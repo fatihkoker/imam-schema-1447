@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tarawih Schema — Ramadan 2026</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary: #24645d;
-      --primary-light: #2e7d74;
       --primary-dark: #1a4a44;
       --gold: #c9a84c;
       --gold-light: #e8c97a;
@@ -16,6 +15,8 @@
       --white: #ffffff;
       --text: #1a1a1a;
       --muted: #6b7280;
+      --today-bg: #e8f7f0;
+      --today-green: #3dba7e;
 
       --abdurrahman: #e8630a;
       --saed: #d4a800;
@@ -32,112 +33,166 @@
       background: var(--cream);
       font-family: 'DM Sans', sans-serif;
       color: var(--text);
+      -webkit-text-size-adjust: 100%;
     }
 
+    /* ── HEADER ── */
     header {
       background: var(--primary);
-      padding: 72px 32px 88px;
+      padding: 52px 20px 72px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
-
     header::before {
       content: '';
       position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.04) 0%, transparent 50%);
+      background: radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%);
     }
 
     .ornament {
-      display: flex; align-items: center; justify-content: center; gap: 14px;
-      margin-bottom: 24px; position: relative; z-index: 2;
-      animation: fadeUp .8s ease both;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      margin-bottom: 20px; position: relative; z-index: 2;
     }
-    .orn-line { height: 1px; width: 70px; }
+    .orn-line { height: 1px; width: 50px; }
     .orn-line.l { background: linear-gradient(to right, transparent, var(--gold)); }
-    .orn-line.r { background: linear-gradient(to left,  transparent, var(--gold)); }
-    .orn-diamond { width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); }
-    .orn-dot     { width: 4px; height: 4px; background: var(--gold-light); border-radius: 50%; }
+    .orn-line.r { background: linear-gradient(to left, transparent, var(--gold)); }
+    .orn-diamond { width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); }
+    .orn-dot { width: 3px; height: 3px; background: var(--gold-light); border-radius: 50%; }
 
     header h1 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-size: clamp(1.8rem, 6vw, 3.2rem);
       font-weight: 600;
       color: var(--white);
-      letter-spacing: .04em;
+      letter-spacing: .03em;
       line-height: 1.2;
       position: relative; z-index: 2;
-      animation: fadeUp .8s .1s ease both;
     }
 
-    .ramadan-badge {
-      display: inline-block;
-      margin-top: 16px;
-      background: rgba(201,168,76,0.18);
-      border: 1px solid rgba(201,168,76,0.42);
-      color: var(--gold-light);
-      font-size: .78rem;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      padding: 6px 20px;
-      border-radius: 30px;
+    /* Address block */
+    .header-address {
+      margin-top: 20px;
       position: relative; z-index: 2;
-      animation: fadeUp .8s .2s ease both;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .header-address .addr-text {
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,.65); font-size: .82rem;
+    }
+    .header-address a {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; color: var(--primary-dark);
+      font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 7px 18px; border-radius: 30px; text-decoration: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
     }
 
+    /* Wave */
     .wave { background: var(--primary); line-height: 0; }
     .wave svg { display: block; width: 100%; }
 
+    /* ── MAIN ── */
     main {
-      max-width: 1080px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 54px 20px 100px;
+      padding: 32px 14px 80px;
     }
 
+    /* ── TODAY CARD ── */
+    .today-card {
+      display: none;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(36,100,93,.14);
+      overflow: hidden;
+      margin-bottom: 28px;
+      animation: fadeUp .6s ease both;
+    }
+    .today-card-top {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      padding: 20px 20px 16px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .today-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.25);
+    }
+    .today-card-info { flex: 1; }
+    .today-card-label {
+      font-size: .65rem; letter-spacing: .16em; text-transform: uppercase;
+      color: rgba(255,255,255,.55); display: block; margin-bottom: 3px;
+    }
+    .today-card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 600; color: #fff; line-height: 1.1;
+      display: block;
+    }
+    .today-card-date {
+      font-size: .78rem; color: rgba(255,255,255,.5); display: block; margin-top: 2px;
+    }
+    .today-card-bottom {
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .today-pages {
+      display: flex; flex-direction: column;
+    }
+    .today-pages-label {
+      font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+    }
+    .today-pages-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem; font-weight: 600; color: var(--primary-dark);
+    }
+    .today-scroll-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--primary); color: #fff;
+      font-size: .75rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+      padding: 8px 16px; border-radius: 30px; border: none; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+
+    /* ── SECTION TITLE ── */
     .section-title {
-      text-align: center;
-      margin-bottom: 36px;
-      animation: fadeUp .8s .15s ease both;
+      text-align: center; margin-bottom: 20px;
     }
     .section-title h2 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
-      font-weight: 600;
-      color: var(--primary-dark);
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      font-weight: 600; color: var(--primary-dark);
     }
     .divider {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      margin-top: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;
     }
-    .divider span { height: 1px; width: 50px; background: var(--gold); display: block; }
-    .divider i { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); display: block; }
+    .divider span { height: 1px; width: 40px; background: var(--gold); display: block; }
+    .divider i { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); display: block; }
 
+    /* ── LEGEND ── */
     .legend {
-      display: flex; flex-wrap: wrap; gap: 10px;
-      justify-content: center;
-      margin-bottom: 36px;
-      animation: fadeUp .8s .22s ease both;
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center; margin-bottom: 20px;
     }
     .legend-item {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--white);
-      border-radius: 30px;
-      padding: 6px 14px 6px 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      font-size: .82rem;
-      font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+      background: var(--white); border-radius: 30px;
+      padding: 5px 12px 5px 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      font-size: .78rem; font-weight: 500;
     }
-    .legend-dot {
-      width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
-    }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
+    /* ── TABLE (desktop) ── */
     .table-wrap {
       overflow-x: auto;
-      border-radius: 18px;
-      box-shadow: 0 8px 40px rgba(36,100,93,.13);
-      animation: fadeUp .8s .3s ease both;
+      border-radius: 16px;
+      box-shadow: 0 6px 32px rgba(36,100,93,.12);
     }
 
     table {
@@ -146,119 +201,118 @@
       background: var(--white);
       font-size: .875rem;
     }
-
     thead tr { background: var(--primary); }
     thead th {
-      font-size: .72rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: rgba(255,255,255,.7);
-      padding: 16px 18px;
-      text-align: left;
-      white-space: nowrap;
+      font-size: .7rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.7);
+      padding: 14px 16px; text-align: left; white-space: nowrap;
     }
-
     tbody tr {
       border-bottom: 1px solid rgba(36,100,93,.07);
-      transition: background .18s;
+      transition: background .15s;
+      border-left: 4px solid transparent;
     }
-    tbody tr:hover { background: rgba(36,100,93,.04); }
     tbody tr:last-child { border-bottom: none; }
-
-    td { padding: 12px 18px; vertical-align: middle; }
-
-    .td-dag {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--primary-dark);
-      text-align: center;
+    tbody tr:hover { background: rgba(36,100,93,.04); }
+    tbody tr.today {
+      background: var(--today-bg) !important;
+      border-left-color: var(--today-green);
     }
-
+    td { padding: 12px 16px; vertical-align: middle; }
+    .td-dag { font-weight: 700; font-size: .95rem; color: var(--primary-dark); text-align: center; }
+    .td-dag.today-day { color: #1d7a4e; }
     .td-sidor { font-size: .8rem; color: var(--muted); white-space: nowrap; }
-
-    .td-kommentar { font-size: .83rem; font-style: italic; min-width: 200px; }
+    .td-datum { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+    .td-datum.today-date { color: #1d7a4e; font-weight: 600; }
+    .td-veckodag { font-size: .8rem; font-weight: 500; white-space: nowrap; }
+    .fredag { color: #b45309; font-weight: 700; }
+    .lordag { color: var(--primary-dark); }
+    .sondag { color: #b45309; }
 
     .imam-chip {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 5px 13px 5px 9px;
-      border-radius: 30px;
-      font-size: .81rem;
-      font-weight: 500;
-      color: var(--white);
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 11px 4px 8px; border-radius: 30px;
+      font-size: .78rem; font-weight: 500; color: #fff; white-space: nowrap;
     }
     .imam-chip .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: rgba(255,255,255,.38); flex-shrink: 0;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,.35); flex-shrink: 0;
     }
-
     .imam-abdurrahman { background: var(--abdurrahman); }
     .imam-saed        { background: var(--saed); color: #1a1a1a !important; }
-    .imam-saed .dot   { background: rgba(0,0,0,.18) !important; }
+    .imam-saed .dot   { background: rgba(0,0,0,.15) !important; }
     .imam-noor        { background: var(--noor); }
     .imam-abdul       { background: var(--abdul); }
     .imam-mohammed    { background: var(--mohammed); }
     .imam-yacquub     { background: var(--yacquub); }
     .imam-guest       { background: var(--guest); color: #1a1a1a !important; }
-    .imam-guest .dot  { background: rgba(0,0,0,.18) !important; }
+    .imam-guest .dot  { background: rgba(0,0,0,.15) !important; }
 
-    .td-datum { font-size: .8rem; color: var(--muted); white-space: nowrap; }
-
-    .td-veckodag { font-size: .8rem; font-weight: 500; white-space: nowrap; }
-    .fredag  { color: #b45309; font-weight: 700; }
-    .lordag  { color: var(--primary-dark); }
-    .sondag  { color: #b45309; }
-
-    /* Today highlight */
-    tbody tr.today {
-      background: #e8f7f0 !important;
-      border-left: 4px solid #3dba7e;
-    }
-    tbody tr.today .td-dag {
-      color: #1d7a4e;
-    }
-    tbody tr.today .td-datum {
-      color: #1d7a4e;
-      font-weight: 600;
-    }
     .today-badge {
-      display: inline-block;
-      background: #3dba7e;
-      color: #fff;
-      font-size: .65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .09em;
-      padding: 2px 7px;
-      border-radius: 10px;
-      margin-left: 6px;
+      display: inline-block; background: var(--today-green); color: #fff;
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; padding: 2px 6px; border-radius: 8px; margin-left: 5px;
       vertical-align: middle;
     }
 
+    /* ── MOBILE CARDS (replaces table on small screens) ── */
+    .mobile-cards { display: none; }
+    .day-card-mobile {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 12px rgba(36,100,93,.08);
+      display: flex; align-items: center; gap: 14px;
+      border-left: 4px solid transparent;
+    }
+    .day-card-mobile.today {
+      background: var(--today-bg);
+      border-left-color: var(--today-green);
+    }
+    .dcm-dag {
+      font-weight: 700; font-size: 1.3rem; color: var(--primary-dark);
+      min-width: 32px; text-align: center; flex-shrink: 0;
+    }
+    .dcm-dag.today-day { color: #1d7a4e; }
+    .dcm-body { flex: 1; min-width: 0; }
+    .dcm-imam { margin-bottom: 5px; }
+    .dcm-meta {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .dcm-date { font-size: .75rem; color: var(--muted); }
+    .dcm-day-label { font-size: .75rem; font-weight: 500; }
+    .dcm-pages {
+      font-size: .75rem; color: var(--muted);
+      background: rgba(36,100,93,.08); padding: 2px 8px; border-radius: 10px;
+    }
+
+    /* ── FOOTER ── */
     footer {
       background: var(--primary-dark);
-      text-align: center;
-      padding: 28px 20px;
-      color: rgba(255,255,255,.45);
-      font-size: .82rem;
-      letter-spacing: .05em;
+      text-align: center; padding: 24px 20px;
+      color: rgba(255,255,255,.45); font-size: .8rem; letter-spacing: .05em;
     }
     footer strong { color: var(--gold); }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(22px); }
+      from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 600px) {
-      header { padding: 52px 20px 70px; }
-      td, thead th { padding: 10px 12px; }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      header { padding: 40px 16px 60px; }
+      main { padding: 24px 12px 60px; }
+      .table-wrap { display: none; }
+      .mobile-cards { display: block; }
+      .legend { display: none; } /* legend shown inline on cards */
     }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="ornament">
     <div class="orn-line l"></div>
@@ -268,25 +322,17 @@
     <div class="orn-line r"></div>
   </div>
   <h1>Tarawih Schema<br>Ramadan 2026</h1>
-  <div id="today-card" style="display:none; margin-top:28px; position:relative; z-index:2;">
-    <div style="display:inline-flex; flex-direction:column; align-items:center; gap:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:16px; padding:18px 32px;">
-      <span style="font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.55);">Dagens Imam</span>
-      <span id="today-imam-name" style="font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:600; color:#fff; letter-spacing:.02em;"></span>
-      <span id="today-date-label" style="font-size:.78rem; color:rgba(255,255,255,.5);"></span>
-      <button onclick="document.getElementById('today-row').scrollIntoView({behavior:'smooth',block:'center'})" style="margin-top:8px; display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.25); border:1px solid rgba(201,168,76,0.5); color:#e8c97a; font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; padding:6px 16px; border-radius:30px; cursor:pointer; font-family:inherit;">↓ Se i schemat</button>
-    </div>
-  </div>
-  <div style="margin-top:22px; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px;">
-    <div style="display:flex; align-items:center; gap:8px; color:rgba(255,255,255,0.65); font-size:.85rem;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+
+  <div class="header-address">
+    <div class="addr-text">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       Tenstastråket 16, 163 61 Spånga
     </div>
-    <a href="https://www.google.com/maps/search/?api=1&query=Tenstastråket+16,+163+61+Spånga" target="_blank" style="display:inline-flex; align-items:center; gap:7px; background:#fff; color:var(--primary-dark); font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 20px; border-radius:30px; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.15); transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    <a href="https://www.google.com/maps/search/?api=1&query=Tenstastråket+16,+163+61+Spånga" target="_blank">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       Hitta hit
     </a>
   </div>
-
 </header>
 
 <div class="wave">
@@ -296,11 +342,35 @@
 </div>
 
 <main>
+
+  <!-- TODAY CARD -->
+  <div class="today-card" id="today-card">
+    <div class="today-card-top">
+      <div class="today-avatar" id="today-avatar">?</div>
+      <div class="today-card-info">
+        <span class="today-card-label">Dagens Imam</span>
+        <span class="today-card-name" id="today-imam-name">—</span>
+        <span class="today-card-date" id="today-date-label">—</span>
+      </div>
+    </div>
+    <div class="today-card-bottom">
+      <div class="today-pages">
+        <span class="today-pages-label">Sidor idag</span>
+        <span class="today-pages-value" id="today-pages">—</span>
+      </div>
+      <button class="today-scroll-btn" onclick="document.getElementById('today-row').scrollIntoView({behavior:'smooth',block:'center'})">
+        ↓ Se i schemat
+      </button>
+    </div>
+  </div>
+
+  <!-- SECTION TITLE -->
   <div class="section-title">
     <h2>Imamernas Böneledning</h2>
     <div class="divider"><span></span><i></i><span></span></div>
   </div>
 
+  <!-- LEGEND (desktop) -->
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--abdurrahman)"></div>Abdurrahman Sudani</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--saed);border:1px solid #ccc"></div>Saed Magan</div>
@@ -311,6 +381,7 @@
     <div class="legend-item"><div class="legend-dot" style="background:var(--guest);border:1px solid #ccc"></div>Gäst</div>
   </div>
 
+  <!-- DESKTOP TABLE -->
   <div class="table-wrap">
     <table>
       <thead>
@@ -356,6 +427,10 @@
       </tbody>
     </table>
   </div>
+
+  <!-- MOBILE CARDS -->
+  <div class="mobile-cards" id="mobile-cards"></div>
+
 </main>
 
 <footer>
@@ -363,33 +438,97 @@
 </footer>
 
 <script>
-  const today = new Date().toISOString().slice(0, 10);
-  const days = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
-  const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+  const SCHEDULE = [
+    {day:1,  sidor:'2–11',    imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-17', vecka:'Tisdag'},
+    {day:2,  sidor:'11–21',   imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-18', vecka:'Onsdag'},
+    {day:3,  sidor:'22–31',   imam:'noor',        imamLabel:'Noor',               datum:'2026-02-19', vecka:'Torsdag'},
+    {day:4,  sidor:'32–41',   imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-02-20', vecka:'Fredag'},
+    {day:5,  sidor:'42–51',   imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-21', vecka:'Lördag'},
+    {day:6,  sidor:'51–62',   imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-02-22', vecka:'Söndag'},
+    {day:7,  sidor:'62–72',   imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-23', vecka:'Måndag'},
+    {day:8,  sidor:'72–81',   imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-02-24', vecka:'Tisdag'},
+    {day:9,  sidor:'82–92',   imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-25', vecka:'Onsdag'},
+    {day:10, sidor:'92–101',  imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-26', vecka:'Torsdag'},
+    {day:11, sidor:'102–106', imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-27', vecka:'Fredag'},
+    {day:12, sidor:'438–449', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-28', vecka:'Lördag'},
+    {day:13, sidor:'449–458', imam:'guest',       imamLabel:'Gäst',              datum:'2026-03-01', vecka:'Söndag'},
+    {day:14, sidor:'458–467', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-02', vecka:'Måndag'},
+    {day:15, sidor:'467–476', imam:'noor',        imamLabel:'Noor',               datum:'2026-03-03', vecka:'Tisdag'},
+    {day:16, sidor:'476–486', imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-04', vecka:'Onsdag'},
+    {day:17, sidor:'486–495', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-05', vecka:'Torsdag'},
+    {day:18, sidor:'496–506', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-06', vecka:'Fredag'},
+    {day:19, sidor:'507–515', imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-07', vecka:'Lördag'},
+    {day:20, sidor:'515–523', imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag'},
+    {day:21, sidor:'523–531', imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag'},
+    {day:22, sidor:'531–539', imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag'},
+    {day:23, sidor:'539–548', imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag'},
+    {day:24, sidor:'549–557', imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag'},
+    {day:25, sidor:'558–566', imam:'guest',       imamLabel:'Gäst',              datum:'2026-03-13', vecka:'Fredag'},
+    {day:26, sidor:'566–574', imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag'},
+    {day:27, sidor:'575–583', imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag'},
+    {day:28, sidor:'583–591', imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag'},
+    {day:29, sidor:'592–604', imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag'},
+    {day:30, sidor:'2–11',    imam:'noor',        imamLabel:'Noor',               datum:'2026-03-18', vecka:'Onsdag'},
+  ];
 
-  document.querySelectorAll('tbody tr').forEach(row => {
-    const datumCell = row.querySelector('.td-datum');
-    if (!datumCell) return;
-    if (datumCell.textContent.trim() === today) {
-      // Highlight row
+  const DAYS   = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+  const MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+  const today  = new Date().toISOString().slice(0, 10);
+
+  // ── Build mobile cards ──
+  const container = document.getElementById('mobile-cards');
+  SCHEDULE.forEach(row => {
+    const isToday = row.datum === today;
+    const card = document.createElement('div');
+    card.className = 'day-card-mobile' + (isToday ? ' today' : '');
+    if (isToday) card.id = 'today-row';
+
+    const veckaClass = row.vecka === 'Fredag' ? 'fredag' : row.vecka === 'Lördag' ? 'lordag' : row.vecka === 'Söndag' ? 'sondag' : '';
+    const todayBadge = isToday ? '<span class="today-badge">Idag</span>' : '';
+
+    card.innerHTML = `
+      <div class="dcm-dag ${isToday ? 'today-day' : ''}">${row.day}</div>
+      <div class="dcm-body">
+        <div class="dcm-imam">
+          <span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span>
+        </div>
+        <div class="dcm-meta">
+          <span class="dcm-date">${row.datum}${todayBadge}</span>
+          <span class="dcm-day-label ${veckaClass}">${row.vecka}</span>
+          <span class="dcm-pages">s. ${row.sidor}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // ── Highlight desktop table row + populate today card ──
+  document.querySelectorAll('tbody tr').forEach((row, i) => {
+    const datum = row.querySelector('.td-datum');
+    if (!datum) return;
+    if (datum.textContent.trim() === today) {
       row.classList.add('today');
       row.id = 'today-row';
-      datumCell.innerHTML = datumCell.textContent + '<span class="today-badge">Idag</span>';
-
-      // Populate header card
-      const imamChip = row.querySelector('.imam-chip');
-      const imamName = imamChip ? imamChip.textContent.trim() : '';
-      const d = new Date(today);
-      const dateLabel = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
-
-      document.getElementById('today-imam-name').textContent = imamName;
-      document.getElementById('today-date-label').textContent = dateLabel;
-      document.getElementById('today-card').style.display = 'block';
-
-      // Scroll to row after short delay
-      setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
+      datum.innerHTML = datum.textContent + '<span class="today-badge">Idag</span>';
     }
   });
+
+  // ── Populate today card ──
+  const todayData = SCHEDULE.find(r => r.datum === today);
+  if (todayData) {
+    const d = new Date(today);
+    const dateLabel = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    document.getElementById('today-imam-name').textContent = todayData.imamLabel;
+    document.getElementById('today-date-label').textContent = dateLabel;
+    document.getElementById('today-pages').textContent = 'Sidor ' + todayData.sidor;
+    document.getElementById('today-avatar').textContent = todayData.imamLabel.charAt(0);
+    document.getElementById('today-card').style.display = 'block';
+
+    setTimeout(() => {
+      const card = document.getElementById('today-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
+  }
 </script>
 </body>
 </html>
