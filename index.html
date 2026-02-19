@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarawih Schema — Ramadan 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #24645d;
+      --primary-light: #2e7d74;
+      --primary-dark: #1a4a44;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --cream: #f7f4ef;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+
+      --abdurrahman: #e8630a;
+      --saed: #d4a800;
+      --noor: #2980b9;
+      --abdul: #2c2c2c;
+      --mohammed: #219150;
+      --yacquub: #7d3aac;
+      --guest: #8e9eab;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+    }
+
+    header {
+      background: var(--primary);
+      padding: 72px 32px 88px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 30%, rgba(255,255,255,0.04) 0%, transparent 50%);
+    }
+
+    .ornament {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      margin-bottom: 24px; position: relative; z-index: 2;
+      animation: fadeUp .8s ease both;
+    }
+    .orn-line { height: 1px; width: 70px; }
+    .orn-line.l { background: linear-gradient(to right, transparent, var(--gold)); }
+    .orn-line.r { background: linear-gradient(to left,  transparent, var(--gold)); }
+    .orn-diamond { width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); }
+    .orn-dot     { width: 4px; height: 4px; background: var(--gold-light); border-radius: 50%; }
+
+    header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: .04em;
+      line-height: 1.2;
+      position: relative; z-index: 2;
+      animation: fadeUp .8s .1s ease both;
+    }
+
+    .ramadan-badge {
+      display: inline-block;
+      margin-top: 16px;
+      background: rgba(201,168,76,0.18);
+      border: 1px solid rgba(201,168,76,0.42);
+      color: var(--gold-light);
+      font-size: .78rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      padding: 6px 20px;
+      border-radius: 30px;
+      position: relative; z-index: 2;
+      animation: fadeUp .8s .2s ease both;
+    }
+
+    .wave { background: var(--primary); line-height: 0; }
+    .wave svg { display: block; width: 100%; }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 54px 20px 100px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 36px;
+      animation: fadeUp .8s .15s ease both;
+    }
+    .section-title h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    .divider {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 12px;
+    }
+    .divider span { height: 1px; width: 50px; background: var(--gold); display: block; }
+    .divider i { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); display: block; }
+
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center;
+      margin-bottom: 36px;
+      animation: fadeUp .8s .22s ease both;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--white);
+      border-radius: 30px;
+      padding: 6px 14px 6px 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      font-size: .82rem;
+      font-weight: 500;
+    }
+    .legend-dot {
+      width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(36,100,93,.13);
+      animation: fadeUp .8s .3s ease both;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      font-size: .875rem;
+    }
+
+    thead tr { background: var(--primary); }
+    thead th {
+      font-size: .72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.7);
+      padding: 16px 18px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(36,100,93,.07);
+      transition: background .18s;
+    }
+    tbody tr:hover { background: rgba(36,100,93,.04); }
+    tbody tr:last-child { border-bottom: none; }
+
+    td { padding: 12px 18px; vertical-align: middle; }
+
+    .td-dag {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      text-align: center;
+    }
+
+    .td-sidor { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+
+    .td-kommentar { font-size: .83rem; font-style: italic; min-width: 200px; }
+
+    .imam-chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 13px 5px 9px;
+      border-radius: 30px;
+      font-size: .81rem;
+      font-weight: 500;
+      color: var(--white);
+      white-space: nowrap;
+    }
+    .imam-chip .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,.38); flex-shrink: 0;
+    }
+
+    .imam-abdurrahman { background: var(--abdurrahman); }
+    .imam-saed        { background: var(--saed); color: #1a1a1a !important; }
+    .imam-saed .dot   { background: rgba(0,0,0,.18) !important; }
+    .imam-noor        { background: var(--noor); }
+    .imam-abdul       { background: var(--abdul); }
+    .imam-mohammed    { background: var(--mohammed); }
+    .imam-yacquub     { background: var(--yacquub); }
+    .imam-guest       { background: var(--guest); color: #1a1a1a !important; }
+    .imam-guest .dot  { background: rgba(0,0,0,.18) !important; }
+
+    .td-datum { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+
+    .td-veckodag { font-size: .8rem; font-weight: 500; white-space: nowrap; }
+    .fredag  { color: #b45309; font-weight: 700; }
+    .lordag  { color: var(--primary-dark); }
+    .sondag  { color: #b45309; }
+
+    /* Today highlight */
+    tbody tr.today {
+      background: #e8f7f0 !important;
+      border-left: 4px solid #3dba7e;
+    }
+    tbody tr.today .td-dag {
+      color: #1d7a4e;
+    }
+    tbody tr.today .td-datum {
+      color: #1d7a4e;
+      font-weight: 600;
+    }
+    .today-badge {
+      display: inline-block;
+      background: #3dba7e;
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    footer {
+      background: var(--primary-dark);
+      text-align: center;
+      padding: 28px 20px;
+      color: rgba(255,255,255,.45);
+      font-size: .82rem;
+      letter-spacing: .05em;
+    }
+    footer strong { color: var(--gold); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 52px 20px 70px; }
+      td, thead th { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="ornament">
+    <div class="orn-line l"></div>
+    <div class="orn-dot"></div>
+    <div class="orn-diamond"></div>
+    <div class="orn-dot"></div>
+    <div class="orn-line r"></div>
+  </div>
+  <h1>Tarawih Schema<br>Ramadan 2026</h1>
+  <div id="today-card" style="display:none; margin-top:28px; position:relative; z-index:2;">
+    <div style="display:inline-flex; flex-direction:column; align-items:center; gap:6px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:16px; padding:18px 32px;">
+      <span style="font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.55);">Dagens Imam</span>
+      <span id="today-imam-name" style="font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:600; color:#fff; letter-spacing:.02em;"></span>
+      <span id="today-date-label" style="font-size:.78rem; color:rgba(255,255,255,.5);"></span>
+      <button onclick="document.getElementById('today-row').scrollIntoView({behavior:'smooth',block:'center'})" style="margin-top:8px; display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.25); border:1px solid rgba(201,168,76,0.5); color:#e8c97a; font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; padding:6px 16px; border-radius:30px; cursor:pointer; font-family:inherit;">↓ Se i schemat</button>
+    </div>
+  </div>
+  <div style="margin-top:22px; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px;">
+    <div style="display:flex; align-items:center; gap:8px; color:rgba(255,255,255,0.65); font-size:.85rem;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Tenstastråket 16, 163 61 Spånga
+    </div>
+    <a href="https://www.google.com/maps/search/?api=1&query=Tenstastråket+16,+163+61+Spånga" target="_blank" style="display:inline-flex; align-items:center; gap:7px; background:#fff; color:var(--primary-dark); font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:8px 20px; border-radius:30px; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,0.15); transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Hitta hit
+    </a>
+  </div>
+
+</header>
+
+<div class="wave">
+  <svg viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,28 C400,65 1040,-9 1440,28 L1440,0 L0,0 Z" fill="#24645d"/>
+  </svg>
+</div>
+
+<main>
+  <div class="section-title">
+    <h2>Imamernas Böneledning</h2>
+    <div class="divider"><span></span><i></i><span></span></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--abdurrahman)"></div>Abdurrahman Sudani</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--saed);border:1px solid #ccc"></div>Saed Magan</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--noor)"></div>Noor</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--abdul)"></div>Abdul Qadir</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--mohammed)"></div>Mohammed Haji</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yacquub)"></div>Yacquub</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--guest);border:1px solid #ccc"></div>Gäst</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sidor</th>
+          <th>Imam</th>
+          <th>Datum</th>
+          <th>Dag</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-dag">1</td><td class="td-sidor">2–11</td><td><span class="imam-chip imam-abdurrahman"><span class="dot"></span>Abdurrahman Sudani</span></td><td class="td-datum">2026-02-17</td><td class="td-veckodag">Tisdag</td></tr>
+        <tr><td class="td-dag">2</td><td class="td-sidor">11–21</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-02-18</td><td class="td-veckodag">Onsdag</td></tr>
+        <tr><td class="td-dag">3</td><td class="td-sidor">22–31</td><td><span class="imam-chip imam-noor"><span class="dot"></span>Noor</span></td><td class="td-datum">2026-02-19</td><td class="td-veckodag">Torsdag</td></tr>
+        <tr><td class="td-dag">4</td><td class="td-sidor">32–41</td><td><span class="imam-chip imam-abdul"><span class="dot"></span>Abdul Qadir</span></td><td class="td-datum">2026-02-20</td><td class="td-veckodag fredag">Fredag</td></tr>
+        <tr><td class="td-dag">5</td><td class="td-sidor">42–51</td><td><span class="imam-chip imam-mohammed"><span class="dot"></span>Mohammed Haji</span></td><td class="td-datum">2026-02-21</td><td class="td-veckodag lordag">Lördag</td></tr>
+        <tr><td class="td-dag">6</td><td class="td-sidor">51–62</td><td><span class="imam-chip imam-yacquub"><span class="dot"></span>Yacquub</span></td><td class="td-datum">2026-02-22</td><td class="td-veckodag sondag">Söndag</td></tr>
+        <tr><td class="td-dag">7</td><td class="td-sidor">62–72</td><td><span class="imam-chip imam-abdurrahman"><span class="dot"></span>Abdurrahman Sudani</span></td><td class="td-datum">2026-02-23</td><td class="td-veckodag">Måndag</td></tr>
+        <tr><td class="td-dag">8</td><td class="td-sidor">72–81</td><td><span class="imam-chip imam-yacquub"><span class="dot"></span>Yacquub</span></td><td class="td-datum">2026-02-24</td><td class="td-veckodag">Tisdag</td></tr>
+        <tr><td class="td-dag">9</td><td class="td-sidor">82–92</td><td><span class="imam-chip imam-abdurrahman"><span class="dot"></span>Abdurrahman Sudani</span></td><td class="td-datum">2026-02-25</td><td class="td-veckodag">Onsdag</td></tr>
+        <tr><td class="td-dag">10</td><td class="td-sidor">92–101</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-02-26</td><td class="td-veckodag">Torsdag</td></tr>
+        <tr><td class="td-dag">11</td><td class="td-sidor">102–106</td><td><span class="imam-chip imam-mohammed"><span class="dot"></span>Mohammed Haji</span></td><td class="td-datum">2026-02-27</td><td class="td-veckodag fredag">Fredag</td></tr>
+        <tr><td class="td-dag">12</td><td class="td-sidor">438–449</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-02-28</td><td class="td-veckodag lordag">Lördag</td></tr>
+        <tr><td class="td-dag">13</td><td class="td-sidor">449–458</td><td><span class="imam-chip imam-guest"><span class="dot"></span>Gäst</span></td><td class="td-datum">2026-03-01</td><td class="td-veckodag sondag">Söndag</td></tr>
+        <tr><td class="td-dag">14</td><td class="td-sidor">458–467</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-03-02</td><td class="td-veckodag">Måndag</td></tr>
+        <tr><td class="td-dag">15</td><td class="td-sidor">467–476</td><td><span class="imam-chip imam-noor"><span class="dot"></span>Noor</span></td><td class="td-datum">2026-03-03</td><td class="td-veckodag">Tisdag</td></tr>
+        <tr><td class="td-dag">16</td><td class="td-sidor">476–486</td><td><span class="imam-chip imam-mohammed"><span class="dot"></span>Mohammed Haji</span></td><td class="td-datum">2026-03-04</td><td class="td-veckodag">Onsdag</td></tr>
+        <tr><td class="td-dag">17</td><td class="td-sidor">486–495</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-03-05</td><td class="td-veckodag">Torsdag</td></tr>
+        <tr><td class="td-dag">18</td><td class="td-sidor">496–506</td><td><span class="imam-chip imam-saed"><span class="dot"></span>Saed Magan</span></td><td class="td-datum">2026-03-06</td><td class="td-veckodag fredag">Fredag</td></tr>
+        <tr><td class="td-dag">19</td><td class="td-sidor">507–515</td><td><span class="imam-chip imam-yacquub"><span class="dot"></span>Yacquub</span></td><td class="td-datum">2026-03-07</td><td class="td-veckodag lordag">Lördag</td></tr>
+        <tr><td class="td-dag">20</td><td class="td-sidor">515–523</td><td><span class="imam-chip imam-yacquub"><span class="dot"></span>Yacquub</span></td><td class="td-datum">2026-03-08</td><td class="td-veckodag sondag">Söndag</td></tr>
+        <tr><td class="td-dag">21</td><td class="td-sidor">523–531</td><td><span class="imam-chip imam-noor"><span class="dot"></span>Noor</span></td><td class="td-datum">2026-03-09</td><td class="td-veckodag">Måndag</td></tr>
+        <tr><td class="td-dag">22</td><td class="td-sidor">531–539</td><td><span class="imam-chip imam-mohammed"><span class="dot"></span>Mohammed Haji</span></td><td class="td-datum">2026-03-10</td><td class="td-veckodag">Tisdag</td></tr>
+        <tr><td class="td-dag">23</td><td class="td-sidor">539–548</td><td><span class="imam-chip imam-abdurrahman"><span class="dot"></span>Abdurrahman Sudani</span></td><td class="td-datum">2026-03-11</td><td class="td-veckodag">Onsdag</td></tr>
+        <tr><td class="td-dag">24</td><td class="td-sidor">549–557</td><td><span class="imam-chip imam-abdul"><span class="dot"></span>Abdul Qadir</span></td><td class="td-datum">2026-03-12</td><td class="td-veckodag">Torsdag</td></tr>
+        <tr><td class="td-dag">25</td><td class="td-sidor">558–566</td><td><span class="imam-chip imam-guest"><span class="dot"></span>Gäst</span></td><td class="td-datum">2026-03-13</td><td class="td-veckodag fredag">Fredag</td></tr>
+        <tr><td class="td-dag">26</td><td class="td-sidor">566–574</td><td><span class="imam-chip imam-abdurrahman"><span class="dot"></span>Abdurrahman Sudani</span></td><td class="td-datum">2026-03-14</td><td class="td-veckodag lordag">Lördag</td></tr>
+        <tr><td class="td-dag">27</td><td class="td-sidor">575–583</td><td><span class="imam-chip imam-noor"><span class="dot"></span>Noor</span></td><td class="td-datum">2026-03-15</td><td class="td-veckodag sondag">Söndag</td></tr>
+        <tr><td class="td-dag">28</td><td class="td-sidor">583–591</td><td><span class="imam-chip imam-mohammed"><span class="dot"></span>Mohammed Haji</span></td><td class="td-datum">2026-03-16</td><td class="td-veckodag">Måndag</td></tr>
+        <tr><td class="td-dag">29</td><td class="td-sidor">592–604</td><td><span class="imam-chip imam-yacquub"><span class="dot"></span>Yacquub</span></td><td class="td-datum">2026-03-17</td><td class="td-veckodag">Tisdag</td></tr>
+        <tr><td class="td-dag">30</td><td class="td-sidor">2–11</td><td><span class="imam-chip imam-noor"><span class="dot"></span>Noor</span></td><td class="td-datum">2026-03-18</td><td class="td-veckodag">Onsdag</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  &copy; 2026 &nbsp;<strong>islam.nu</strong>&nbsp; — Tarawih Schema Ramadan 1447
+</footer>
+
+<script>
+  const today = new Date().toISOString().slice(0, 10);
+  const days = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+  const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+
+  document.querySelectorAll('tbody tr').forEach(row => {
+    const datumCell = row.querySelector('.td-datum');
+    if (!datumCell) return;
+    if (datumCell.textContent.trim() === today) {
+      // Highlight row
+      row.classList.add('today');
+      row.id = 'today-row';
+      datumCell.innerHTML = datumCell.textContent + '<span class="today-badge">Idag</span>';
+
+      // Populate header card
+      const imamChip = row.querySelector('.imam-chip');
+      const imamName = imamChip ? imamChip.textContent.trim() : '';
+      const d = new Date(today);
+      const dateLabel = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
+
+      document.getElementById('today-imam-name').textContent = imamName;
+      document.getElementById('today-date-label').textContent = dateLabel;
+      document.getElementById('today-card').style.display = 'block';
+
+      // Scroll to row after short delay
+      setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
+    }
+  });
+</script>
+</body>
+</html>
