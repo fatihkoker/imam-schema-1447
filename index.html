@@ -282,16 +282,7 @@
       pointer-events: none;
       transition: left 0.25s linear;
     }
-    /* Mobile player — lives inside dcm-surahs, expands with it */
-    .dcm-player {
-      max-height: 0; overflow: hidden; opacity: 0;
-      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
-    }
-    .dcm-player.open { max-height: 60px; opacity: 1; }
-    .dcm-player-inner {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0 2px 0;
-    }
+
 
     /* EID CARD */
     .eid-card {
@@ -312,6 +303,55 @@
       line-height: 1.15; margin-bottom: 12px;
     }
     .eid-subtitle { font-size: .95rem; color: rgba(255,255,255,.6); font-style: italic; letter-spacing: .04em; }
+
+    /* STICKY BOTTOM PLAYER */
+    .sticky-player {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 9999;
+      background: #fff;
+      border-top: 1px solid rgba(36,100,93,.12);
+      box-shadow: 0 -4px 24px rgba(0,0,0,.10);
+      padding: 10px 20px 14px;
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .sticky-player.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    .sticky-player-label {
+      font-size: .6rem; text-transform: uppercase; letter-spacing: .12em;
+      color: #9ca3af; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .sticky-player-imam { color: var(--primary-dark); font-weight: 600; }
+    .sticky-player-inner {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sticky-player .audio-time { font-size: .72rem; color: var(--muted); min-width: 36px; font-variant-numeric: tabular-nums; }
+    .sticky-player .audio-time.total { text-align: right; }
+    .sticky-player .audio-seek {
+      flex: 1; height: 5px; border-radius: 5px;
+      background: rgba(36,100,93,.15);
+      position: relative; cursor: pointer;
+    }
+    .sticky-player .audio-seek-fill {
+      height: 100%; border-radius: 5px;
+      background: var(--primary-dark); width: 0%;
+      pointer-events: none;
+    }
+    .sticky-player .audio-seek-thumb {
+      position: absolute; top: 50%; left: 0%;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: var(--primary-dark);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
 
     footer { background: var(--primary-dark); text-align: center; padding: 24px 20px; color: rgba(255,255,255,.45); font-size: .8rem; letter-spacing: .05em; }
     footer strong { color: var(--gold); }
@@ -829,16 +869,6 @@
         <span class="dcm-surahs-label">Suror — tryck för detaljer</span>
         ${row.surahs}
         <div class="dcm-tooltip">📖 ${row.tooltip}</div>
-        <div class="dcm-player" id="player-mobile-${row.datum}">
-          <div class="dcm-player-inner">
-            <span class="audio-time" id="cur-mobile-${row.datum}">0:00</span>
-            <div class="audio-seek" id="seek-mobile-${row.datum}">
-              <div class="audio-seek-fill" id="fill-mobile-${row.datum}"></div>
-              <div class="audio-seek-thumb" id="thumb-mobile-${row.datum}"></div>
-            </div>
-            <span class="audio-time total" id="dur-mobile-${row.datum}">0:00</span>
-          </div>
-        </div>
       </div>
     `;
 
@@ -858,7 +888,7 @@
     });
 
     container.appendChild(card);
-    seekSetup(`seek-mobile-${row.datum}`, row.datum);
+
   });
 
   // Populate today card
@@ -966,36 +996,84 @@
 
   function updatePlayerUI(datum, currentTime, duration) {
     const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
-    ['desktop', 'mobile'].forEach(ctx => {
-      const cur = document.getElementById(`cur-${ctx}-${datum}`);
-      const dur = document.getElementById(`dur-${ctx}-${datum}`);
-      const fill = document.getElementById(`fill-${ctx}-${datum}`);
-      const thumb = document.getElementById(`thumb-${ctx}-${datum}`);
-      if (cur) cur.textContent = fmtTime(currentTime);
-      if (dur) dur.textContent = fmtTime(duration);
-      if (fill) fill.style.width = pct + '%';
-      if (thumb) thumb.style.left = pct + '%';
-    });
+    // Desktop row player
+    const cur = document.getElementById('cur-desktop-' + datum);
+    const dur = document.getElementById('dur-desktop-' + datum);
+    const fill = document.getElementById('fill-desktop-' + datum);
+    const thumb = document.getElementById('thumb-desktop-' + datum);
+    if (cur) cur.textContent = fmtTime(currentTime);
+    if (dur) dur.textContent = fmtTime(duration);
+    if (fill) fill.style.width = pct + '%';
+    if (thumb) thumb.style.left = pct + '%';
+    // Sticky bottom player
+    const sCur = document.getElementById('sticky-cur');
+    const sDur = document.getElementById('sticky-dur');
+    const sFill = document.getElementById('sticky-fill');
+    const sThumb = document.getElementById('sticky-thumb');
+    if (sCur) sCur.textContent = fmtTime(currentTime);
+    if (sDur) sDur.textContent = fmtTime(duration);
+    if (sFill) sFill.style.width = pct + '%';
+    if (sThumb) sThumb.style.left = pct + '%';
   }
 
+  // Sticky player scroll-fade logic
+  let _stickyScrollTimer = null;
+  let _stickyVisible = false;
+  let _activeDatum = null;
+
+  function showSticky() {
+    if (!_activeDatum) return;
+    document.getElementById('sticky-player').classList.add('visible');
+    _stickyVisible = true;
+  }
+  function hideSticky() {
+    document.getElementById('sticky-player').classList.remove('visible');
+    _stickyVisible = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!_activeDatum) return;
+    hideSticky();
+    clearTimeout(_stickyScrollTimer);
+    _stickyScrollTimer = setTimeout(showSticky, 600);
+  }, { passive: true });
+
+  // Sticky seek click
+  document.getElementById('sticky-seek').addEventListener('click', e => {
+    if (!_activeDatum || !audioState[_activeDatum]) return;
+    const audio = audioState[_activeDatum];
+    if (!audio.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = pct * audio.duration;
+    updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
+  });
+
   function openPlayer(datum) {
+    _activeDatum = datum;
+    // Update sticky imam label
+    const row = SCHEDULE.find(r => r.datum === datum);
+    if (row) document.getElementById('sticky-imam-label').textContent = row.imamLabel;
     // Show desktop player row
-    const desktopRow = document.getElementById(`player-row-desktop-${datum}`);
+    const desktopRow = document.getElementById('player-row-desktop-' + datum);
     if (desktopRow) {
       desktopRow.style.display = 'table-row';
       requestAnimationFrame(() => {
-        document.getElementById(`player-desktop-${datum}`)?.classList.add('open');
+        const p = document.getElementById('player-desktop-' + datum);
+        if (p) p.classList.add('open');
       });
     }
-    // Show mobile player
-    document.getElementById(`player-mobile-${datum}`)?.classList.add('open');
+    // Show sticky bar (after short delay)
+    setTimeout(showSticky, 200);
   }
 
   function closePlayer(datum) {
-    document.getElementById(`player-desktop-${datum}`)?.classList.remove('open');
-    document.getElementById(`player-mobile-${datum}`)?.classList.remove('open');
+    _activeDatum = null;
+    hideSticky();
+    const p = document.getElementById('player-desktop-' + datum);
+    if (p) p.classList.remove('open');
     setTimeout(() => {
-      const row = document.getElementById(`player-row-desktop-${datum}`);
+      const row = document.getElementById('player-row-desktop-' + datum);
       if (row) row.style.display = 'none';
     }, 380);
   }
@@ -1270,5 +1348,21 @@
     }, lastDelay + 50);
   }
 </script>
+  <!-- STICKY BOTTOM PLAYER -->
+  <div class="sticky-player" id="sticky-player">
+    <div class="sticky-player-label">
+      <span>Nu spelar</span>
+      <span class="sticky-player-imam" id="sticky-imam-label"></span>
+    </div>
+    <div class="sticky-player-inner">
+      <span class="audio-time" id="sticky-cur">0:00</span>
+      <div class="audio-seek" id="sticky-seek">
+        <div class="audio-seek-fill" id="sticky-fill"></div>
+        <div class="audio-seek-thumb" id="sticky-thumb"></div>
+      </div>
+      <span class="audio-time total" id="sticky-dur">0:00</span>
+    </div>
+  </div>
+
 </body>
 </html>
