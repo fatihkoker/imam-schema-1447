@@ -311,8 +311,8 @@
       z-index: 9999;
       background: #fff;
       border-top: 1px solid rgba(36,100,93,.12);
-      box-shadow: 0 -4px 24px rgba(0,0,0,.10);
-      padding: 10px 20px 14px;
+      box-shadow: 0 -4px 28px rgba(0,0,0,.12);
+      padding: 10px 16px 16px;
       transform: translateY(100%);
       opacity: 0;
       transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
@@ -323,35 +323,87 @@
       opacity: 1;
       pointer-events: all;
     }
-    .sticky-player-label {
-      font-size: .6rem; text-transform: uppercase; letter-spacing: .12em;
-      color: #9ca3af; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;
+    /* Top row: subtitle left, times right */
+    .sticky-top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
     }
-    .sticky-player-imam { color: var(--primary-dark); font-weight: 600; }
-    .sticky-player-inner {
-      display: flex; align-items: center; gap: 10px;
+    .sticky-subtitle {
+      font-size: .68rem; color: var(--primary-dark); font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;
     }
-    .sticky-player .audio-time { font-size: .72rem; color: var(--muted); min-width: 36px; font-variant-numeric: tabular-nums; }
-    .sticky-player .audio-time.total { text-align: right; }
-    .sticky-player .audio-seek {
-      flex: 1; height: 5px; border-radius: 5px;
+    .sticky-subtitle-day {
+      font-size: .6rem; color: #9ca3af; font-weight: 400; margin-left: 6px;
+    }
+    .sticky-times {
+      font-size: .68rem; color: #9ca3af; font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+
+    /* Waveform */
+    .sticky-waves {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 2px; height: 28px; margin-bottom: 6px;
+    }
+    .sticky-wave-bar {
+      width: 3px; border-radius: 2px;
+      background: rgba(36,100,93,.2);
+      transition: height 0.1s ease, background 0.2s ease;
+      flex-shrink: 0;
+    }
+    .sticky-wave-bar.active { background: var(--primary-dark); }
+    .sticky-wave-bar.playing {
+      animation: wavePulse 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes wavePulse {
+      from { transform: scaleY(0.5); }
+      to   { transform: scaleY(1); }
+    }
+
+    /* Seek bar */
+    .sticky-seek-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .sticky-seek {
+      flex: 1; height: 4px; border-radius: 4px;
       background: rgba(36,100,93,.15);
       position: relative; cursor: pointer;
     }
-    .sticky-player .audio-seek-fill {
-      height: 100%; border-radius: 5px;
+    .sticky-seek-fill {
+      height: 100%; border-radius: 4px;
       background: var(--primary-dark); width: 0%;
       pointer-events: none;
     }
-    .sticky-player .audio-seek-thumb {
+    .sticky-seek-thumb {
       position: absolute; top: 50%; left: 0%;
-      width: 13px; height: 13px; border-radius: 50%;
+      width: 12px; height: 12px; border-radius: 50%;
       background: var(--primary-dark);
       border: 2px solid #fff;
       box-shadow: 0 1px 4px rgba(0,0,0,.2);
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
+
+    /* Controls row */
+    .sticky-controls {
+      display: flex; align-items: center; justify-content: center; gap: 24px;
+    }
+    .sticky-ctrl-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--primary-dark); padding: 4px;
+      opacity: .7; transition: opacity 0.15s ease, transform 0.15s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sticky-ctrl-btn:hover { opacity: 1; transform: scale(1.1); }
+    .sticky-ctrl-btn:disabled { opacity: .25; cursor: default; transform: none; }
+    .sticky-play-main {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--primary-dark); border: none; cursor: pointer;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px rgba(36,100,93,.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .sticky-play-main:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(36,100,93,.4); }
+    .sticky-play-main.red { background: #c0392b; }
 
     footer { background: var(--primary-dark); text-align: center; padding: 24px 20px; color: rgba(255,255,255,.45); font-size: .8rem; letter-spacing: .05em; }
     footer strong { color: var(--gold); }
@@ -975,6 +1027,8 @@
       b.innerHTML = icon;
       isPlaying ? b.classList.add('playing') : b.classList.remove('playing');
     });
+    // Sync sticky play button if this is the active datum
+    if (datum === _activeDatum) updateStickyPlayBtn(isPlaying);
   }
 
   function createPlayBtn(datum) {
@@ -996,39 +1050,64 @@
 
   function updatePlayerUI(datum, currentTime, duration) {
     const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const pctFrac = duration > 0 ? currentTime / duration : 0;
     // Desktop row player
-    const cur = document.getElementById('cur-desktop-' + datum);
-    const dur = document.getElementById('dur-desktop-' + datum);
-    const fill = document.getElementById('fill-desktop-' + datum);
+    const cur   = document.getElementById('cur-desktop-'   + datum);
+    const dur   = document.getElementById('dur-desktop-'   + datum);
+    const fill  = document.getElementById('fill-desktop-'  + datum);
     const thumb = document.getElementById('thumb-desktop-' + datum);
-    if (cur) cur.textContent = fmtTime(currentTime);
-    if (dur) dur.textContent = fmtTime(duration);
-    if (fill) fill.style.width = pct + '%';
-    if (thumb) thumb.style.left = pct + '%';
+    if (cur)   cur.textContent    = fmtTime(currentTime);
+    if (dur)   dur.textContent    = fmtTime(duration);
+    if (fill)  fill.style.width   = pct + '%';
+    if (thumb) thumb.style.left   = pct + '%';
     // Sticky bottom player
-    const sCur = document.getElementById('sticky-cur');
-    const sDur = document.getElementById('sticky-dur');
-    const sFill = document.getElementById('sticky-fill');
+    const sCur   = document.getElementById('sticky-cur');
+    const sDur   = document.getElementById('sticky-dur');
+    const sFill  = document.getElementById('sticky-fill');
     const sThumb = document.getElementById('sticky-thumb');
-    if (sCur) sCur.textContent = fmtTime(currentTime);
-    if (sDur) sDur.textContent = fmtTime(duration);
-    if (sFill) sFill.style.width = pct + '%';
-    if (sThumb) sThumb.style.left = pct + '%';
+    if (sCur)   sCur.textContent   = fmtTime(currentTime);
+    if (sDur)   sDur.textContent   = fmtTime(duration);
+    if (sFill)  sFill.style.width  = pct + '%';
+    if (sThumb) sThumb.style.left  = pct + '%';
+    // Waveform
+    const isPlaying = audioState[datum] && !audioState[datum].paused;
+    updateWaves(pctFrac, isPlaying);
   }
 
-  // Sticky player scroll-fade logic
+  // ── STICKY PLAYER LOGIC ──
   let _stickyScrollTimer = null;
-  let _stickyVisible = false;
   let _activeDatum = null;
+
+  // Build waveform bars once
+  (function buildWaves() {
+    const container = document.getElementById('sticky-waves');
+    if (!container) return;
+    // 36 bars with random heights for natural look
+    const heights = [6,9,14,18,22,26,24,20,16,12,18,24,28,26,22,18,14,10,14,18,22,26,28,24,20,16,12,8,14,20,24,22,18,14,10,7];
+    heights.forEach((h, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'sticky-wave-bar';
+      bar.style.height = h + 'px';
+      bar.style.animationDelay = (i * 0.04) + 's';
+      container.appendChild(bar);
+    });
+  })();
+
+  function updateWaves(pct, isPlaying) {
+    const bars = document.querySelectorAll('.sticky-wave-bar');
+    const activeBars = Math.floor(pct * bars.length);
+    bars.forEach((bar, i) => {
+      bar.classList.toggle('active', i < activeBars);
+      bar.classList.toggle('playing', isPlaying && i >= activeBars - 3 && i <= activeBars + 3);
+    });
+  }
 
   function showSticky() {
     if (!_activeDatum) return;
     document.getElementById('sticky-player').classList.add('visible');
-    _stickyVisible = true;
   }
   function hideSticky() {
     document.getElementById('sticky-player').classList.remove('visible');
-    _stickyVisible = false;
   }
 
   window.addEventListener('scroll', () => {
@@ -1047,13 +1126,75 @@
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     audio.currentTime = pct * audio.duration;
     updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
+    e.stopPropagation();
   });
+
+  // Sticky play/pause button
+  document.getElementById('sticky-play-btn').addEventListener('click', e => {
+    if (!_activeDatum) return;
+    toggleAudio(_activeDatum);
+    e.stopPropagation();
+  });
+
+  // Prev / Next buttons
+  function navigateTo(datum) {
+    // Stop current
+    if (_activeDatum && audioState[_activeDatum]) {
+      audioState[_activeDatum].pause();
+      setBtns(_activeDatum, PLAY_ICON, false);
+      closePlayer(_activeDatum);
+    }
+    // Play new
+    toggleAudio(datum);
+  }
+
+  document.getElementById('sticky-prev').addEventListener('click', e => {
+    if (!_activeDatum) return;
+    const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
+    const hasPrev = idx > 0 && audioUrls[SCHEDULE[idx-1].datum];
+    if (hasPrev) navigateTo(SCHEDULE[idx-1].datum);
+    e.stopPropagation();
+  });
+
+  document.getElementById('sticky-next').addEventListener('click', e => {
+    if (!_activeDatum) return;
+    const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
+    const hasNext = idx < SCHEDULE.length - 1 && audioUrls[SCHEDULE[idx+1].datum];
+    if (hasNext) navigateTo(SCHEDULE[idx+1].datum);
+    e.stopPropagation();
+  });
+
+  function updateStickyControls() {
+    if (!_activeDatum) return;
+    const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
+    const prevBtn = document.getElementById('sticky-prev');
+    const nextBtn = document.getElementById('sticky-next');
+    const row = SCHEDULE[idx];
+    // Check prev/next availability based on detected audio files
+    if (prevBtn) prevBtn.disabled = idx <= 0 || !audioUrls[SCHEDULE[idx-1]?.datum];
+    if (nextBtn) nextBtn.disabled = idx >= SCHEDULE.length-1 || !audioUrls[SCHEDULE[idx+1]?.datum];
+    // Update subtitle
+    const imamEl = document.getElementById('sticky-imam-label');
+    const dayEl  = document.getElementById('sticky-day-label');
+    if (imamEl && row) imamEl.textContent = row.imamLabel;
+    if (dayEl  && row) dayEl.textContent  = 'Natt ' + row.day + ' · ' + row.vecka;
+  }
+
+  function updateStickyPlayBtn(isPlaying) {
+    const btn = document.getElementById('sticky-play-btn');
+    if (!btn) return;
+    if (isPlaying) {
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>';
+      btn.classList.add('red');
+    } else {
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>';
+      btn.classList.remove('red');
+    }
+  }
 
   function openPlayer(datum) {
     _activeDatum = datum;
-    // Update sticky imam label
-    const row = SCHEDULE.find(r => r.datum === datum);
-    if (row) document.getElementById('sticky-imam-label').textContent = row.imamLabel;
+    updateStickyControls();
     // Show desktop player row
     const desktopRow = document.getElementById('player-row-desktop-' + datum);
     if (desktopRow) {
@@ -1063,18 +1204,19 @@
         if (p) p.classList.add('open');
       });
     }
-    // Show sticky bar (after short delay)
+    updateStickyPlayBtn(true);
     setTimeout(showSticky, 200);
   }
 
   function closePlayer(datum) {
     _activeDatum = null;
     hideSticky();
+    updateStickyPlayBtn(false);
     const p = document.getElementById('player-desktop-' + datum);
     if (p) p.classList.remove('open');
     setTimeout(() => {
-      const row = document.getElementById('player-row-desktop-' + datum);
-      if (row) row.style.display = 'none';
+      const desktopRow = document.getElementById('player-row-desktop-' + datum);
+      if (desktopRow) desktopRow.style.display = 'none';
     }, 380);
   }
 
@@ -1350,17 +1492,34 @@
 </script>
   <!-- STICKY BOTTOM PLAYER -->
   <div class="sticky-player" id="sticky-player">
-    <div class="sticky-player-label">
-      <span>Nu spelar</span>
-      <span class="sticky-player-imam" id="sticky-imam-label"></span>
-    </div>
-    <div class="sticky-player-inner">
-      <span class="audio-time" id="sticky-cur">0:00</span>
-      <div class="audio-seek" id="sticky-seek">
-        <div class="audio-seek-fill" id="sticky-fill"></div>
-        <div class="audio-seek-thumb" id="sticky-thumb"></div>
+    <!-- Top row -->
+    <div class="sticky-top-row">
+      <div>
+        <span class="sticky-subtitle" id="sticky-imam-label">–</span>
+        <span class="sticky-subtitle-day" id="sticky-day-label"></span>
       </div>
-      <span class="audio-time total" id="sticky-dur">0:00</span>
+      <span class="sticky-times"><span id="sticky-cur">0:00</span> / <span id="sticky-dur">0:00</span></span>
+    </div>
+    <!-- Waveform -->
+    <div class="sticky-waves" id="sticky-waves"></div>
+    <!-- Seek -->
+    <div class="sticky-seek-row">
+      <div class="sticky-seek" id="sticky-seek">
+        <div class="sticky-seek-fill" id="sticky-fill"></div>
+        <div class="sticky-seek-thumb" id="sticky-thumb"></div>
+      </div>
+    </div>
+    <!-- Controls -->
+    <div class="sticky-controls">
+      <button class="sticky-ctrl-btn" id="sticky-prev" title="Föregående dag">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="sticky-play-main" id="sticky-play-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>
+      </button>
+      <button class="sticky-ctrl-btn" id="sticky-next" title="Nästa dag">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+      </button>
     </div>
   </div>
 
