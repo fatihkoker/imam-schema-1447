@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tarawih Schema — Ramadan 2026</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
   <style>
     :root {
       --primary: #24645d;
@@ -17,21 +19,22 @@
       --muted: #6b7280;
       --today-bg: #e8f7f0;
       --today-green: #3dba7e;
-
       --abdurrahman: #e8630a;
       --saed: #d4a800;
       --noor: #2980b9;
       --abdul: #2c2c2c;
       --mohammed: #219150;
       --yacquub: #7d3aac;
-      --guest: #8e9eab;
+      --abdelsalam: #7b3f00;
+      --hatem: #2d6a4f;
+      --ibrahim: #1a6b8a;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; }
 
     /* HEADER */
-    header { background: var(--primary); padding: 52px 20px 72px; text-align: center; position: relative; overflow: hidden; }
+    header { background: var(--primary); padding: 28px 20px 22px; text-align: center; position: relative; overflow: hidden; }
     header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%); }
     .ornament { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 2; }
     .orn-line { height: 1px; width: 50px; }
@@ -63,8 +66,46 @@
     .today-pages-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
     .today-pages-value { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--primary-dark); }
     .today-surahs-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-top: 2px; }
-    .today-surahs-value { font-size: .82rem; color: var(--text); font-weight: 500; line-height: 1.5; }
-    .today-scroll-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: #fff; font-size: .75rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; padding: 8px 16px; border-radius: 30px; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; align-self: flex-start; margin-top: 4px; }
+    .today-surahs-value { font-size: .82rem; color: var(--text); font-weight: 500; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .today-hadith { display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; font-size: .75rem; color: var(--muted); font-style: italic; line-height: 1.5; }
+    .today-hadith .moon-small { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #0f2d5e; flex-shrink: 0; margin-top: 1px; }
+    /* ISHA COUNTDOWN */
+    .isha-countdown {
+      background: #fff;
+      border-top: 1px solid rgba(36,100,93,.1);
+      padding: 12px 20px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+    }
+    .isha-label {
+      font-size: .58rem; text-transform: uppercase; letter-spacing: .14em;
+      color: #9ca3af; display: block; margin-bottom: 3px;
+    }
+    .isha-timer {
+      font-family: 'Digital-7 Mono', 'Digital-7', monospace;
+      font-size: 1.7rem; font-weight: 400; color: #1a4a44;
+      letter-spacing: .06em; line-height: 1.1;
+    }
+    .isha-timer.done {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 600; letter-spacing: .01em;
+      color: #1a6b8a;
+    }
+    .isha-time-info {
+      font-size: .68rem; color: #9ca3af; margin-top: 2px;
+    }
+    .isha-time-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    }
+    .isha-time-right-label {
+      font-size: .58rem; text-transform: uppercase; letter-spacing: .1em; color: #9ca3af;
+    }
+    .isha-time-right-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem; color: #374151; font-weight: 500;
+    }
+    .today-scroll-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: #fff; font-size: .75rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; padding: 8px 16px; border-radius: 30px; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; align-self: flex-start; margin-top: 4px; box-shadow: 0 4px 14px rgba(0,0,0,.18); transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .today-scroll-btn:hover { box-shadow: 0 6px 20px rgba(0,0,0,.26); transform: translateY(-1px); }
 
     /* SECTION TITLE */
     .section-title { text-align: center; margin-bottom: 20px; }
@@ -90,7 +131,7 @@
     td { padding: 12px 16px; vertical-align: middle; }
     .td-dag { font-weight: 700; font-size: .95rem; color: var(--primary-dark); text-align: center; }
     .td-sidor { font-size: .8rem; color: var(--muted); white-space: nowrap; }
-    .td-surah { font-size: .78rem; color: var(--primary-dark); max-width: 220px; line-height: 1.4; }
+    .td-surah { font-size: .78rem; color: var(--primary-dark); max-width: 240px; line-height: 1.4; }
     .td-datum { font-size: .8rem; color: var(--muted); white-space: nowrap; }
     .td-datum.today-date { color: #1d7a4e; font-weight: 600; }
     .td-veckodag { font-size: .8rem; font-weight: 500; white-space: nowrap; }
@@ -106,15 +147,53 @@
     .imam-abdul { background: var(--abdul); }
     .imam-mohammed { background: var(--mohammed); }
     .imam-yacquub { background: var(--yacquub); }
-    .imam-guest { background: var(--guest); color: #1a1a1a !important; }
-    .imam-guest .dot { background: rgba(0,0,0,.15) !important; }
+    .imam-abdelsalam { background: var(--abdelsalam); }
+    .imam-hatem { background: var(--hatem); }
+    .imam-ibrahim { background: var(--ibrahim); }
     .today-badge { display: inline-block; background: var(--today-green); color: #fff; font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 2px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; }
+
+    /* TOOLTIP */
+    .surah-cell { position: relative; cursor: pointer; }
+    .surah-names { font-size: .78rem; color: var(--primary-dark); line-height: 1.5; }
+    .surah-names span { display: inline; }
+
+    .tooltip-box {
+      display: none;
+      position: absolute;
+      left: 0; top: calc(100% + 6px);
+      background: var(--primary-dark);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 500;
+      padding: 7px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      letter-spacing: .02em;
+      pointer-events: none;
+    }
+    .tooltip-box::before {
+      content: '';
+      position: absolute;
+      top: -5px; left: 12px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 5px solid var(--primary-dark);
+    }
+    /* Desktop: show on hover */
+    @media (hover: hover) {
+      .surah-cell:hover .tooltip-box { display: block; }
+    }
+    /* Mobile: show on click (toggled via JS) */
+    .tooltip-box.visible { display: block; }
 
     /* MOBILE CARDS */
     .mobile-cards { display: none; }
     .day-card-mobile { background: var(--white); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 12px rgba(36,100,93,.08); border-left: 4px solid transparent; }
     .day-card-mobile.today { background: var(--today-bg); border-left-color: var(--today-green); }
     .dcm-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+    .dcm-audio-right { display: flex; align-items: center; margin-left: auto; flex-shrink: 0; }
     .dcm-dag { font-weight: 700; font-size: 1.3rem; color: var(--primary-dark); min-width: 32px; text-align: center; flex-shrink: 0; }
     .dcm-dag.today-day { color: #1d7a4e; }
     .dcm-body { flex: 1; min-width: 0; }
@@ -123,20 +202,335 @@
     .dcm-date { font-size: .75rem; color: var(--muted); }
     .dcm-day-label { font-size: .75rem; font-weight: 500; }
     .dcm-pages { font-size: .75rem; color: var(--muted); background: rgba(36,100,93,.08); padding: 2px 8px; border-radius: 10px; }
-    .dcm-surahs { margin-left: 46px; font-size: .78rem; color: var(--primary-dark); background: rgba(36,100,93,.06); border-radius: 8px; padding: 6px 10px; line-height: 1.5; }
+    .dcm-surahs {
+      margin-left: 46px; font-size: .78rem; color: var(--primary-dark);
+      background: rgba(36,100,93,.06); border-radius: 8px; padding: 6px 10px; line-height: 1.5;
+      position: relative; cursor: pointer;
+    }
     .dcm-surahs-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); display: block; margin-bottom: 2px; }
+    .dcm-tooltip {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      margin-top: 0;
+      padding: 0 10px;
+      background: var(--primary-dark);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 500;
+      border-radius: 7px;
+      letter-spacing: .02em;
+      transition:
+        max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s ease,
+        margin-top 0.35s ease,
+        padding 0.35s ease;
+    }
+    .dcm-tooltip.visible {
+      max-height: 80px;
+      opacity: 1;
+      margin-top: 6px;
+      padding: 7px 10px;
+    }
+
+    /* AUDIO PLAYER */
+    .audio-player {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .audio-player.open {
+      max-height: 60px;
+      opacity: 1;
+    }
+    .audio-player-inner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px 10px;
+      background: rgba(36,100,93,.05);
+      border-top: 1px solid rgba(36,100,93,.08);
+    }
+    .audio-time {
+      font-size: .7rem; color: var(--muted); white-space: nowrap; min-width: 36px; font-variant-numeric: tabular-nums;
+    }
+    .audio-time.total { text-align: right; }
+    .audio-seek {
+      flex: 1; height: 4px; border-radius: 4px;
+      background: rgba(36,100,93,.15);
+      position: relative; cursor: pointer;
+    }
+    .audio-seek-fill {
+      height: 100%; border-radius: 4px;
+      background: var(--primary-dark);
+      width: 0%;
+      transition: width 0.25s linear;
+      pointer-events: none;
+    }
+    .audio-seek-thumb {
+      position: absolute; top: 50%; right: auto;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--primary-dark);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transform: translate(-50%, -50%);
+      left: 0%;
+      pointer-events: none;
+      transition: left 0.25s linear;
+    }
+    /* Mobile player */
+    .dcm-player {
+      max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    }
+    .dcm-player.open { max-height: 60px; opacity: 1; }
+    .dcm-player-inner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 16px 10px 46px;
+      background: rgba(36,100,93,.04);
+      border-top: 1px solid rgba(36,100,93,.07);
+    }
+
+    /* EID CARD */
+    .eid-card {
+      display: none;
+      background: linear-gradient(135deg, #0f2d5e 0%, #1a4a44 60%, #24645d 100%);
+      border-radius: 18px;
+      padding: 52px 32px 44px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(36,100,93,.2);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .eid-stars { font-size: 1.3rem; letter-spacing: .25em; color: var(--gold); margin-bottom: 16px; }
+    .eid-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem; font-weight: 600; color: #fff;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .eid-subtitle { font-size: .95rem; color: rgba(255,255,255,.6); font-style: italic; letter-spacing: .04em; }
 
     footer { background: var(--primary-dark); text-align: center; padding: 24px 20px; color: rgba(255,255,255,.45); font-size: .8rem; letter-spacing: .05em; }
     footer strong { color: var(--gold); }
 
+    /* LAST 10 NIGHTS */
+    tbody tr.last-ten { background: var(--white); }
+    tbody tr.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
+    tbody tr.last-ten.today td { color: #fff !important; }
+    tbody tr.last-ten.today .td-sidor,
+    tbody tr.last-ten.today .td-datum,
+    tbody tr.last-ten.today .td-veckodag { color: rgba(255,255,255,0.75) !important; }
+    tbody tr.last-ten.today .td-dag { color: #fff !important; }
+    tbody tr.last-ten.today .today-date { color: #7eb8f7 !important; }
+    tbody tr.last-ten.today .today-badge { background: #3a7bd5; }
+    tbody tr.last-ten.today .td-surah .surah-names { color: rgba(255,255,255,0.9) !important; }
+    tbody tr.last-ten.today .moon-icon {
+      background: transparent !important;
+      border: 2px solid rgba(255,255,255,0.8);
+    }
+    .day-card-mobile.last-ten.today .moon-icon {
+      background: transparent !important;
+      border: 2px solid rgba(255,255,255,0.8);
+    }
+
+    .moon-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #0f2d5e;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    /* AUDIO PLAY BUTTON */
+    .play-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--primary); border: none; cursor: pointer;
+      color: #fff; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(36,100,93,.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .play-btn:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(36,100,93,.4); }
+    .play-btn.playing { background: #c0392b; }
+    .play-btn svg { display: block; }
+
+    .td-audio { text-align: center; width: 36px; padding: 12px 4px 12px 8px; }
+    .dcm-audio { display: inline-flex; align-items: center; margin-left: 5px; }
+
+    /* Desktop: moon gets its own cell, right-aligned */
+    .td-moon {
+      text-align: center;
+      width: 32px;
+      padding: 12px 8px 12px 0;
+    }
+    .moon-icon svg { display: block; }
+
+    /* Moon tooltip */
+    .moon-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .moon-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      width: 240px;
+      background: #0f2d5e;
+      color: #fff;
+      font-size: .72rem;
+      line-height: 1.55;
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.3);
+      z-index: 200;
+      pointer-events: none;
+      font-style: italic;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+    }
+    .moon-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%; right: 6px;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid #0f2d5e;
+    }
+    .moon-wrap:hover .moon-tooltip,
+    .moon-wrap.active .moon-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Today card moon */
+    .today-moon-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .today-moon-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #0f2d5e;
+      border: 2px solid rgba(255,255,255,0.3);
+      cursor: default;
+      animation: moonPulse 2s ease-in-out infinite;
+    }
+    @keyframes moonPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(58,123,213,0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(58,123,213,0); }
+    }
+    .today-moon-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      width: 240px;
+      background: #0f2d5e;
+      color: #fff;
+      font-size: .72rem;
+      line-height: 1.55;
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.3);
+      z-index: 200;
+      pointer-events: none;
+      font-style: italic;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+    }
+    .today-moon-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid #0f2d5e;
+    }
+    .today-moon-wrap:hover .today-moon-tooltip,
+    .today-moon-wrap.active .today-moon-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* mobile last-ten */
+    .day-card-mobile.last-ten { background: var(--white); }
+    .day-card-mobile.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
+    .day-card-mobile.last-ten.today .dcm-dag,
+    .day-card-mobile.last-ten.today .dcm-date,
+    .day-card-mobile.last-ten.today .dcm-day-label { color: rgba(255,255,255,0.85) !important; }
+    .day-card-mobile.last-ten.today .imam-chip { opacity: 0.95; }
+    .day-card-mobile.last-ten.today .dcm-surahs { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+    .day-card-mobile.last-ten.today .dcm-surahs-label { color: rgba(255,255,255,0.5); }
+    .day-card-mobile.last-ten.today .dcm-pages { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+    .day-card-mobile.last-ten.today .today-badge { background: #3a7bd5; }
+    .day-card-mobile.last-ten.today .dcm-dag.today-day { color: #7eb8f7 !important; }
+
     @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes cardPulse {
+      0%   { box-shadow: 0 8px 32px rgba(36,100,93,.14), 0 0 0 0 var(--card-pulse, rgba(255,255,255,0.3)); }
+      40%  { box-shadow: 0 8px 32px rgba(36,100,93,.14), 0 0 0 14px rgba(0,0,0,0); }
+      66%  { box-shadow: 0 8px 32px rgba(36,100,93,.14), 0 0 0 0 rgba(0,0,0,0); }
+      100% { box-shadow: 0 8px 32px rgba(36,100,93,.14), 0 0 0 0 rgba(0,0,0,0); }
+    }
+    .today-card.pulsing {
+      animation: cardPulse 3s ease-out infinite;
+      animation-delay: 0.5s;
+    }
+
+    @keyframes chipPulse {
+      0%   { box-shadow: 0 0 0 0 var(--pulse-color, rgba(0,0,0,0.4)); }
+      50%  { box-shadow: 0 0 0 10px rgba(0,0,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+    }
+    .filter-chip.active {
+      animation: chipPulse 2s ease-out infinite;
+    }
+
+    /* FILTER */
+    .filter-wrap { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .filter-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--white); border: 1.5px solid transparent;
+      border-radius: 30px; padding: 5px 12px 5px 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      font-size: .78rem; font-weight: 500; font-family: inherit;
+      cursor: pointer; color: var(--text);
+      transition: all 0.2s ease;
+    }
+    .filter-chip:hover { box-shadow: 0 3px 12px rgba(0,0,0,.12); transform: translateY(-1px); }
+    .filter-chip.active {
+      background: var(--primary-dark); color: #fff;
+      border-color: var(--primary-dark);
+      box-shadow: 0 4px 14px rgba(26,74,68,.3);
+    }
+    .filter-chip.active .filter-dot { border-color: rgba(255,255,255,.4) !important; }
+    .filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+
+    /* hidden rows */
+    tbody tr.filtered-out { display: none; }
+    .day-card-mobile.filtered-out { display: none; }
 
     @media (max-width: 640px) {
-      header { padding: 40px 16px 60px; }
+      header { padding: 20px 16px 18px; }
       main { padding: 24px 12px 60px; }
       .table-wrap { display: none; }
       .mobile-cards { display: block; }
-      .legend { display: none; }
+      .filter-chips { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; width: 100%; gap: 8px; }
+      .filter-chip { justify-content: flex-start; border-radius: 30px; padding: 6px 12px 6px 8px; font-size: .8rem; flex: 0 1 auto; }
+      .filter-wrap { align-items: flex-start; }
+      .filter-clear { align-self: flex-start; }
     }
   </style>
 </head>
@@ -170,6 +564,17 @@
 <main>
 
   <!-- TODAY CARD -->
+  <div class="eid-card" id="eid-card">
+    <div class="eid-stars">🌙 ✦ 🌙</div>
+    <div class="eid-title">Eid Mubarak!</div>
+    <div class="eid-divider">
+      <div class="eid-divider-line"></div>
+      <div class="eid-divider-dot"></div>
+      <div class="eid-divider-line"></div>
+    </div>
+    <div class="eid-subtitle">Taqabbal Allah minna wa minkum</div>
+  </div>
+
   <div class="today-card" id="today-card">
     <div class="today-card-top">
       <div class="today-avatar" id="today-avatar">?</div>
@@ -190,7 +595,18 @@
           <span class="today-surahs-value" id="today-surahs">—</span>
         </div>
       </div>
-      <button class="today-scroll-btn" onclick="document.getElementById('today-row').scrollIntoView({behavior:'smooth',block:'center'})">↓ Se i schemat</button>
+      <button class="today-scroll-btn" onclick="scrollToToday()">↓ Se i schemat</button>
+    </div>
+    <div class="isha-countdown" id="isha-countdown" style="display:none">
+      <div>
+        <span class="isha-label" id="isha-label">Tid kvar till Isha</span>
+        <div class="isha-timer" id="isha-timer">--:--:--</div>
+        <div class="isha-time-info" id="isha-time-info"></div>
+      </div>
+      <div class="isha-time-right">
+        <span class="isha-time-right-label">Isha</span>
+        <span class="isha-time-right-val" id="isha-time-right-val">--:--</span>
+      </div>
     </div>
   </div>
 
@@ -200,15 +616,19 @@
     <div class="divider"><span></span><i></i><span></span></div>
   </div>
 
-  <!-- LEGEND -->
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--abdurrahman)"></div>Abdurrahman Sudani</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--saed);border:1px solid #ccc"></div>Saed Magan</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--noor)"></div>Noor</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--abdul)"></div>Abdul Qadir</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--mohammed)"></div>Mohammed Haji</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--yacquub)"></div>Yacquub</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--guest);border:1px solid #ccc"></div>Gäst</div>
+  <!-- FILTER -->
+  <div class="filter-wrap" id="filter-wrap">
+    <div class="filter-chips" id="filter-chips">
+      <button class="filter-chip" data-imam="abdurrahman" onclick="toggleFilter('abdurrahman')"><span class="filter-dot" style="background:var(--abdurrahman)"></span>Abdurrahman Sudani</button>
+      <button class="filter-chip" data-imam="saed" onclick="toggleFilter('saed')"><span class="filter-dot" style="background:var(--saed);border:1px solid #bbb"></span>Saed Magan</button>
+      <button class="filter-chip" data-imam="noor" onclick="toggleFilter('noor')"><span class="filter-dot" style="background:var(--noor)"></span>Noor</button>
+      <button class="filter-chip" data-imam="abdul" onclick="toggleFilter('abdul')"><span class="filter-dot" style="background:var(--abdul)"></span>Abdul Qadir</button>
+      <button class="filter-chip" data-imam="mohammed" onclick="toggleFilter('mohammed')"><span class="filter-dot" style="background:var(--mohammed)"></span>Mohammed Haji</button>
+      <button class="filter-chip" data-imam="yacquub" onclick="toggleFilter('yacquub')"><span class="filter-dot" style="background:var(--yacquub)"></span>Yacquub</button>
+      <button class="filter-chip" data-imam="ibrahim" onclick="toggleFilter('ibrahim')"><span class="filter-dot" style="background:var(--ibrahim)"></span>Ibrahim Noor</button>
+      <button class="filter-chip" data-imam="abdelsalam" onclick="toggleFilter('abdelsalam')"><span class="filter-dot" style="background:var(--abdelsalam)"></span>Abdelsalam Nour</button>
+      <button class="filter-chip" data-imam="hatem" onclick="toggleFilter('hatem')"><span class="filter-dot" style="background:var(--hatem)"></span>Hatem</button>
+    </div>
   </div>
 
   <!-- DESKTOP TABLE -->
@@ -221,6 +641,8 @@
           <th>Suror</th>
           <th>Imam</th>
           <th>Datum</th>
+          <th></th>
+          <th></th>
           <th>Dag</th>
         </tr>
       </thead>
@@ -234,64 +656,145 @@
 </main>
 
 <footer>
-  &copy; 2026 &nbsp;<strong>islam.nu</strong>&nbsp; — Tarawih Schema Ramadan 1447
+  <a href="https://www.instagram.com/sverigesimamer/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.65);text-decoration:none;margin-bottom:12px;font-size:.82rem;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.65)'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    @sverigesimamer
+  </a>
+  <br>
+  &copy; 2026 &nbsp;<strong>Sveriges Imamer</strong>&nbsp; — Tarawih Schema Ramadan 1447
 </footer>
 
 <script>
+  // tooltip = "Surah:Aya – Surah:Aya" format
+  // surahs = display names without numbers
   const SCHEDULE = [
-    {day:1,  sidor:'2–11',    imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-17', vecka:'Tisdag',   surahs:'2. Al-Baqarah'},
-    {day:2,  sidor:'11–21',  imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-18', vecka:'Onsdag',   surahs:'2. Al-Baqarah'},
-    {day:3,  sidor:'22–31',  imam:'noor',        imamLabel:'Noor',               datum:'2026-02-19', vecka:'Torsdag',  surahs:'2. Al-Baqarah'},
-    {day:4,  sidor:'32–41',  imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-02-20', vecka:'Fredag',   surahs:'2. Al-Baqarah'},
-    {day:5,  sidor:'42–51',  imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-21', vecka:'Lördag',   surahs:'2. Al-Baqarah, 3. Ali Imran'},
-    {day:6,  sidor:'51–62',  imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-02-22', vecka:'Söndag',   surahs:'3. Ali Imran'},
-    {day:7,  sidor:'62–72',  imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-23', vecka:'Måndag',   surahs:'3. Ali Imran'},
-    {day:8,  sidor:'72–81',  imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-02-24', vecka:'Tisdag',   surahs:'3. Ali Imran, 4. An-Nisa'},
-    {day:9,  sidor:'82–92',  imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-25', vecka:'Onsdag',   surahs:'4. An-Nisa'},
-    {day:10, sidor:'92–101', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-26', vecka:'Torsdag',  surahs:'4. An-Nisa'},
-    {day:11, sidor:'102–106',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-27', vecka:'Fredag',   surahs:'4. An-Nisa, 35. Fatir'},
-    {day:12, sidor:'438–449',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-28', vecka:'Lördag',   surahs:'35. Fatir, 36. Ya-Sin'},
-    {day:13, sidor:'449–458',imam:'guest',       imamLabel:'Gäst',               datum:'2026-03-01', vecka:'Söndag',   surahs:'36. Ya-Sin, 37. As-Saffat, 38. Sad'},
-    {day:14, sidor:'458–467',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-02', vecka:'Måndag',   surahs:'39. Az-Zumar'},
-    {day:15, sidor:'467–476',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-03', vecka:'Tisdag',   surahs:'40. Ghafir'},
-    {day:16, sidor:'476–486',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-04', vecka:'Onsdag',   surahs:'41. Fussilat, 42. Ash-Shura'},
-    {day:17, sidor:'486–495',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-05', vecka:'Torsdag',  surahs:'42. Ash-Shura, 43. Az-Zukhruf'},
-    {day:18, sidor:'496–506',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-06', vecka:'Fredag',   surahs:'44. Ad-Dukhan, 45. Al-Jathiyah, 46. Al-Ahqaf'},
-    {day:19, sidor:'507–515',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-07', vecka:'Lördag',   surahs:'47. Muhammad, 48. Al-Fath'},
-    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'49. Al-Hujurat, 50. Qaf, 51. Adh-Dhariyat'},
-    {day:21, sidor:'523–531',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag',   surahs:'52. At-Tur, 53. An-Najm, 54. Al-Qamar'},
-    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'55. Ar-Rahman, 56. Al-Waqiah, 57. Al-Hadid'},
-    {day:23, sidor:'539–548',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag',   surahs:'57. Al-Hadid, 58. Al-Mujadilah, 59. Al-Hashr'},
-    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'60. Al-Mumtahanah, 61. As-Saf, 62. Al-Jumuah, 63. Al-Munafiqun, 64. At-Taghabun'},
-    {day:25, sidor:'558–566',imam:'guest',       imamLabel:'Gäst',               datum:'2026-03-13', vecka:'Fredag',   surahs:'65. At-Talaq, 66. At-Tahrim, 67. Al-Mulk, 68. Al-Qalam'},
-    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'69. Al-Haqqah, 70. Al-Maarij, 71. Nuh, 72. Al-Jinn, 73. Al-Muzzammil'},
-    {day:27, sidor:'575–583',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag',   surahs:'74. Al-Muddaththir, 75. Al-Qiyamah, 76. Al-Insan, 77. Al-Mursalat, 78. An-Naba'},
-    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'79. An-Naziat, 80. Abasa, 81. At-Takwir, 82. Al-Infitar, 83. Al-Mutaffifin, 84. Al-Inshiqaq, 85. Al-Buruj, 86. At-Tariq, 87. Al-Ala'},
-    {day:29, sidor:'592–604',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag',   surahs:'88. Al-Ghashiyah, 89. Al-Fajr, 90. Al-Balad, 91. Ash-Shams, 92. Al-Layl, 93. Ad-Duha, 94. Ash-Sharh, 95. At-Tin, 96. Al-Alaq, 97. Al-Qadr, 98. Al-Bayyinah, 99. Az-Zalzalah, 100. Al-Adiyat, 101. Al-Qariah, 102. At-Takathur, 103. Al-Asr, 104. Al-Humazah, 105. Al-Fil, 106. Quraysh, 107. Al-Maun, 108. Al-Kawthar, 109. Al-Kafirun, 110. An-Nasr, 111. Al-Masad, 112. Al-Ikhlas, 113. Al-Falaq, 114. An-Nas'},
-    {day:30, sidor:'2–11',   imam:'noor',        imamLabel:'Noor',               datum:'2026-03-18', vecka:'Onsdag',   surahs:'2. Al-Baqarah'},
+    {day:1,  sidor:'2–11',    imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-17', vecka:'Tisdag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:1 – 2:74'},
+    {day:2,  sidor:'11–21',  imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-18', vecka:'Onsdag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:75 – 2:141'},
+    {day:3,  sidor:'22–31',  imam:'noor',        imamLabel:'Noor',               datum:'2026-02-19', vecka:'Torsdag',  surahs:'Al-Baqarah',                                                                                                        tooltip:'2:142 – 2:202'},
+    {day:4,  sidor:'32–41',  imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-02-20', vecka:'Fredag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:203 – 2:265'},
+    {day:5,  sidor:'42–51',  imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-21', vecka:'Lördag',   surahs:'Al-Baqarah, Ali Imran',                                                                                             tooltip:'2:266 – 3:14'},
+    {day:6,  sidor:'51–62',  imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-22', vecka:'Söndag',   surahs:'Ali Imran',                                                                                                         tooltip:'3:15 – 3:92'},
+    {day:7,  sidor:'62–72',  imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-02-23', vecka:'Måndag',   surahs:'Ali Imran',                                                                                                         tooltip:'3:93 – 3:170'},
+    {day:8,  sidor:'72–81',  imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-24', vecka:'Tisdag',   surahs:'Ali Imran, An-Nisa',                                                                                                tooltip:'3:171 – 4:23'},
+    {day:9,  sidor:'82–92',  imam:'ibrahim',     imamLabel:'Ibrahim Noor',        datum:'2026-02-25', vecka:'Onsdag',   surahs:'An-Nisa',                                                                                                           tooltip:'4:24 – 4:87'},
+    {day:10, sidor:'92–101', imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-26', vecka:'Torsdag',  surahs:'An-Nisa',                                                                                                           tooltip:'4:88 – 4:147'},
+    {day:11, sidor:'102–106',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-27', vecka:'Fredag',   surahs:'An-Nisa, Fatir',                                                                                                    tooltip:'4:148 – 35:30'},
+    {day:12, sidor:'438–449',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-28', vecka:'Lördag',   surahs:'Fatir, Ya-Sin',                                                                                                     tooltip:'35:31 – 36:82'},
+    {day:13, sidor:'449–458',imam:'abdelsalam',  imamLabel:'Abdelsalam Nour',    datum:'2026-03-01', vecka:'Söndag',   surahs:'Ya-Sin, As-Saffat, Sad',                                                                                            tooltip:'36:83 – 38:88'},
+    {day:14, sidor:'458–467',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-02', vecka:'Måndag',   surahs:'Az-Zumar',                                                                                                          tooltip:'39:1 – 39:75'},
+    {day:15, sidor:'467–476',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-03', vecka:'Tisdag',   surahs:'Ghafir',                                                                                                            tooltip:'40:1 – 40:85'},
+    {day:16, sidor:'476–486',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-04', vecka:'Onsdag',   surahs:'Fussilat, Ash-Shura',                                                                                               tooltip:'41:1 – 42:26'},
+    {day:17, sidor:'486–495',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-05', vecka:'Torsdag',  surahs:'Ash-Shura, Az-Zukhruf',                                                                                             tooltip:'42:27 – 43:89'},
+    {day:18, sidor:'496–506',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-06', vecka:'Fredag',   surahs:'Ad-Dukhan, Al-Jathiyah, Al-Ahqaf',                                                                                  tooltip:'44:1 – 46:35'},
+    {day:19, sidor:'507–515',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-07', vecka:'Lördag',   surahs:'Muhammad, Al-Fath',                                                                                                 tooltip:'47:1 – 48:29'},
+    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'Al-Hujurat, Qaf, Adh-Dhariyat',                                                                                     tooltip:'49:1 – 51:60'},
+    {day:21, sidor:'523–531',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag',   surahs:'At-Tur, An-Najm, Al-Qamar',                                                                                         tooltip:'52:1 – 54:55'},
+    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'Ar-Rahman, Al-Waqiah, Al-Hadid',                                                                                    tooltip:'55:1 – 57:15'},
+    {day:23, sidor:'539–548',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag',   surahs:'Al-Hadid, Al-Mujadilah, Al-Hashr',                                                                                  tooltip:'57:16 – 59:24'},
+    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'Al-Mumtahanah, As-Saf, Al-Jumuah, Al-Munafiqun, At-Taghabun',                                                       tooltip:'60:1 – 64:18'},
+    {day:25, sidor:'558–566',imam:'hatem',       imamLabel:'Hatem',              datum:'2026-03-13', vecka:'Fredag',   surahs:'At-Talaq, At-Tahrim, Al-Mulk, Al-Qalam',                                                                            tooltip:'65:1 – 68:52'},
+    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'Al-Haqqah, Al-Maarij, Nuh, Al-Jinn, Al-Muzzammil',                                                                  tooltip:'69:1 – 73:20'},
+    {day:27, sidor:'575–583',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag',   surahs:'Al-Muddaththir, Al-Qiyamah, Al-Insan, Al-Mursalat, An-Naba',                                                         tooltip:'74:1 – 78:40'},
+    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'An-Naziat, Abasa, At-Takwir, Al-Infitar, Al-Mutaffifin, Al-Inshiqaq, Al-Buruj, At-Tariq, Al-Ala',                    tooltip:'79:1 – 87:19'},
+    {day:29, sidor:'592–604',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag',   surahs:'Al-Ghashiyah, Al-Fajr, Al-Balad, Ash-Shams, Al-Layl, Ad-Duha, Ash-Sharh, At-Tin, Al-Alaq, Al-Qadr, Al-Bayyinah, Az-Zalzalah, Al-Adiyat, Al-Qariah, At-Takathur, Al-Asr, Al-Humazah, Al-Fil, Quraysh, Al-Maun, Al-Kawthar, Al-Kafirun, An-Nasr, Al-Masad, Al-Ikhlas, Al-Falaq, An-Nas', tooltip:'88:1 – 114:6'},
+    {day:30, sidor:'2–11',   imam:'noor',        imamLabel:'Noor',               datum:'2026-03-18', vecka:'Onsdag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:1 – 2:74'},
   ];
 
   const DAYS   = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
   const MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
-  const today  = new Date().toISOString().slice(0, 10);
+  // Use local date (not UTC) to avoid timezone offset issues
+  const _now = new Date();
+  const _p2 = n => String(n).padStart(2,'0');
+  const today = _now.getFullYear() + '-' + _p2(_now.getMonth()+1) + '-' + _p2(_now.getDate());
+  const isAfterRamadan = today > '2026-03-18';
+
+  function scrollToToday() {
+    // On mobile the table is hidden, so use the mobile card; otherwise use the desktop row
+    const isMobile = window.innerWidth <= 640;
+    const el = document.getElementById(isMobile ? 'today-row-mobile' : 'today-row-desktop');
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
+  // Close all tooltips on outside click (mobile)
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.surah-cell') && !e.target.closest('.dcm-surahs')) {
+      document.querySelectorAll('.tooltip-box.visible, .dcm-tooltip.visible').forEach(el => el.classList.remove('visible'));
+    }
+    if (!e.target.closest('.moon-wrap') && !e.target.closest('.today-moon-wrap')) {
+      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
+    }
+  });
+
+  // Moon tap toggle for mobile
+  document.addEventListener('click', (e) => {
+    const moonWrap = e.target.closest('.moon-wrap, .today-moon-wrap');
+    if (moonWrap) {
+      const isActive = moonWrap.classList.contains('active');
+      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
+      if (!isActive) moonWrap.classList.add('active');
+      e.stopPropagation();
+    }
+  });
 
   // Build desktop table rows
   const tbody = document.getElementById('table-body');
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
     const tr = document.createElement('tr');
-    if (isToday) { tr.classList.add('today'); tr.id = 'today-row'; }
+    if (isToday) { tr.classList.add('today'); tr.id = 'today-row-desktop'; }
     const veckaClass = row.vecka === 'Fredag' ? 'fredag' : row.vecka === 'Lördag' ? 'lordag' : row.vecka === 'Söndag' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
+
+    const isLastTen = row.day >= 21;
+    if (isLastTen) tr.classList.add('last-ten');
+    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="moon-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="moon-tooltip">Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span></span>` : '';
     tr.innerHTML = `
       <td class="td-dag">${row.day}</td>
       <td class="td-sidor">${row.sidor}</td>
-      <td class="td-surah">${row.surahs}</td>
+      <td class="td-surah surah-cell" tabindex="0">
+        <div class="surah-names">${row.surahs}</div>
+        <div class="tooltip-box">📖 ${row.tooltip}</div>
+      </td>
       <td><span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span></td>
       <td class="td-datum ${isToday ? 'today-date' : ''}">${row.datum}${badge}</td>
+      <td class="td-audio" id="audio-desktop-${row.datum}"></td>
+      <td class="td-moon">${moonIcon}</td>
       <td class="td-veckodag ${veckaClass}">${row.vecka}</td>
     `;
+
+    // Mobile click toggle for tooltip
+    const cell = tr.querySelector('.surah-cell');
+    cell.addEventListener('click', (e) => {
+      const tip = cell.querySelector('.tooltip-box');
+      const isVisible = tip.classList.contains('visible');
+      document.querySelectorAll('.tooltip-box.visible').forEach(el => el.classList.remove('visible'));
+      if (!isVisible) tip.classList.add('visible');
+      e.stopPropagation();
+    });
+
+    // Add expandable player row
+    const playerRow = document.createElement('tr');
+    playerRow.id = `player-row-desktop-${row.datum}`;
+    playerRow.style.display = 'none';
+    playerRow.innerHTML = `
+      <td colspan="8" style="padding:0; border:none;">
+        <div class="audio-player" id="player-desktop-${row.datum}">
+          <div class="audio-player-inner">
+            <span class="audio-time" id="cur-desktop-${row.datum}">0:00</span>
+            <div class="audio-seek" id="seek-desktop-${row.datum}">
+              <div class="audio-seek-fill" id="fill-desktop-${row.datum}"></div>
+              <div class="audio-seek-thumb" id="thumb-desktop-${row.datum}"></div>
+            </div>
+            <span class="audio-time total" id="dur-desktop-${row.datum}">0:00</span>
+          </div>
+        </div>
+      </td>
+    `;
+    seekSetup(`seek-desktop-${row.datum}`, row.datum);
     tbody.appendChild(tr);
+    tbody.appendChild(playerRow);
   });
 
   // Build mobile cards
@@ -299,10 +802,12 @@
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
     const card = document.createElement('div');
-    card.className = 'day-card-mobile' + (isToday ? ' today' : '');
-    if (isToday) card.id = 'today-row';
+    const isLastTenM = row.day >= 21;
+    card.className = 'day-card-mobile' + (isToday ? ' today' : '') + (isLastTenM ? ' last-ten' : '');
+    if (isToday) card.id = 'today-row-mobile';
     const veckaClass = row.vecka === 'Fredag' ? 'fredag' : row.vecka === 'Lördag' ? 'lordag' : row.vecka === 'Söndag' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
+    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='moon-icon'><svg width='11' height='11' viewBox='0 0 24 24' fill='white'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg></span><span class='moon-tooltip' style='right:auto;left:0;'>Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span></span>` : '';
     card.innerHTML = `
       <div class="dcm-top">
         <div class="dcm-dag ${isToday ? 'today-day' : ''}">${row.day}</div>
@@ -310,32 +815,456 @@
           <div class="dcm-imam"><span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span></div>
           <div class="dcm-meta">
             <span class="dcm-date">${row.datum}${badge}</span>
+            ${moonSpan}
             <span class="dcm-day-label ${veckaClass}">${row.vecka}</span>
             <span class="dcm-pages">s. ${row.sidor}</span>
           </div>
         </div>
+        <div class="dcm-audio-right" id="audio-mobile-${row.datum}"></div>
       </div>
       <div class="dcm-surahs">
-        <span class="dcm-surahs-label">Suror</span>
+        <span class="dcm-surahs-label">Suror — tryck för detaljer</span>
         ${row.surahs}
+        <div class="dcm-tooltip">📖 ${row.tooltip}</div>
+      </div>
+      <div class="dcm-player" id="player-mobile-${row.datum}">
+        <div class="dcm-player-inner">
+          <span class="audio-time" id="cur-mobile-${row.datum}">0:00</span>
+          <div class="audio-seek" id="seek-mobile-${row.datum}">
+            <div class="audio-seek-fill" id="fill-mobile-${row.datum}"></div>
+            <div class="audio-seek-thumb" id="thumb-mobile-${row.datum}"></div>
+          </div>
+          <span class="audio-time total" id="dur-mobile-${row.datum}">0:00</span>
+        </div>
       </div>
     `;
+
+    // Toggle tooltip on tap with smooth scroll after expand
+    const surahBox = card.querySelector('.dcm-surahs');
+    surahBox.addEventListener('click', (e) => {
+      const tip = surahBox.querySelector('.dcm-tooltip');
+      const isVisible = tip.classList.contains('visible');
+      document.querySelectorAll('.dcm-tooltip.visible').forEach(el => el.classList.remove('visible'));
+      if (!isVisible) {
+        tip.classList.add('visible');
+        setTimeout(() => {
+          surahBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 220);
+      }
+      e.stopPropagation();
+    });
+
     container.appendChild(card);
+    seekSetup(`seek-mobile-${row.datum}`, row.datum);
   });
 
   // Populate today card
+  if (isAfterRamadan) {
+    document.getElementById('eid-card').style.display = 'block';
+  }
+
   const todayData = SCHEDULE.find(r => r.datum === today);
   if (todayData) {
     const d = new Date(today);
     document.getElementById('today-imam-name').textContent = todayData.imamLabel;
-    document.getElementById('today-date-label').textContent = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    const dateLabel = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    if (todayData.day >= 21) {
+      const dateEl = document.getElementById('today-date-label');
+      dateEl.textContent = dateLabel;
+      const moonWrap = document.createElement('span');
+      moonWrap.className = 'today-moon-wrap';
+      moonWrap.innerHTML = `<span class="today-moon-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="today-moon-tooltip">Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span>`;
+      dateEl.parentNode.insertBefore(moonWrap, dateEl.nextSibling);
+    } else {
+      document.getElementById('today-date-label').textContent = dateLabel;
+    }
     document.getElementById('today-pages').textContent = 'Sidor ' + todayData.sidor;
-    document.getElementById('today-surahs').textContent = todayData.surahs;
-    document.getElementById('today-avatar').textContent = todayData.imamLabel.charAt(0);
-    document.getElementById('today-card').style.display = 'block';
+    document.getElementById('today-surahs').textContent = todayData.surahs + '  (' + todayData.tooltip + ')';
+
+    // Add hadith row below suror for last-ten nights
+    if (todayData.day >= 21) {
+      const hadithEl = document.createElement('div');
+      hadithEl.className = 'today-hadith';
+      hadithEl.innerHTML = `
+        <span class="moon-small"><svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span>Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span>
+      `;
+      document.getElementById('today-surahs').parentNode.appendChild(hadithEl);
+    }
+    const avatarEl = document.getElementById('today-avatar');
+    avatarEl.textContent = todayData.imamLabel.charAt(0);
+    const avatarPulseColors = {
+      abdurrahman: 'rgba(232,99,10,0.55)',
+      saed:        'rgba(212,168,0,0.55)',
+      noor:        'rgba(41,128,185,0.55)',
+      abdul:       'rgba(100,100,100,0.55)',
+      mohammed:    'rgba(33,145,80,0.55)',
+      yacquub:     'rgba(125,58,172,0.55)',
+      ibrahim:     'rgba(26,107,138,0.55)',
+      abdelsalam:  'rgba(123,63,0,0.55)',
+      hatem:       'rgba(45,106,79,0.55)',
+    };
+
+    const todayCard = document.getElementById('today-card');
+    todayCard.style.display = 'block';
+    todayCard.style.setProperty('--card-pulse', avatarPulseColors[todayData.imam] || 'rgba(255,255,255,0.3)');
+    todayCard.classList.add('pulsing');
     setTimeout(() => {
-      document.getElementById('today-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 600);
+      const card = document.getElementById('today-card');
+      const targetY = card.getBoundingClientRect().top + window.scrollY - 20;
+      const startY = window.scrollY;
+      const dist = targetY - startY;
+      const duration = 1100;
+      let start = null;
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+      function step(ts) {
+        if (!start) start = ts;
+        const elapsed = ts - start;
+        const progress = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, startY + dist * easeInOutCubic(progress));
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }, 3000);
+  }
+
+  // ── AUDIO ──
+  const audioState = {};
+
+  const PLAY_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>`;
+  const PAUSE_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
+  const SPIN_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="animation:spin 0.9s linear infinite"><path d="M12 2a10 10 0 1 0 10 10"/></svg>`;
+
+  function setBtns(datum, icon, isPlaying) {
+    document.querySelectorAll('.play-btn[data-datum="' + datum + '"]').forEach(b => {
+      b.innerHTML = icon;
+      isPlaying ? b.classList.add('playing') : b.classList.remove('playing');
+    });
+  }
+
+  function createPlayBtn(datum) {
+    const btn = document.createElement('button');
+    btn.className = 'play-btn';
+    btn.setAttribute('data-datum', datum);
+    btn.title = 'Spela upp recitation';
+    btn.innerHTML = PLAY_ICON;
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleAudio(datum); });
+    return btn;
+  }
+
+  function fmtTime(s) {
+    if (!isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  function updatePlayerUI(datum, currentTime, duration) {
+    const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    ['desktop', 'mobile'].forEach(ctx => {
+      const cur = document.getElementById(`cur-${ctx}-${datum}`);
+      const dur = document.getElementById(`dur-${ctx}-${datum}`);
+      const fill = document.getElementById(`fill-${ctx}-${datum}`);
+      const thumb = document.getElementById(`thumb-${ctx}-${datum}`);
+      if (cur) cur.textContent = fmtTime(currentTime);
+      if (dur) dur.textContent = fmtTime(duration);
+      if (fill) fill.style.width = pct + '%';
+      if (thumb) thumb.style.left = pct + '%';
+    });
+  }
+
+  function openPlayer(datum) {
+    // Show desktop player row
+    const desktopRow = document.getElementById(`player-row-desktop-${datum}`);
+    if (desktopRow) {
+      desktopRow.style.display = 'table-row';
+      requestAnimationFrame(() => {
+        document.getElementById(`player-desktop-${datum}`)?.classList.add('open');
+      });
+    }
+    // Show mobile player
+    document.getElementById(`player-mobile-${datum}`)?.classList.add('open');
+  }
+
+  function closePlayer(datum) {
+    document.getElementById(`player-desktop-${datum}`)?.classList.remove('open');
+    document.getElementById(`player-mobile-${datum}`)?.classList.remove('open');
+    setTimeout(() => {
+      const row = document.getElementById(`player-row-desktop-${datum}`);
+      if (row) row.style.display = 'none';
+    }, 380);
+  }
+
+  function seekSetup(seekId, datum) {
+    setTimeout(() => {
+      const seekEl = document.getElementById(seekId);
+      if (!seekEl) return;
+      seekEl.addEventListener('click', (e) => {
+        const audio = audioState[datum];
+        if (!audio || !audio.duration) return;
+        const rect = seekEl.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        audio.currentTime = pct * audio.duration;
+        updatePlayerUI(datum, audio.currentTime, audio.duration);
+      });
+    }, 500);
+  }
+
+  function toggleAudio(datum) {
+    // Pause all others
+    Object.keys(audioState).forEach(d => {
+      if (d !== datum && audioState[d] && !audioState[d].paused) {
+        audioState[d].pause();
+        closePlayer(d);
+        setBtns(d, PLAY_ICON, false);
+      }
+    });
+
+    // Create audio object once
+    if (!audioState[datum]) {
+      const a = new Audio();
+      a.src = audioUrls[datum];
+      // Events
+      a.addEventListener('waiting',  () => setBtns(datum, SPIN_ICON,  true));
+      a.addEventListener('playing',  () => { setBtns(datum, PAUSE_ICON, true); openPlayer(datum); });
+      a.addEventListener('timeupdate', () => updatePlayerUI(datum, a.currentTime, a.duration));
+      a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
+      a.addEventListener('ended', () => {
+        closePlayer(datum);
+        setBtns(datum, PLAY_ICON, false);
+        updatePlayerUI(datum, 0, a.duration);
+      });
+      audioState[datum] = a;
+    }
+
+    const audio = audioState[datum];
+    if (audio.paused) {
+      setBtns(datum, SPIN_ICON, true);
+      audio.play().then(() => {
+        // 'playing' event handles UI
+      }).catch(err => {
+        console.warn('Play failed:', err);
+        setBtns(datum, PLAY_ICON, false);
+      });
+    } else {
+      audio.pause();
+      closePlayer(datum);
+      setBtns(datum, PLAY_ICON, false);
+    }
+  }
+
+  function injectPlayButtons(datum) {
+    ['audio-desktop-' + datum, 'audio-mobile-' + datum].forEach(id => {
+      const cell = document.getElementById(id);
+      if (cell && !cell.querySelector('.play-btn')) {
+        cell.appendChild(createPlayBtn(datum));
+      }
+    });
+  }
+
+  // Build correct base path for GitHub Pages subdir
+  // e.g. https://sverigesimamer.github.io/imam-schema-1447/  -> /imam-schema-1447
+  const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+
+  // Store URLs separately
+  const audioUrls = {};
+
+  // Detect MP3 files with HEAD request
+  SCHEDULE.forEach(row => {
+    const url = basePath + '/' + row.datum + '.mp3';
+    audioUrls[row.datum] = url;
+    fetch(url, { method: 'HEAD' })
+      .then(res => { if (res.ok || res.status === 206) injectPlayButtons(row.datum); })
+      .catch(() => {
+        fetch(url).then(res => { if (res.ok) injectPlayButtons(row.datum); }).catch(() => {});
+      });
+  });
+
+  // ── ISHA COUNTDOWN ──
+  const ISHA_TIMES = {
+    '2026-02-17':'18:56','2026-02-18':'18:58','2026-02-19':'19:00',
+    '2026-02-20':'19:03','2026-02-21':'19:05','2026-02-22':'19:07',
+    '2026-02-23':'19:10','2026-02-24':'19:12','2026-02-25':'19:14',
+    '2026-02-26':'19:17','2026-02-27':'19:19','2026-02-28':'19:22',
+    '2026-03-01':'19:24','2026-03-02':'19:27','2026-03-03':'19:29',
+    '2026-03-04':'19:32','2026-03-05':'19:34','2026-03-06':'19:37',
+    '2026-03-07':'19:39','2026-03-08':'19:42','2026-03-09':'19:45',
+    '2026-03-10':'19:47','2026-03-11':'19:50','2026-03-12':'19:53',
+    '2026-03-13':'19:55','2026-03-14':'19:58','2026-03-15':'20:01',
+    '2026-03-16':'20:04','2026-03-17':'20:07','2026-03-18':'20:09',
+  };
+
+  function padZ(n) { return String(n).padStart(2,'0'); }
+
+  function getDateKey(d) {
+    // Use local time, not UTC, to avoid midnight UTC offset issues
+    const y = d.getFullYear();
+    const m = padZ(d.getMonth() + 1);
+    const day = padZ(d.getDate());
+    return y + '-' + m + '-' + day;
+  }
+
+  function startIshaCountdown() {
+    const countdownEl = document.getElementById('isha-countdown');
+    const timerEl     = document.getElementById('isha-timer');
+    const infoEl      = document.getElementById('isha-time-info');
+    const labelEl     = document.getElementById('isha-label');
+    const rightVal    = document.getElementById('isha-time-right-val');
+    if (!countdownEl) return;
+    countdownEl.style.display = 'flex';
+
+    function tick() {
+      const now = new Date();
+      const todayKey = getDateKey(now);
+      const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const ishaStr = ISHA_TIMES[todayKey];
+
+      if (!ishaStr) {
+        // Outside Ramadan
+        timerEl.textContent = '--:--:--';
+        timerEl.classList.remove('done');
+        labelEl.textContent = 'Tid kvar till Isha';
+        infoEl.textContent = '';
+        rightVal.textContent = '--:--';
+        return;
+      }
+
+      const [ishaH, ishaM] = ishaStr.split(':').map(Number);
+      const ishaSec = ishaH * 3600 + ishaM * 60;
+
+      rightVal.textContent = ishaStr;
+
+      if (nowSec >= ishaSec) {
+        // Bönetiden är inne — show until midnight
+        timerEl.textContent = '🕌 Bönetiden är inne';
+        timerEl.classList.add('done');
+        labelEl.textContent = 'Isha';
+        infoEl.textContent = 'Isha-bönen är inne sedan kl. ' + ishaStr;
+      } else {
+        // Count down to today's isha
+        timerEl.classList.remove('done');
+        labelEl.textContent = 'Tid kvar till Isha';
+        infoEl.textContent = 'Isha-bönen börjar kl. ' + ishaStr;
+        const diff = ishaSec - nowSec;
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        timerEl.textContent = padZ(h) + ':' + padZ(m) + ':' + padZ(s);
+      }
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // Always start countdown — works every day of Ramadan
+  startIshaCountdown();
+
+  // ── FILTER ──
+  let activeFilter = null;
+
+  function toggleFilter(imam) {
+    activeFilter = (activeFilter === imam) ? null : imam;
+    applyFilter();
+    // Scroll to top of schedule after filter applied
+    if (activeFilter) {
+      setTimeout(() => {
+        const target = window.innerWidth <= 640
+          ? document.getElementById('mobile-cards')
+          : document.querySelector('.table-wrap');
+        if (target) {
+          const y = target.getBoundingClientRect().top + window.scrollY - 90;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 80);
+    }
+  }
+
+  function applyFilter() {
+    // Lock body width before any DOM changes to prevent scrollbar-caused layout shift
+    document.body.style.width = document.body.offsetWidth + 'px';
+    document.body.style.overflowY = 'hidden';
+
+    // Update chip states
+    const imamColors = {
+      abdurrahman: 'rgba(232,99,10,0.5)',
+      saed:        'rgba(212,168,0,0.5)',
+      noor:        'rgba(41,128,185,0.5)',
+      abdul:       'rgba(44,44,44,0.5)',
+      mohammed:    'rgba(33,145,80,0.5)',
+      yacquub:     'rgba(125,58,172,0.5)',
+      ibrahim:     'rgba(26,107,138,0.5)',
+      abdelsalam:  'rgba(123,63,0,0.5)',
+      hatem:       'rgba(45,106,79,0.5)',
+    };
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+      const isActive = btn.dataset.imam === activeFilter;
+      btn.classList.toggle('active', isActive);
+      if (isActive) {
+        btn.style.setProperty('--pulse-color', imamColors[btn.dataset.imam] || 'rgba(0,0,0,0.3)');
+      } else {
+        btn.style.removeProperty('--pulse-color');
+      }
+    });
+
+    // Hide non-matching instantly
+    document.querySelectorAll('#table-body tr').forEach(tr => {
+      const chip = tr.querySelector('.imam-chip');
+      const show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      tr.classList.toggle('filtered-out', !show);
+    });
+    document.querySelectorAll('#mobile-cards .day-card-mobile').forEach(card => {
+      const chip = card.querySelector('.imam-chip');
+      const show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      card.classList.toggle('filtered-out', !show);
+    });
+
+    // Animate visible rows in with stagger
+    const visibleRows = [...document.querySelectorAll('#table-body tr:not(.filtered-out)')];
+    const visibleCards = [...document.querySelectorAll('#mobile-cards .day-card-mobile:not(.filtered-out)')];
+    const total = visibleRows.length + visibleCards.length;
+    const lastDelay = Math.max(
+      visibleRows.length ? (visibleRows.length - 1) * 45 + 320 : 0,
+      visibleCards.length ? (visibleCards.length - 1) * 55 + 320 : 0
+    );
+
+    visibleRows.forEach((tr, i) => {
+      tr.style.opacity = '0';
+      tr.style.transform = 'translateY(8px)';
+      tr.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      setTimeout(() => {
+        tr.style.opacity = '1';
+        tr.style.transform = 'translateY(0)';
+        setTimeout(() => {
+          tr.style.transition = 'background .15s';
+          tr.style.opacity = '';
+          tr.style.transform = '';
+        }, 320);
+      }, i * 45);
+    });
+
+    visibleCards.forEach((card, i) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(10px)';
+      card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+        setTimeout(() => {
+          card.style.transition = '';
+          card.style.opacity = '';
+          card.style.transform = '';
+        }, 320);
+      }, i * 55);
+    });
+
+    // Release lock after all animations are done
+    setTimeout(() => {
+      document.body.style.width = '';
+      document.body.style.overflowY = '';
+    }, lastDelay + 50);
   }
 </script>
 </body>
