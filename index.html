@@ -295,19 +295,19 @@
     }
     .sticky-marquee-wrap {
       flex: 1; min-width: 0; overflow: hidden; position: relative;
-      /* fade edges */
+    }
+    .sticky-marquee-wrap.fading {
       mask-image: linear-gradient(to right, transparent 0%, black 8%, black 85%, transparent 100%);
       -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 85%, transparent 100%);
     }
     .sticky-marquee-inner {
       display: inline-flex; white-space: nowrap;
-      animation: none;
     }
     .sticky-marquee-inner.scrolling {
       animation: marqueeScroll var(--marquee-dur, 18s) linear infinite;
     }
     .sticky-marquee-text {
-      font-size: .68rem; color: #555; padding-right: 40px;
+      font-size: .68rem; color: #555; padding-right: 48px;
     }
     @keyframes marqueeScroll {
       0%   { transform: translateX(0); }
@@ -1104,24 +1104,48 @@
     const txt = row.surahs + '  ·  ' + row.tooltip;
     text1.textContent = txt;
     text2.textContent = txt;
+    text2.style.display = 'none';
+    inner.classList.remove('scrolling');
+    inner.style.removeProperty('--marquee-dur');
+    wrap.classList.remove('fading');
 
-    // Measure after next paint
-    requestAnimationFrame(() => {
-      const wrapW  = wrap.offsetWidth;
-      const textW  = text1.offsetWidth;
-      if (textW <= wrapW) {
-        // Fits — no scroll needed
-        text2.style.display = 'none';
-        inner.classList.remove('scrolling');
-        inner.style.removeProperty('--marquee-dur');
-      } else {
-        text2.style.display = '';
-        // Speed: ~60px/s — comfortable reading pace
-        const dur = Math.max(10, Math.round((textW + 40) / 60));
-        inner.style.setProperty('--marquee-dur', dur + 's');
-        inner.classList.add('scrolling');
-      }
-    });
+    // Measure using a hidden off-screen span to get true text width
+    // regardless of whether sticky player is visible or not
+    const ruler = document.createElement('span');
+    ruler.style.cssText = 'position:fixed;top:-9999px;left:-9999px;white-space:nowrap;font-size:.68rem;visibility:hidden;pointer-events:none;';
+    ruler.textContent = txt;
+    document.body.appendChild(ruler);
+
+    // Also measure wrap width — use window width minus fixed offsets as fallback
+    // sticky-player has 16px padding each side
+    const playerEl = document.getElementById('sticky-player');
+    const playerW = playerEl ? playerEl.getBoundingClientRect().width : window.innerWidth;
+
+    // Estimate fixed space used by: imam label + day sub + times + gaps + controls padding
+    // Measure them directly if available
+    const imamEl  = document.getElementById('sticky-imam-label');
+    const dayEl   = document.getElementById('sticky-day-label');
+    const timesEl = document.querySelector('.sticky-times');
+    const imamW   = imamEl  ? imamEl.getBoundingClientRect().width  : 80;
+    const dayW    = dayEl   ? dayEl.getBoundingClientRect().width   : 80;
+    const timesW  = timesEl ? timesEl.getBoundingClientRect().width : 80;
+    const gaps    = 8 * 3 + 32; // 3 gaps of 8px + player padding
+    const availW  = Math.max(60, playerW - imamW - dayW - timesW - gaps);
+
+    const textW = ruler.getBoundingClientRect().width;
+    document.body.removeChild(ruler);
+
+    if (textW <= availW) {
+      // Fits — static, no fade, no scroll
+    } else {
+      // Overflows — duplicate + fade + scroll
+      text2.style.display = '';
+      wrap.classList.add('fading');
+      const totalW = textW + 48;
+      const dur = Math.max(8, Math.round(totalW / 65));
+      inner.style.setProperty('--marquee-dur', dur + 's');
+      inner.classList.add('scrolling');
+    }
   }
 
   function updateStickyControls() {
