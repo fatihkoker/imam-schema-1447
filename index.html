@@ -1091,11 +1091,10 @@
 
   // ── STICKY PLAYER LOGIC ──
 
-  // Build waveform bars once
-  (function buildWaves() {
+  // Build waveform bars — deferred so DOM exists
+  function buildWaves() {
     const container = document.getElementById('sticky-waves');
     if (!container) return;
-    // 36 bars with random heights for natural look
     const heights = [6,9,14,18,22,26,24,20,16,12,18,24,28,26,22,18,14,10,14,18,22,26,28,24,20,16,12,8,14,20,24,22,18,14,10,7];
     heights.forEach((h, i) => {
       const bar = document.createElement('div');
@@ -1104,7 +1103,8 @@
       bar.style.animationDelay = (i * 0.04) + 's';
       container.appendChild(bar);
     });
-  })();
+  }
+  document.addEventListener('DOMContentLoaded', buildWaves);
 
   function updateWaves(pct, isPlaying) {
     const bars = document.querySelectorAll('.sticky-wave-bar');
@@ -1130,51 +1130,52 @@
     _stickyScrollTimer = setTimeout(showSticky, 600);
   }, { passive: true });
 
-  // Sticky seek click
-  document.getElementById('sticky-seek').addEventListener('click', e => {
-    if (!_activeDatum || !audioState[_activeDatum]) return;
-    const audio = audioState[_activeDatum];
-    if (!audio.duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = pct * audio.duration;
-    updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
-    e.stopPropagation();
-  });
-
-  // Sticky play/pause button
-  document.getElementById('sticky-play-btn').addEventListener('click', e => {
-    if (!_activeDatum) return;
-    toggleAudio(_activeDatum);
-    e.stopPropagation();
-  });
-
-  // Prev / Next buttons
+  // Prev / Next navigation helper
   function navigateTo(datum) {
-    // Stop current
     if (_activeDatum && audioState[_activeDatum]) {
       audioState[_activeDatum].pause();
       setBtns(_activeDatum, PLAY_ICON, false);
       closePlayer(_activeDatum);
     }
-    // Play new
     toggleAudio(datum);
   }
 
-  document.getElementById('sticky-prev').addEventListener('click', e => {
-    if (!_activeDatum) return;
-    const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
-    const hasPrev = idx > 0 && audioUrls[SCHEDULE[idx-1].datum];
-    if (hasPrev) navigateTo(SCHEDULE[idx-1].datum);
-    e.stopPropagation();
-  });
+  // Bind sticky controls after DOM is ready (elements are after script tag)
+  document.addEventListener('DOMContentLoaded', function() {
+    const seekEl = document.getElementById('sticky-seek');
+    if (seekEl) seekEl.addEventListener('click', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      const audio = audioState[_activeDatum];
+      if (!audio.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      audio.currentTime = pct * audio.duration;
+      updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
+      e.stopPropagation();
+    });
 
-  document.getElementById('sticky-next').addEventListener('click', e => {
-    if (!_activeDatum) return;
-    const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
-    const hasNext = idx < SCHEDULE.length - 1 && audioUrls[SCHEDULE[idx+1].datum];
-    if (hasNext) navigateTo(SCHEDULE[idx+1].datum);
-    e.stopPropagation();
+    const playBtn = document.getElementById('sticky-play-btn');
+    if (playBtn) playBtn.addEventListener('click', e => {
+      if (!_activeDatum) return;
+      toggleAudio(_activeDatum);
+      e.stopPropagation();
+    });
+
+    const prevBtn = document.getElementById('sticky-prev');
+    if (prevBtn) prevBtn.addEventListener('click', e => {
+      if (!_activeDatum) return;
+      const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
+      if (idx > 0 && audioUrls[SCHEDULE[idx-1].datum]) navigateTo(SCHEDULE[idx-1].datum);
+      e.stopPropagation();
+    });
+
+    const nextBtn = document.getElementById('sticky-next');
+    if (nextBtn) nextBtn.addEventListener('click', e => {
+      if (!_activeDatum) return;
+      const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
+      if (idx < SCHEDULE.length-1 && audioUrls[SCHEDULE[idx+1].datum]) navigateTo(SCHEDULE[idx+1].datum);
+      e.stopPropagation();
+    });
   });
 
   function updateStickyControls() {
