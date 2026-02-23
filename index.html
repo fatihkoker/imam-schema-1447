@@ -193,6 +193,7 @@
     .day-card-mobile { background: var(--white); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 12px rgba(36,100,93,.08); border-left: 4px solid transparent; }
     .day-card-mobile.today { background: var(--today-bg); border-left-color: var(--today-green); }
     .dcm-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+    .dcm-audio-right .play-btn { width: 34px; height: 34px; }
     .dcm-audio-right { display: flex; align-items: center; margin-left: auto; flex-shrink: 0; }
     .dcm-dag { font-weight: 700; font-size: 1.3rem; color: var(--primary-dark); min-width: 32px; text-align: center; flex-shrink: 0; }
     .dcm-dag.today-day { color: #1d7a4e; }
@@ -231,6 +232,10 @@
       opacity: 1;
       margin-top: 6px;
       padding: 7px 10px;
+    }
+    /* When player open inside surahs box, expand it */
+    .dcm-surahs:has(.dcm-player.open) {
+      padding-bottom: 10px;
     }
 
     /* AUDIO PLAYER */
@@ -277,17 +282,15 @@
       pointer-events: none;
       transition: left 0.25s linear;
     }
-    /* Mobile player */
+    /* Mobile player — lives inside dcm-surahs, expands with it */
     .dcm-player {
       max-height: 0; overflow: hidden; opacity: 0;
-      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
     }
     .dcm-player.open { max-height: 60px; opacity: 1; }
     .dcm-player-inner {
       display: flex; align-items: center; gap: 10px;
-      padding: 6px 16px 10px 46px;
-      background: rgba(36,100,93,.04);
-      border-top: 1px solid rgba(36,100,93,.07);
+      padding: 8px 0 2px 0;
     }
 
     /* EID CARD */
@@ -826,15 +829,15 @@
         <span class="dcm-surahs-label">Suror — tryck för detaljer</span>
         ${row.surahs}
         <div class="dcm-tooltip">📖 ${row.tooltip}</div>
-      </div>
-      <div class="dcm-player" id="player-mobile-${row.datum}">
-        <div class="dcm-player-inner">
-          <span class="audio-time" id="cur-mobile-${row.datum}">0:00</span>
-          <div class="audio-seek" id="seek-mobile-${row.datum}">
-            <div class="audio-seek-fill" id="fill-mobile-${row.datum}"></div>
-            <div class="audio-seek-thumb" id="thumb-mobile-${row.datum}"></div>
+        <div class="dcm-player" id="player-mobile-${row.datum}">
+          <div class="dcm-player-inner">
+            <span class="audio-time" id="cur-mobile-${row.datum}">0:00</span>
+            <div class="audio-seek" id="seek-mobile-${row.datum}">
+              <div class="audio-seek-fill" id="fill-mobile-${row.datum}"></div>
+              <div class="audio-seek-thumb" id="thumb-mobile-${row.datum}"></div>
+            </div>
+            <span class="audio-time total" id="dur-mobile-${row.datum}">0:00</span>
           </div>
-          <span class="audio-time total" id="dur-mobile-${row.datum}">0:00</span>
         </div>
       </div>
     `;
