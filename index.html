@@ -275,6 +275,21 @@
       border-radius: 14px;
       padding: 18px 20px;
       margin-bottom: 20px;
+      transition: background 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease;
+    }
+    .today-countdown-section.isha-done {
+      background: rgba(36,186,120,0.08);
+      border-color: rgba(36,186,120,0.25);
+    }
+    @keyframes ishaGlow {
+      0%   { box-shadow: 0 0 0 0 rgba(61,186,126,0); }
+      20%  { box-shadow: 0 0 0 8px rgba(61,186,126,0.18); }
+      50%  { box-shadow: 0 0 0 16px rgba(61,186,126,0.08); }
+      80%  { box-shadow: 0 0 0 8px rgba(61,186,126,0.12); }
+      100% { box-shadow: 0 0 0 0 rgba(61,186,126,0); }
+    }
+    .today-countdown-section.isha-pulsing {
+      animation: ishaGlow 1.6s ease-out 3;
     }
     .today-countdown-inner {
       display: flex;
@@ -282,7 +297,7 @@
       justify-content: space-between;
       gap: 12px;
     }
-    .today-countdown-left {}
+    .today-countdown-left { flex: 1; min-width: 0; }
     .today-countdown-label {
       font-size: 0.60rem;
       font-weight: 600;
@@ -291,6 +306,16 @@
       color: var(--muted);
       display: block;
       margin-bottom: 6px;
+      transition: color 0.6s ease;
+    }
+    .isha-done .today-countdown-label { color: #1d7a4e; }
+
+    /* Timer crossfade wrapper */
+    .timer-wrap {
+      position: relative;
+      min-height: 2.2rem;
+      display: flex;
+      align-items: center;
     }
     .today-timer {
       font-family: 'Digital-7 Mono', 'Digital-7', monospace;
@@ -299,18 +324,73 @@
       color: var(--primary-dark);
       letter-spacing: 0.05em;
       line-height: 1;
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
-    .today-timer.done {
+    .today-timer.fading-out {
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+    }
+    .today-timer-done {
+      position: absolute;
+      left: 0;
       font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      color: var(--primary);
+      color: #1d7a4e;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+      white-space: nowrap;
+    }
+    .today-timer-done.fading-in {
+      opacity: 1;
+      transform: translateY(0);
     }
     .today-countdown-sub {
       font-size: 0.72rem;
       color: var(--muted);
       margin-top: 6px;
       display: block;
+      transition: color 0.6s ease;
+    }
+    .isha-done .today-countdown-sub { color: #2d9e6b; }
+
+    /* Notification bell button */
+    .notif-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid rgba(36,100,93,0.20);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+    .notif-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: rgba(36,100,93,0.04);
+    }
+    .notif-btn.granted {
+      border-color: rgba(36,186,120,0.35);
+      color: #1d7a4e;
+      background: rgba(36,186,120,0.06);
+      cursor: default;
+      pointer-events: none;
+    }
+    .notif-btn.denied {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
     }
 
     /* ── CTA button ── */
@@ -704,16 +784,23 @@
         <div class="today-countdown-inner">
           <div class="today-countdown-left">
             <span class="today-countdown-label" id="isha-label">Tid kvar till Isha</span>
-            <div class="today-timer" id="isha-timer">--:--:--</div>
+            <div class="timer-wrap">
+              <div class="today-timer" id="isha-timer">--:--:--</div>
+              <div class="today-timer-done" id="isha-timer-done">🕌 Bönetiden är inne</div>
+            </div>
             <span class="today-countdown-sub" id="isha-time-info"></span>
           </div>
+          <button class="notif-btn" id="notif-btn" title="Få en notis när Isha-bönetiden börjar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span id="notif-btn-label">Notifiera mig</span>
+          </button>
         </div>
       </div>
 
       <!-- CTA -->
       <div class="today-card-footer">
         <button class="today-scroll-btn" onclick="scrollToToday()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" transform="rotate(180,12,12)"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           Se i schemat
         </button>
       </div>
@@ -1217,38 +1304,110 @@
   function getDateKey(d) { const y=d.getFullYear(),m=padZ(d.getMonth()+1),day=padZ(d.getDate()); return y+'-'+m+'-'+day; }
 
   function startIshaCountdown() {
-    const countdownEl = document.getElementById('isha-countdown');
-    const timerEl     = document.getElementById('isha-timer');
-    const infoEl      = document.getElementById('isha-time-info');
-    const labelEl     = document.getElementById('isha-label');
+    const countdownEl  = document.getElementById('isha-countdown');
+    const timerEl      = document.getElementById('isha-timer');
+    const timerDoneEl  = document.getElementById('isha-timer-done');
+    const infoEl       = document.getElementById('isha-time-info');
+    const labelEl      = document.getElementById('isha-label');
+    const notifBtn     = document.getElementById('notif-btn');
+    const notifLabel   = document.getElementById('notif-btn-label');
     if (!countdownEl) return;
     countdownEl.style.display = 'block';
+
+    let _hasTriggeredDone = false;
+
+    // ── Notification permission ──
+    function updateNotifBtn() {
+      if (!('Notification' in window)) { notifBtn.style.display = 'none'; return; }
+      if (Notification.permission === 'granted') {
+        notifBtn.classList.add('granted');
+        notifLabel.textContent = 'Notis aktiv';
+        notifBtn.querySelector('svg').style.stroke = '#1d7a4e';
+      } else if (Notification.permission === 'denied') {
+        notifBtn.classList.add('denied');
+        notifLabel.textContent = 'Notis blockerad';
+      }
+    }
+    updateNotifBtn();
+
+    notifBtn.addEventListener('click', async () => {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') {
+        const result = await Notification.requestPermission();
+        updateNotifBtn();
+      }
+    });
+
+    function fireIshaNotification(ishaStr) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      new Notification('🕌 Isha-bönen är inne', {
+        body: 'Bönetiden har börjat — kl. ' + ishaStr,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        tag: 'isha-prayer',          // prevents duplicate stacking
+        renotify: false,
+        silent: false,
+      });
+    }
+
+    // ── Crossfade + glow trigger (runs once) ──
+    function triggerDoneAnimation(ishaStr) {
+      if (_hasTriggeredDone) return;
+      _hasTriggeredDone = true;
+
+      // 1. Fade out the digital timer
+      timerEl.classList.add('fading-out');
+
+      // 2. Fade in the done text
+      timerDoneEl.classList.add('fading-in');
+
+      // 3. Tint the box green
+      countdownEl.classList.add('isha-done');
+
+      // 4. Glow pulse (3 slow pulses)
+      countdownEl.classList.add('isha-pulsing');
+      countdownEl.addEventListener('animationend', () => {
+        countdownEl.classList.remove('isha-pulsing');
+      }, { once: true });
+
+      // 5. Browser notification
+      fireIshaNotification(ishaStr);
+    }
 
     function tick() {
       const now = new Date();
       const todayKey = getDateKey(now);
       const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
       const ishaStr = ISHA_TIMES[todayKey];
+
       if (!ishaStr) {
-        timerEl.textContent = '--:--:--'; timerEl.classList.remove('done');
-        labelEl.textContent = 'Tid kvar till Isha'; infoEl.textContent = '';
+        timerEl.textContent = '--:--:--';
+        labelEl.textContent = 'Tid kvar till Isha';
+        infoEl.textContent  = '';
         return;
       }
+
       const [ishaH, ishaM] = ishaStr.split(':').map(Number);
       const ishaSec = ishaH * 3600 + ishaM * 60;
+
       if (nowSec >= ishaSec) {
-        timerEl.textContent = '🕌 Bönetiden är inne'; timerEl.classList.add('done');
+        // Trigger animation + notification once
+        triggerDoneAnimation(ishaStr);
+        // Keep updating the sub-label
         labelEl.textContent = 'Isha';
-        infoEl.textContent = 'Isha-bönen är inne sedan kl. ' + ishaStr;
+        infoEl.textContent  = 'Isha-bönen är inne sedan kl. ' + ishaStr;
       } else {
-        timerEl.classList.remove('done');
+        // Counting down
         labelEl.textContent = 'Tid kvar till Isha';
-        infoEl.textContent = 'Isha-bönen börjar kl. ' + ishaStr;
+        infoEl.textContent  = 'Isha-bönen börjar kl. ' + ishaStr;
         const diff = ishaSec - nowSec;
-        const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
         timerEl.textContent = padZ(h) + ':' + padZ(m) + ':' + padZ(s);
       }
     }
+
     tick();
     setInterval(tick, 1000);
   }
