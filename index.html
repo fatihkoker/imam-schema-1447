@@ -1018,16 +1018,31 @@
   // ── AUDIO ──
   const audioState = {};
 
+  // Sticky state — declared early so all functions can reference them
+  let _stickyScrollTimer = null;
+  let _activeDatum = null;
+
   const PLAY_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>`;
   const PAUSE_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
   const SPIN_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="animation:spin 0.9s linear infinite"><path d="M12 2a10 10 0 1 0 10 10"/></svg>`;
+
+  function updateStickyPlayBtn(isPlaying) {
+    const btn = document.getElementById('sticky-play-btn');
+    if (!btn) return;
+    if (isPlaying) {
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>';
+      btn.classList.add('red');
+    } else {
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>';
+      btn.classList.remove('red');
+    }
+  }
 
   function setBtns(datum, icon, isPlaying) {
     document.querySelectorAll('.play-btn[data-datum="' + datum + '"]').forEach(b => {
       b.innerHTML = icon;
       isPlaying ? b.classList.add('playing') : b.classList.remove('playing');
     });
-    // Sync sticky play button if this is the active datum
     if (datum === _activeDatum) updateStickyPlayBtn(isPlaying);
   }
 
@@ -1075,8 +1090,6 @@
   }
 
   // ── STICKY PLAYER LOGIC ──
-  let _stickyScrollTimer = null;
-  let _activeDatum = null;
 
   // Build waveform bars once
   (function buildWaves() {
@@ -1178,18 +1191,6 @@
     const dayEl  = document.getElementById('sticky-day-label');
     if (imamEl && row) imamEl.textContent = row.imamLabel;
     if (dayEl  && row) dayEl.textContent  = 'Natt ' + row.day + ' · ' + row.vecka;
-  }
-
-  function updateStickyPlayBtn(isPlaying) {
-    const btn = document.getElementById('sticky-play-btn');
-    if (!btn) return;
-    if (isPlaying) {
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>';
-      btn.classList.add('red');
-    } else {
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>';
-      btn.classList.remove('red');
-    }
   }
 
   function openPlayer(datum) {
