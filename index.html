@@ -458,18 +458,186 @@
     /* ── EID CARD ── */
     .eid-card {
       display: none;
-      background: linear-gradient(135deg, #0f2d5e 0%, #1a4a44 60%, #24645d 100%);
-      border-radius: 18px;
+      position: relative;
+      border-radius: 24px;
       padding: 52px 32px 44px;
       text-align: center;
-      box-shadow: 0 8px 40px rgba(36,100,93,.2);
       margin-bottom: 32px;
-      position: relative;
       overflow: hidden;
+      background:
+        linear-gradient(160deg,
+          #0a1f3d 0%,
+          #0f2d40 25%,
+          #163d38 55%,
+          #1a4a44 80%,
+          #24645d 100%
+        );
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.08),
+        0 12px 40px rgba(10,31,61,0.35),
+        0 32px 64px rgba(10,31,61,0.18);
+      border: 1px solid rgba(201,168,76,0.12);
+      animation: eidFadeUp 1.1s cubic-bezier(0.22,1,0.36,1) both;
     }
-    .eid-stars { font-size: 1.3rem; letter-spacing: .25em; color: var(--gold); margin-bottom: 16px; }
-    .eid-title { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 600; color: #fff; line-height: 1.15; margin-bottom: 12px; }
-    .eid-subtitle { font-size: .95rem; color: rgba(255,255,255,.6); font-style: italic; letter-spacing: .04em; }
+
+    @keyframes eidFadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Radial gold glow top-left */
+    .eid-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 20%, rgba(201,168,76,0.13) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 80%, rgba(36,100,93,0.25) 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, rgba(15,45,64,0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Subtle grain overlay */
+    .eid-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 128px;
+      pointer-events: none;
+    }
+
+    .eid-inner { position: relative; z-index: 2; }
+
+    /* Ornament top */
+    .eid-ornament {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 28px;
+      animation: eidFadeUp 1.1s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .eid-orn-line {
+      height: 1px; width: 44px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.6));
+    }
+    .eid-orn-line.r {
+      background: linear-gradient(to left, transparent, rgba(201,168,76,0.6));
+    }
+    .eid-orn-diamond {
+      width: 6px; height: 6px;
+      background: var(--gold); transform: rotate(45deg);
+    }
+    .eid-orn-dot {
+      width: 3px; height: 3px;
+      background: var(--gold-light); border-radius: 50%;
+    }
+
+    /* Arabic text */
+    .eid-arabic {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 500;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+      margin-bottom: 6px;
+      direction: rtl;
+      animation: eidFadeUp 1.1s 0.25s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* Main title */
+    .eid-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 8vw, 4rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.05;
+      letter-spacing: 0.01em;
+      margin-bottom: 10px;
+      animation: eidFadeUp 1.1s 0.35s cubic-bezier(0.22,1,0.36,1) both;
+      /* Gold shimmer sweep on the title */
+      background: linear-gradient(
+        105deg,
+        #fff 0%,
+        #fff 35%,
+        var(--gold-light) 50%,
+        #fff 65%,
+        #fff 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: eidFadeUp 1.1s 0.35s cubic-bezier(0.22,1,0.36,1) both,
+                 eidShimmer 4s 1.5s ease-in-out infinite;
+    }
+    @keyframes eidShimmer {
+      0%   { background-position: 200% center; }
+      50%  { background-position: -50% center; }
+      100% { background-position: 200% center; }
+    }
+
+    /* Gold divider */
+    .eid-divider {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin: 16px 0 18px;
+      animation: eidFadeUp 1.1s 0.45s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .eid-divider-line { height: 1px; width: 36px; background: rgba(201,168,76,0.45); }
+    .eid-divider-dot  { width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); border-radius: 0; }
+
+    /* Transliteration */
+    .eid-subtitle {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.55);
+      font-style: italic;
+      letter-spacing: 0.06em;
+      line-height: 1.6;
+      animation: eidFadeUp 1.1s 0.52s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* Closing note */
+    .eid-note {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.03em;
+      line-height: 1.7;
+      animation: eidFadeUp 1.1s 0.62s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .eid-note strong { color: rgba(255,255,255,0.55); font-weight: 500; }
+
+    /* Instagram link inside eid card */
+    .eid-instagram {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-top: 18px;
+      color: rgba(255,255,255,0.45);
+      font-size: 0.76rem;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+      animation: eidFadeUp 1.1s 0.70s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .eid-instagram:hover { color: rgba(255,255,255,0.75); }
+
+    /* Floating crescents */
+    .eid-crescents {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .eid-crescent {
+      position: absolute;
+      font-size: 1.1rem;
+      opacity: 0;
+      animation: eidFloat var(--dur, 6s) var(--delay, 0s) ease-in-out infinite;
+    }
+    @keyframes eidFloat {
+      0%   { opacity: 0; transform: translateY(0) rotate(var(--rot,0deg)) scale(0.8); }
+      15%  { opacity: var(--max-op, 0.18); }
+      85%  { opacity: var(--max-op, 0.18); }
+      100% { opacity: 0; transform: translateY(-30px) rotate(var(--rot,15deg)) scale(1); }
+    }
 
     /* ── SECTION TITLE ── */
     .section-title { text-align: center; margin-bottom: 20px; }
@@ -583,10 +751,11 @@
     tbody tr.last-ten.today .today-date { color: #7eb8f7 !important; }
     tbody tr.last-ten.today .today-badge { background: #3a7bd5; }
     tbody tr.last-ten.today .td-surah .surah-names { color: rgba(255,255,255,0.9) !important; }
-    tbody tr.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); }
-    .day-card-mobile.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); }
+    tbody tr.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; }
+    .day-card-mobile.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; }
 
     .moon-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #0f2d5e; vertical-align: middle; flex-shrink: 0; }
+    .moon-icon.moon-odd { background: linear-gradient(135deg, #9a6f0a, #c9a84c); box-shadow: 0 0 7px rgba(201,168,76,0.55); }
 
     /* ── AUDIO PLAY BUTTON ── */
     .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); transition: transform 0.15s ease, box-shadow 0.15s ease; }
@@ -847,9 +1016,54 @@
 
   <!-- EID CARD -->
   <div class="eid-card" id="eid-card">
-    <div class="eid-stars">🌙 ✦ 🌙</div>
-    <div class="eid-title">Eid Mubarak!</div>
-    <div class="eid-subtitle">Taqabbal Allah minna wa minkum</div>
+    <!-- Floating background crescents -->
+    <div class="eid-crescents">
+      <span class="eid-crescent" style="left:8%;top:18%;--dur:7s;--delay:0s;--rot:-12deg;--max-op:0.15;">🌙</span>
+      <span class="eid-crescent" style="right:10%;top:12%;--dur:9s;--delay:1.2s;--rot:10deg;--max-op:0.12;">🌙</span>
+      <span class="eid-crescent" style="left:20%;bottom:20%;--dur:8s;--delay:2.5s;--rot:5deg;--max-op:0.10;">✦</span>
+      <span class="eid-crescent" style="right:18%;bottom:25%;--dur:6.5s;--delay:0.8s;--rot:-8deg;--max-op:0.13;">✦</span>
+      <span class="eid-crescent" style="left:50%;top:8%;--dur:10s;--delay:3s;--rot:3deg;--max-op:0.09;">🌙</span>
+    </div>
+
+    <div class="eid-inner">
+      <!-- Top ornament -->
+      <div class="eid-ornament">
+        <div class="eid-orn-line"></div>
+        <div class="eid-orn-dot"></div>
+        <div class="eid-orn-diamond"></div>
+        <div class="eid-orn-dot"></div>
+        <div class="eid-orn-line r"></div>
+      </div>
+
+      <!-- Arabic -->
+      <div class="eid-arabic">تَقَبَّلَ اللهُ مِنَّا وَمِنْكُم</div>
+
+      <!-- Main title -->
+      <div class="eid-title">Eid Mubarak</div>
+
+      <!-- Gold divider -->
+      <div class="eid-divider">
+        <div class="eid-divider-line"></div>
+        <div class="eid-divider-dot"></div>
+        <div class="eid-divider-line"></div>
+      </div>
+
+      <!-- Transliteration -->
+      <div class="eid-subtitle">Taqabbal Allahu minna wa minkum</div>
+
+      <!-- Closing note -->
+      <div class="eid-note">
+        <strong>Ramadan 1447 är avslutat.</strong><br>
+        Må Allah acceptera era böner, fasta och goda gärningar.<br>
+        Vi ses nästa år, in shaa Allah.
+      </div>
+
+      <!-- Instagram -->
+      <a class="eid-instagram" href="https://www.instagram.com/sverigesimamer/" target="_blank" rel="noopener">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        @sverigesimamer
+      </a>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════
@@ -997,15 +1211,15 @@
     {day:17, sidor:'486–495',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-05', vecka:'Torsdag',  surahs:'Ash-Shura, Az-Zukhruf',                                                                                             tooltip:'42:27 – 43:89'},
     {day:18, sidor:'496–506',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-06', vecka:'Fredag',   surahs:'Ad-Dukhan, Al-Jathiyah, Al-Ahqaf',                                                                                  tooltip:'44:1 – 46:35'},
     {day:19, sidor:'507–515',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-07', vecka:'Lördag',   surahs:'Muhammad, Al-Fath',                                                                                                 tooltip:'47:1 – 48:29'},
-    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'Al-Hujurat, Qaf, Adh-Dhariyat',                                                                                     tooltip:'49:1 – 51:60'},
+    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'Al-Hujurat, Qaf, Adh-Dhariyat',                                                                                     tooltip:'49:1 – 51:60', moonText:'Profeten ﷺ sade: "Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan." (Sahih Bukhari)'},
     {day:21, sidor:'523–531',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag',   surahs:'At-Tur, An-Najm, Al-Qamar',                                                                                         tooltip:'52:1 – 54:55'},
-    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'Ar-Rahman, Al-Waqiah, Al-Hadid',                                                                                    tooltip:'55:1 – 57:15'},
+    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'Ar-Rahman, Al-Waqiah, Al-Hadid',                                                                                    tooltip:'55:1 – 57:15', moonText:'Profeten ﷺ sade: "Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan." (Sahih Bukhari)'},
     {day:23, sidor:'539–548',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag',   surahs:'Al-Hadid, Al-Mujadilah, Al-Hashr',                                                                                  tooltip:'57:16 – 59:24'},
-    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'Al-Mumtahanah, As-Saf, Al-Jumuah, Al-Munafiqun, At-Taghabun',                                                       tooltip:'60:1 – 64:18'},
+    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'Al-Mumtahanah, As-Saf, Al-Jumuah, Al-Munafiqun, At-Taghabun',                                                       tooltip:'60:1 – 64:18', moonText:'Profeten ﷺ sade: "Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten." Sahih al-Bukhari 2023'},
     {day:25, sidor:'558–566',imam:'hatem',       imamLabel:'Hatem',              datum:'2026-03-13', vecka:'Fredag',   surahs:'At-Talaq, At-Tahrim, Al-Mulk, Al-Qalam',                                                                            tooltip:'65:1 – 68:52'},
-    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'Al-Haqqah, Al-Maarij, Nuh, Al-Jinn, Al-Muzzammil',                                                                  tooltip:'69:1 – 73:20'},
+    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'Al-Haqqah, Al-Maarij, Nuh, Al-Jinn, Al-Muzzammil',                                                                  tooltip:'69:1 – 73:20', moonText:'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." (al-Bukhari och Muslim)'},
     {day:27, sidor:'575–583',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag',   surahs:'Al-Muddaththir, Al-Qiyamah, Al-Insan, Al-Mursalat, An-Naba',                                                         tooltip:'74:1 – 78:40'},
-    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'An-Naziat, Abasa, At-Takwir, Al-Infitar, Al-Mutaffifin, Al-Inshiqaq, Al-Buruj, At-Tariq, Al-Ala',                    tooltip:'79:1 – 87:19'},
+    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'An-Naziat, Abasa, At-Takwir, Al-Infitar, Al-Mutaffifin, Al-Inshiqaq, Al-Buruj, At-Tariq, Al-Ala',                    tooltip:'79:1 – 87:19', moonText:'Profeten ﷺ sade: "Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten." Sahih al-Bukhari 2023'},
     {day:29, sidor:'592–604',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag',   surahs:'Al-Ghashiyah, Al-Fajr, Al-Balad, Ash-Shams, Al-Layl, Ad-Duha, Ash-Sharh, At-Tin, Al-Alaq, Al-Qadr, Al-Bayyinah, Az-Zalzalah, Al-Adiyat, Al-Qariah, At-Takathur, Al-Asr, Al-Humazah, Al-Fil, Quraysh, Al-Maun, Al-Kawthar, Al-Kafirun, An-Nasr, Al-Masad, Al-Ikhlas, Al-Falaq, An-Nas', tooltip:'88:1 – 114:6'},
     {day:30, sidor:'2–11',   imam:'noor',        imamLabel:'Noor',               datum:'2026-03-18', vecka:'Onsdag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:1 – 2:74'},
   ];
@@ -1054,7 +1268,11 @@
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
     const isLastTen = row.day >= 21;
     if (isLastTen) tr.classList.add('last-ten');
-    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="moon-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="moon-tooltip">Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span></span>` : '';
+    const isOddNight = row.day % 2 !== 0;
+    const moonClass = isOddNight ? 'moon-icon moon-odd' : 'moon-icon';
+    const defaultMoonText = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
+    const thisMoonText = row.moonText || defaultMoonText;
+    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="${moonClass}"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="moon-tooltip">${thisMoonText}</span></span>` : '';
     tr.innerHTML = `
       <td class="td-dag">${row.day}</td>
       <td class="td-sidor">${row.sidor}</td>
@@ -1089,7 +1307,11 @@
     if (isToday) card.id = 'today-row-mobile';
     const veckaClass = row.vecka === 'Fredag' ? 'fredag' : row.vecka === 'Lördag' ? 'lordag' : row.vecka === 'Söndag' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
-    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='moon-icon'><svg width='11' height='11' viewBox='0 0 24 24' fill='white'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg></span><span class='moon-tooltip' style='right:auto;left:0;'>Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span></span>` : '';
+    const isOddNightM = row.day % 2 !== 0;
+    const moonClassM = isOddNightM ? 'moon-icon moon-odd' : 'moon-icon';
+    const defaultMoonTextM = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
+    const thisMoonTextM = row.moonText || defaultMoonTextM;
+    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='${moonClassM}'><svg width='11' height='11' viewBox='0 0 24 24' fill='white'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg></span><span class='moon-tooltip' style='right:auto;left:0;'>${thisMoonTextM}</span></span>` : '';
     card.innerHTML = `
       <div class="dcm-top">
         <div class="dcm-dag ${isToday ? 'today-day' : ''}">${row.day}</div>
@@ -1138,10 +1360,13 @@
     if (todayData.day >= 21) {
       const dateEl = document.getElementById('today-date-label');
       dateEl.textContent = dateLabel;
+      const isTodayOdd = todayData.day % 2 !== 0;
+      const todayMoonText = todayData.moonText || 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
       const moonWrap = document.createElement('span');
       moonWrap.className = 'today-moon-wrap';
       moonWrap.style.marginLeft = '8px';
-      moonWrap.innerHTML = `<span class="today-moon-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="today-moon-tooltip">Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span>`;
+      const moonIconStyle = isTodayOdd ? 'background:linear-gradient(135deg,#9a6f0a,#c9a84c);box-shadow:0 0 7px rgba(201,168,76,0.55);' : '';
+      moonWrap.innerHTML = `<span class="today-moon-icon" style="${moonIconStyle}"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="today-moon-tooltip">${todayMoonText}</span>`;
       dateEl.parentNode.appendChild(moonWrap);
     } else {
       document.getElementById('today-date-label').textContent = dateLabel;
@@ -1154,10 +1379,11 @@
     // Hadith for last 10 nights
     if (todayData.day >= 21) {
       const hadithSlot = document.getElementById('today-hadith-slot');
+      const hadithText = todayData.moonText || 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
       hadithSlot.innerHTML = `
         <div class="today-hadith">
           <span class="moon-small"><svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
-          <span>Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]</span>
+          <span>${hadithText}</span>
         </div>
       `;
     }
