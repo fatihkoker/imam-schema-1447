@@ -63,7 +63,6 @@
       --wave-fill:       #24645d;
       --footer-bg:       #1a4a44;
       --legend-bg:       #ffffff;
-      /* iPhone toggle light */
       --ios-track-off:   #e5e5ea;
       --ios-track-on:    #34c759;
       --ios-thumb:       #ffffff;
@@ -110,7 +109,6 @@
       --wave-fill:       #131f1b;
       --footer-bg:       #0d1714;
       --legend-bg:       #1e2c28;
-      /* iPhone toggle dark */
       --ios-track-off:   #3a3a3c;
       --ios-track-on:    #30d158;
       --ios-thumb:       #ffffff;
@@ -119,9 +117,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; }
 
-    /* ══════════════════════════════════════════════
-       EXACT IMAGE TOGGLE — wide pill, label inside, dark circle thumb
-    ══════════════════════════════════════════════ */
+    /* ══ iOS TOGGLE ══ */
     .theme-toggle {
       position: absolute; top: 10px; right: 12px; z-index: 10;
       display: inline-flex; align-items: center;
@@ -129,103 +125,44 @@
       cursor: pointer; font-family: inherit;
       -webkit-tap-highlight-color: transparent;
     }
-
-    /* The wide pill track */
     .ios-track {
-      position: relative;
-      width: 76px;
-      height: 30px;
-      border-radius: 999px;
+      position: relative; width: 76px; height: 30px; border-radius: 999px;
       background: #e8e8e8;
-      box-shadow:
-        0 3px 8px rgba(0,0,0,0.30),
-        inset 0 1px 2px rgba(255,255,255,0.6),
-        inset 0 -1px 2px rgba(0,0,0,0.12);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.30), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -1px 2px rgba(0,0,0,0.12);
       flex-shrink: 0;
-      transition: background 0.38s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow 0.38s ease;
+      transition: background 0.38s cubic-bezier(0.4,0,0.2,1), box-shadow 0.38s ease;
       overflow: hidden;
     }
     [data-theme="dark"] .ios-track {
       background: #1c1c1e;
-      box-shadow:
-        0 3px 8px rgba(0,0,0,0.50),
-        inset 0 1px 3px rgba(255,255,255,0.04),
-        inset 0 -1px 3px rgba(0,0,0,0.5);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.50), inset 0 1px 3px rgba(255,255,255,0.04), inset 0 -1px 3px rgba(0,0,0,0.5);
     }
-
-    /* Label text inside the track — centred in the gap opposite the thumb */
     .ios-track-label {
-      position: absolute;
-      top: 50%;
-      /* Light mode: thumb on right (occupies 49–76px). Centre of left zone (0–49px) = 24.5px */
-      left: 0;
-      right: calc(24px + 3px);   /* keep label out of thumb zone */
+      position: absolute; top: 50%; left: 0; right: calc(24px + 3px);
       transform: translateY(-50%);
-      font-size: 0.38rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      line-height: 1.2;
-      text-align: center;
-      pointer-events: none;
-      white-space: nowrap;
-      user-select: none;
-      color: rgba(70,70,70,0.80);
-      transition: color 0.3s ease, left 0s, right 0s;
+      font-size: 0.38rem; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; line-height: 1.2; text-align: center;
+      pointer-events: none; white-space: nowrap; user-select: none;
+      color: rgba(70,70,70,0.80); transition: color 0.3s ease, left 0s, right 0s;
     }
-    [data-theme="dark"] .ios-track-label {
-      /* Dark mode: thumb on left (occupies 3–27px). Centre of right zone (27–76px). */
-      left: calc(24px + 3px);
-      right: 0;
-      color: rgba(160,160,160,0.70);
-    }
-
-    /* Dark circle thumb */
+    [data-theme="dark"] .ios-track-label { left: calc(24px + 3px); right: 0; color: rgba(160,160,160,0.70); }
     .ios-thumb {
-      position: absolute;
-      top: 3px;
-      left: calc(100% - 3px - 24px);
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+      position: absolute; top: 3px; left: calc(100% - 3px - 24px);
+      width: 24px; height: 24px; border-radius: 50%;
       background: radial-gradient(circle at 38% 35%, #4a4a4a, #1a1a1a);
-      box-shadow:
-        0 2px 6px rgba(0,0,0,0.50),
-        0 1px 2px rgba(0,0,0,0.35),
-        inset 0 1px 1px rgba(255,255,255,0.08);
-      transition:
-        left 0.38s cubic-bezier(0.34,1.45,0.64,1),
-        width 0.10s ease;
-      will-change: left;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    [data-theme="dark"] .ios-thumb {
-      left: 3px;
-      background: radial-gradient(circle at 38% 35%, #555, #222);
-    }
-    /* Icon inside thumb — cross-dissolve between sun and moon */
-    .ios-thumb-icon {
-      position: absolute;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.50), 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.08);
+      transition: left 0.38s cubic-bezier(0.34,1.45,0.64,1), width 0.10s ease;
+      will-change: left; z-index: 2;
       display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.34,1.56,0.64,1);
     }
+    [data-theme="dark"] .ios-thumb { left: 3px; background: radial-gradient(circle at 38% 35%, #555, #222); }
+    .ios-thumb-icon { position: absolute; display: flex; align-items: center; justify-content: center; transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.34,1.56,0.64,1); }
     .ios-thumb-sun  { opacity: 1;  transform: scale(1)   rotate(0deg); }
     .ios-thumb-moon { opacity: 0;  transform: scale(0.5) rotate(-30deg); }
     [data-theme="dark"] .ios-thumb-sun  { opacity: 0;  transform: scale(0.5) rotate(30deg); }
     [data-theme="dark"] .ios-thumb-moon { opacity: 1;  transform: scale(1)   rotate(0deg); }
-
-    /* Squish on press */
-    .theme-toggle:active .ios-thumb {
-      width: 28px;
-    }
-    [data-theme="dark"] .theme-toggle:active .ios-thumb {
-      width: 28px;
-      left: 3px;
-    }
+    .theme-toggle:active .ios-thumb { width: 28px; }
+    [data-theme="dark"] .theme-toggle:active .ios-thumb { width: 28px; left: 3px; }
 
     /* ── HEADER ── */
     header { background: var(--header-bg); padding: 28px 20px 22px; text-align: center; position: relative; overflow: hidden; transition: background 0.35s ease; }
@@ -250,42 +187,11 @@
     /* ═══════════════════════════════════════════════════
        TODAY CARD
     ═══════════════════════════════════════════════════ */
-    .today-card {
-      display: none;
-      background: var(--surface);
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      box-shadow: var(--card-shadow);
-      overflow: hidden;
-      margin-bottom: 32px;
-      transition: background 0.35s, border-color 0.35s, box-shadow 0.35s;
-    }
-
-    .today-card-top {
-      position: relative;
-      padding: 22px 28px 20px;
-      background: linear-gradient(145deg, rgba(15,40,50,0.97) 0%, rgba(20,58,52,0.97) 40%, rgba(26,74,68,0.95) 70%, rgba(36,100,93,0.93) 100%);
-      overflow: hidden;
-    }
-    .today-card-top::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 55%),
-                  radial-gradient(ellipse at 20% 80%, rgba(36,100,93,0.15) 0%, transparent 45%);
-      pointer-events: none;
-    }
-    .today-card-top::after {
-      content: ''; position: absolute; inset: 0; opacity: 0.025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 128px; pointer-events: none;
-    }
-
-    .today-badge-pill {
-      position: relative; z-index: 2;
-      display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.30);
-      border-radius: 100px; padding: 4px 12px; margin-bottom: 10px;
-    }
+    .today-card { display: none; background: var(--surface); border-radius: 22px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 32px; transition: background 0.35s, border-color 0.35s, box-shadow 0.35s; }
+    .today-card-top { position: relative; padding: 22px 28px 20px; background: linear-gradient(145deg, rgba(15,40,50,0.97) 0%, rgba(20,58,52,0.97) 40%, rgba(26,74,68,0.95) 70%, rgba(36,100,93,0.93) 100%); overflow: hidden; }
+    .today-card-top::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(36,100,93,0.15) 0%, transparent 45%); pointer-events: none; }
+    .today-card-top::after { content: ''; position: absolute; inset: 0; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 128px; pointer-events: none; }
+    .today-badge-pill { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 5px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.30); border-radius: 100px; padding: 4px 12px; margin-bottom: 10px; }
     .today-badge-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-light); flex-shrink: 0; box-shadow: 0 0 5px rgba(201,168,76,0.6); }
     .today-badge-pill-text { font-size: 0.60rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-light); }
     .today-card-header-content { position: relative; z-index: 2; }
@@ -293,13 +199,16 @@
     .today-date-row { display: flex; align-items: center; gap: 8px; }
     .today-date-text { font-size: 0.82rem; color: rgba(255,255,255,0.55); font-weight: 400; letter-spacing: 0.02em; }
 
+    /* ══════════════════════════════════════════════════════
+       MOON ICON — unchanged glow animations
+    ══════════════════════════════════════════════════════ */
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
     .today-moon-icon {
       display: inline-flex; align-items: center; justify-content: center;
       width: 22px; height: 22px; border-radius: 50%;
       background: rgba(15, 45, 94, 0.5);
       border: 1.5px solid rgba(255,255,255,0.2);
-      cursor: default;
+      cursor: pointer;
       animation: moonPulseBlue 2s ease-in-out infinite;
     }
     .today-moon-icon.moon-odd-today {
@@ -312,43 +221,8 @@
       50% { box-shadow: 0 0 0 6px rgba(58,123,213,0); }
     }
     @keyframes moonGlow {
-      0%,100% {
-        box-shadow: 0 0 4px 1px rgba(201,168,76,0.6), 0 0 10px 2px rgba(201,168,76,0.35), 0 0 22px 4px rgba(201,168,76,0.15);
-      }
-      50% {
-        box-shadow: 0 0 8px 3px rgba(232,201,122,0.85), 0 0 18px 6px rgba(201,168,76,0.55), 0 0 36px 10px rgba(201,168,76,0.22);
-      }
-    }
-
-    .today-moon-tooltip {
-      position: absolute;
-      bottom: calc(100% + 8px); left: 50%;
-      transform: translateX(-50%) translateY(4px);
-      width: 240px;
-      background: #12211f;
-      border: 1px solid rgba(201,168,76,0.40);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-      color: rgba(255,255,255,0.88);
-      font-size: .72rem; line-height: 1.55;
-      padding: 10px 12px; border-radius: 10px;
-      z-index: 200; pointer-events: none; font-style: italic;
-      opacity: 0; visibility: hidden;
-      transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    }
-    .today-moon-tooltip::before {
-      content: '';
-      position: absolute; top: 0; left: 12px; right: 12px; height: 1px;
-      background: linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent);
-    }
-    .today-moon-tooltip::after {
-      content: ''; position: absolute; top: 100%; left: 50%;
-      transform: translateX(-50%);
-      border-left: 6px solid transparent; border-right: 6px solid transparent;
-      border-top: 6px solid #12211f;
-    }
-    .today-moon-wrap:hover .today-moon-tooltip,
-    .today-moon-wrap.active .today-moon-tooltip {
-      opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+      0%,100% { box-shadow: 0 0 4px 1px rgba(201,168,76,0.6), 0 0 10px 2px rgba(201,168,76,0.35), 0 0 22px 4px rgba(201,168,76,0.15); }
+      50% { box-shadow: 0 0 8px 3px rgba(232,201,122,0.85), 0 0 18px 6px rgba(201,168,76,0.55), 0 0 36px 10px rgba(201,168,76,0.22); }
     }
 
     .today-card-body { padding: 16px 28px 20px; display: flex; flex-direction: column; gap: 0; background: var(--surface); transition: background 0.35s; }
@@ -390,28 +264,8 @@
     .today-scroll-btn { display: inline-flex; align-items: center; gap: 7px; background: var(--primary-dark); color: #fff; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; padding: 10px 20px; border-radius: 100px; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; box-shadow: 0 2px 12px rgba(26,74,68,0.25); transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease; }
     .today-scroll-btn:hover { background: var(--primary); box-shadow: 0 4px 20px rgba(26,74,68,0.35); transform: translateY(-1px); }
 
-    .today-hadith-inline {
-      position: relative; z-index: 2;
-      margin-top: 12px;
-      padding: 10px 12px;
-      background: rgba(201,168,76,0.07);
-      border-left: 2px solid rgba(201,168,76,0.45);
-      border-radius: 0 8px 8px 0;
-      font-size: 0.70rem;
-      color: rgba(255,255,255,0.50);
-      font-style: italic;
-      line-height: 1.6;
-    }
-    .today-hadith-inline .hadith-label {
-      display: block;
-      font-size: 0.55rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.65);
-      margin-bottom: 4px;
-      font-style: normal;
-    }
+    .today-hadith-inline { position: relative; z-index: 2; margin-top: 12px; padding: 10px 12px; background: rgba(201,168,76,0.07); border-left: 2px solid rgba(201,168,76,0.45); border-radius: 0 8px 8px 0; font-size: 0.70rem; color: rgba(255,255,255,0.50); font-style: italic; line-height: 1.6; }
+    .today-hadith-inline .hadith-label { display: block; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(201,168,76,0.65); margin-bottom: 4px; font-style: normal; }
 
     @keyframes cardPulse {
       0%   { box-shadow: 0 2px 4px rgba(0,0,0,.04), 0 8px 24px rgba(36,100,93,.10), 0 24px 48px rgba(36,100,93,.06), 0 0 0 0 var(--card-pulse, rgba(255,255,255,0.3)); }
@@ -502,10 +356,6 @@
       60%  { opacity: 1; transform: translateY(-2px) scale(1.01); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
-    @keyframes tooltipSlideDown {
-      0%   { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(8px) scale(0.97); }
-    }
 
     .tooltip-box {
       display: none;
@@ -521,8 +371,6 @@
       letter-spacing: .02em; pointer-events: none;
       transform-origin: top left;
     }
-    .tooltip-box::before { display: none; }
-    .tooltip-box::after { display: none; }
     @media (hover: hover) {
       .surah-cell:hover .tooltip-box {
         display: block;
@@ -534,103 +382,155 @@
       animation: tooltipSlideUp 0.38s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
 
-    /* ══════════════════════════════════════════
-       CHANGE 1 — Moon tooltip: full-width slide-up on mobile
-    ══════════════════════════════════════════ */
-    @keyframes moonTooltipSlideUp {
-      0%   { opacity: 0; transform: translateY(20px) scale(0.96); }
-      60%  { opacity: 1; transform: translateY(-3px) scale(1.01); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
+    /* ══════════════════════════════════════════════════════════════
+       MOON CHAT BUBBLE — matches reference image exactly
+       Dark rounded box, centered text, label on own line, spring pop
+    ══════════════════════════════════════════════════════════════ */
+
+    /* Spring "blow up" from moon center — desktop */
+    @keyframes moonBubbleOpen {
+      0%   { opacity: 0; transform: translateX(-50%) scale(0.18) translateY(6px); }
+      55%  { opacity: 1; transform: translateX(-50%) scale(1.05) translateY(-2px); }
+      78%  { transform: translateX(-50%) scale(0.98) translateY(1px); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
     }
-    @keyframes moonTooltipSlideDown {
-      0%   { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(14px) scale(0.96); }
+    @keyframes moonBubbleClose {
+      0%   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) scale(0.12) translateY(6px); }
     }
 
-    @media (max-width: 640px) {
-      /* Overlay backdrop */
-      .moon-tooltip-backdrop {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.45);
-        z-index: 998;
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(2px);
-        animation: fadeIn 0.25s ease forwards;
-      }
-      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      .moon-tooltip-backdrop.visible { display: block; }
-      .moon-tooltip-backdrop.hiding  { animation: fadeOut 0.25s ease forwards; }
-      @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    /* Backdrop for mobile */
+    .moon-tooltip-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 998;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    @keyframes fadeInBackdrop  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOutBackdrop { from { opacity: 1; } to { opacity: 0; } }
+    .moon-tooltip-backdrop.visible { display: block; animation: fadeInBackdrop 0.22s ease forwards; }
+    .moon-tooltip-backdrop.hiding  { display: block; animation: fadeOutBackdrop 0.22s ease forwards; }
 
-      /* Override existing moon-tooltip on mobile */
-      .moon-tooltip,
-      .today-moon-tooltip {
-        position: fixed !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important;
-        top: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        transform: none !important;
-        border-radius: 22px 22px 0 0 !important;
-        padding: 20px 22px 32px !important;
-        font-size: 0.88rem !important;
-        line-height: 1.7 !important;
-        z-index: 999 !important;
-        pointer-events: auto !important;
-        visibility: hidden;
-        opacity: 0;
-        transition: none !important;
-      }
-      .moon-tooltip.visible,
-      .today-moon-wrap.active .today-moon-tooltip,
-      .moon-wrap.active .moon-tooltip {
-        visibility: visible !important;
-        opacity: 1 !important;
-        animation: moonTooltipSlideUp 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
-      }
-      .moon-tooltip.hiding,
-      .today-moon-tooltip.hiding {
-        animation: moonTooltipSlideDown 0.28s ease forwards !important;
-      }
+    /* ── Moon icon base styles ── */
+    .moon-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #0f2d5e; vertical-align: middle; flex-shrink: 0;
+      cursor: pointer;
+    }
+    .moon-icon.moon-odd { background: linear-gradient(135deg, #9a6f0a, #c9a84c); animation: moonGlow 2.2s ease-in-out infinite; }
 
-      /* Gold variant on mobile too */
-      .moon-tooltip.gold-tooltip,
-      .today-moon-tooltip {
-        background: #12211f !important;
-        border: 1px solid rgba(201,168,76,0.40) !important;
-        border-bottom: none !important;
-        box-shadow: 0 -8px 40px rgba(0,0,0,0.5) !important;
-        color: rgba(255,255,255,0.88) !important;
-      }
-      /* Handle bar at top */
-      .moon-tooltip::before,
-      .today-moon-tooltip::before {
-        content: '' !important;
-        position: absolute !important; top: 10px !important; left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 36px !important; height: 4px !important;
-        background: rgba(255,255,255,0.25) !important;
-        border-radius: 99px !important;
-        right: auto !important;
-      }
-      /* Remove arrow */
-      .moon-tooltip::after,
-      .today-moon-tooltip::after { display: none !important; }
+    /* ── Moon wrap — positioning context ── */
+    .moon-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
 
-      /* Hadith label inside mobile tooltip */
-      .moon-tooltip-title {
-        display: block;
-        font-size: 0.60rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(201,168,76,0.80);
-        margin-bottom: 10px;
-        margin-top: 10px;
-        font-style: normal;
+    /* ══ THE BUBBLE — desktop default ══
+       Matches reference: dark bg, rounded rect, centered text,
+       label line + hadith text, downward tail pointing at moon icon.
+    ══ */
+    .moon-bubble {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      transform-origin: bottom center;
+      width: 252px;
+
+      /* Exact reference style */
+      background: #252535;
+      border-radius: 14px;
+      padding: 12px 14px 13px;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 6px 28px rgba(0,0,0,0.60), 0 2px 6px rgba(0,0,0,0.40);
+
+      /* Text — centered like reference image */
+      color: rgba(255,255,255,0.88);
+      font-size: 0.76rem;
+      line-height: 1.58;
+      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+
+      z-index: 500;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      /* No transition — animation handles everything */
+    }
+
+    /* Downward tail — centered, pointing at the moon */
+    .moon-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 9px solid #252535;
+    }
+
+    /* No ::before shimmer line — not in reference */
+    .moon-bubble::before { display: none; }
+
+    /* Label line inside bubble — "🌙 Laylatul-Qadr" */
+    .moon-bubble-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.88);
+      margin-bottom: 4px;
+      font-style: normal;
+      line-height: 1.4;
+    }
+
+    /* Hadith body text */
+    .moon-bubble-text {
+      display: block;
+      font-style: italic;
+    }
+
+    /* Open — desktop click/hover */
+    .moon-wrap.bubble-open .moon-bubble {
+      visibility: visible;
+      pointer-events: auto;
+      animation: moonBubbleOpen 0.50s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+
+    /* Close animation */
+    .moon-bubble.bubble-closing {
+      visibility: visible;
+      pointer-events: none;
+      animation: moonBubbleClose 0.20s cubic-bezier(0.4,0,1,1) forwards !important;
+    }
+
+    /* Desktop hover trigger */
+    @media (hover: hover) {
+      .moon-wrap:hover .moon-bubble {
+        visibility: visible;
+        pointer-events: auto;
+        animation: moonBubbleOpen 0.50s cubic-bezier(0.34,1.56,0.64,1) forwards;
       }
     }
+
+    /* ── Last 10 nights: table row & today card adjustments ── */
+    tbody tr.last-ten { background: var(--surface); }
+    tbody tr.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
+    [data-theme="dark"] tbody tr.last-ten.today { background: #0a2040 !important; }
+    tbody tr.last-ten.today td { color: #fff !important; }
+    tbody tr.last-ten.today .td-sidor,
+    tbody tr.last-ten.today .td-datum,
+    tbody tr.last-ten.today .td-veckodag { color: rgba(255,255,255,0.75) !important; }
+    tbody tr.last-ten.today .td-dag { color: #fff !important; }
+    tbody tr.last-ten.today .today-date { color: #7eb8f7 !important; }
+    tbody tr.last-ten.today .today-badge { background: #3a7bd5; }
+    tbody tr.last-ten.today .td-surah .surah-names { color: rgba(255,255,255,0.9) !important; }
+    tbody tr.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; animation: none !important; }
+    .day-card-mobile.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; animation: none !important; }
 
     /* ── MOBILE CARDS ── */
     .mobile-cards { display: none; }
@@ -652,101 +552,7 @@
     .dcm-tooltip { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; padding: 0 10px; background: var(--primary-dark); color: #fff; font-size: .75rem; font-weight: 500; border-radius: 7px; letter-spacing: .02em; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease, margin-top 0.35s ease, padding 0.35s ease; }
     .dcm-tooltip.visible { max-height: 80px; opacity: 1; margin-top: 6px; padding: 7px 10px; }
 
-    /* ── LAST 10 NIGHTS ── */
-    tbody tr.last-ten { background: var(--surface); }
-    tbody tr.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
-    [data-theme="dark"] tbody tr.last-ten.today { background: #0a2040 !important; }
-    tbody tr.last-ten.today td { color: #fff !important; }
-    tbody tr.last-ten.today .td-sidor,
-    tbody tr.last-ten.today .td-datum,
-    tbody tr.last-ten.today .td-veckodag { color: rgba(255,255,255,0.75) !important; }
-    tbody tr.last-ten.today .td-dag { color: #fff !important; }
-    tbody tr.last-ten.today .today-date { color: #7eb8f7 !important; }
-    tbody tr.last-ten.today .today-badge { background: #3a7bd5; }
-    tbody tr.last-ten.today .td-surah .surah-names { color: rgba(255,255,255,0.9) !important; }
-    tbody tr.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; animation: none !important; }
-    .day-card-mobile.last-ten.today .moon-icon { background: transparent !important; border: 2px solid rgba(255,255,255,0.8); box-shadow: none !important; animation: none !important; }
-
-    /* ── MOON ICONS (table) ── */
-    .moon-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #0f2d5e; vertical-align: middle; flex-shrink: 0; }
-    .moon-icon.moon-odd { background: linear-gradient(135deg, #9a6f0a, #c9a84c); animation: moonGlow 2.2s ease-in-out infinite; }
-
-    /* ── MOON TOOLTIP (table) ── */
-    .moon-wrap { position: relative; display: inline-flex; align-items: center; }
-    .moon-tooltip {
-      position: absolute;
-      bottom: calc(100% + 8px); right: 0;
-      width: 240px;
-      background: #0f2d5e; color: #fff;
-      font-size: .72rem; line-height: 1.55;
-      padding: 10px 12px; border-radius: 10px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.3);
-      z-index: 200; pointer-events: none; font-style: italic;
-      opacity: 0; visibility: hidden; transform: translateY(4px);
-      transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    }
-    .moon-tooltip::after {
-      content: ''; position: absolute; top: 100%; right: 6px;
-      border-left: 6px solid transparent; border-right: 6px solid transparent;
-      border-top: 6px solid #0f2d5e;
-    }
-    .moon-wrap:hover .moon-tooltip, .moon-wrap.active .moon-tooltip { opacity: 1; visibility: visible; transform: translateY(0); }
-
-    .moon-tooltip.gold-tooltip {
-      background: #12211f;
-      border: 1px solid rgba(201,168,76,0.40);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-      color: rgba(255,255,255,0.88);
-    }
-    .moon-tooltip.gold-tooltip::before {
-      content: '';
-      position: absolute; top: 0; left: 12px; right: 12px; height: 1px;
-      background: linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent);
-    }
-    .moon-tooltip.gold-tooltip::after { border-top-color: #12211f; }
-
-    /* ══════════════════════════════════════════
-       CHANGE 3 — Table play button: same spring + ripple as sticky player
-    ══════════════════════════════════════════ */
-    .play-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--primary);
-      border: none; cursor: pointer; color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(36,100,93,.3);
-      position: relative; overflow: hidden;
-      transition: background 0.42s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow  0.15s ease;
-    }
-    .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
-    .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
-    .play-btn svg { display: block; position: relative; z-index: 1; }
-    /* Spring animation */
-    @keyframes playBtnSpring {
-      0%   { transform: scale(1); }
-      28%  { transform: scale(0.78); }
-      62%  { transform: scale(1.14); }
-      84%  { transform: scale(0.94); }
-      100% { transform: scale(1); }
-    }
-    .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
-    /* Ripple on table btn */
-    .play-btn-ripple {
-      position: absolute; border-radius: 50%;
-      width: 32px; height: 32px; left: 0; top: 0;
-      background: rgba(255,255,255,0.28);
-      transform: scale(0); pointer-events: none;
-      animation: spmRipple 0.55s ease-out forwards;
-    }
-    @keyframes spmRipple { to { transform: scale(2.6); opacity: 0; } }
-
-    .td-audio { text-align: center; width: 36px; padding: 12px 4px 12px 8px; }
-    .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
-    .moon-icon svg { display: block; }
-
-    /* ── MOBILE last-ten ── */
+    /* ── Mobile last-ten ── */
     .day-card-mobile.last-ten { background: var(--surface); }
     .day-card-mobile.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
     [data-theme="dark"] .day-card-mobile.last-ten.today { background: #0a2040 !important; }
@@ -759,6 +565,93 @@
     .day-card-mobile.last-ten.today .dcm-pages { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
     .day-card-mobile.last-ten.today .today-badge { background: #3a7bd5; }
     .day-card-mobile.last-ten.today .dcm-dag.today-day { color: #7eb8f7 !important; }
+
+    /* ══ Mobile: bottom sheet slide-up ══ */
+    @keyframes moonBubbleMobileOpen {
+      0%   { transform: translateY(100%); opacity: 0; }
+      60%  { transform: translateY(-5px); opacity: 1; }
+      80%  { transform: translateY(3px); }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes moonBubbleMobileClose {
+      0%   { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100%); opacity: 0; }
+    }
+
+    @media (max-width: 640px) {
+      .moon-bubble {
+        /* Fixed bottom sheet */
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        /* Reset desktop transform; start offscreen */
+        transform: translateY(100%) !important;
+        transform-origin: bottom center !important;
+        border-radius: 20px 20px 0 0 !important;
+        padding: 28px 22px 40px !important;
+        font-size: 0.84rem !important;
+        line-height: 1.65 !important;
+        text-align: center !important;
+        z-index: 999 !important;
+        /* hidden by default */
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+
+      /* Remove tail arrow on mobile */
+      .moon-bubble::after {
+        display: none !important;
+      }
+
+      /* Drag handle bar at top */
+      .moon-bubble::before {
+        content: '' !important;
+        display: block !important;
+        position: absolute !important;
+        top: 10px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 36px !important;
+        height: 4px !important;
+        background: rgba(255,255,255,0.22) !important;
+        border-radius: 99px !important;
+        right: auto !important;
+      }
+
+      /* Open: slide up from bottom */
+      .moon-wrap.bubble-open .moon-bubble {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        animation: moonBubbleMobileOpen 0.42s cubic-bezier(0.34,1.20,0.64,1) forwards !important;
+      }
+
+      /* Close: slide back down */
+      .moon-bubble.bubble-closing {
+        visibility: visible !important;
+        opacity: 1 !important;
+        animation: moonBubbleMobileClose 0.26s cubic-bezier(0.4,0,1,1) forwards !important;
+      }
+
+      /* Never show on hover (touch devices) */
+      .moon-wrap:hover .moon-bubble {
+        visibility: hidden !important;
+        animation: none !important;
+        opacity: 0 !important;
+      }
+      /* But DO show when explicitly opened */
+      .moon-wrap.bubble-open .moon-bubble {
+        visibility: visible !important;
+        animation: moonBubbleMobileOpen 0.42s cubic-bezier(0.34,1.20,0.64,1) forwards !important;
+      }
+    }
+
+    /* Today-card moon wrap: bubble opens upward, centered on moon */
+    .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
 
     /* ══════════════════════════════════════════
        STICKY BOTTOM PLAYER
@@ -780,135 +673,38 @@
     @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
     .sticky-times { font-size: .68rem; color: var(--muted-2); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; transition: color 0.35s; }
     .sticky-seek-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-
-    .sticky-seek {
-      flex: 1; height: 28px; display: flex; align-items: center;
-      position: relative; cursor: grab; touch-action: none;
-    }
+    .sticky-seek { flex: 1; height: 28px; display: flex; align-items: center; position: relative; cursor: grab; touch-action: none; }
     .sticky-seek.seeking { cursor: grabbing; }
-    /* Track (unplayed) */
-    .sticky-seek::before {
-      content: ''; position: absolute; left: 0; right: 0; top: 50%;
-      height: 3px; transform: translateY(-50%); border-radius: 999px;
-      background: var(--seek-bg);
-      transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-      pointer-events: none;
-    }
+    .sticky-seek::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 999px; background: var(--seek-bg); transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
     .sticky-seek:hover::before, .sticky-seek.seeking::before, .sticky-seek.bar-expanded::before { height: 5px; }
-    /* Fill (played) */
-    .sticky-seek-fill {
-      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      height: 3px; border-radius: 999px;
-      background: var(--seek-fill);
-      width: 0%; pointer-events: none; z-index: 1;
-      transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-    }
-    .sticky-seek:hover .sticky-seek-fill,
-    .sticky-seek.seeking .sticky-seek-fill,
-    .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
-    /* Scrubber dot — hidden at rest, round dot on hover/drag */
-    .sticky-seek-thumb {
-      position: absolute; top: 50%; left: 0%;
-      width: 0px; height: 0px;
-      border-radius: 50%;
-      background: var(--scrubber-notch);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-      transform: translate(-50%, -50%);
-      pointer-events: none; touch-action: none; z-index: 3;
-      transition: width  0.18s cubic-bezier(0.34,1.56,0.64,1),
-                  height 0.18s cubic-bezier(0.34,1.56,0.64,1),
-                  background 0.35s;
-    }
-    .sticky-seek:hover .sticky-seek-thumb,
-    .sticky-seek.seeking .sticky-seek-thumb,
-    .sticky-seek.bar-expanded .sticky-seek-thumb { width: 13px; height: 13px; }
+    .sticky-seek-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; border-radius: 999px; background: var(--seek-fill); width: 0%; pointer-events: none; z-index: 1; transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; }
+    .sticky-seek:hover .sticky-seek-fill, .sticky-seek.seeking .sticky-seek-fill, .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
+    .sticky-seek-thumb { position: absolute; top: 50%; left: 0%; width: 0px; height: 0px; border-radius: 50%; background: var(--scrubber-notch); box-shadow: 0 1px 4px rgba(0,0,0,0.25); transform: translate(-50%, -50%); pointer-events: none; touch-action: none; z-index: 3; transition: width 0.18s cubic-bezier(0.34,1.56,0.64,1), height 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.35s; }
+    .sticky-seek:hover .sticky-seek-thumb, .sticky-seek.seeking .sticky-seek-thumb, .sticky-seek.bar-expanded .sticky-seek-thumb { width: 13px; height: 13px; }
     .sticky-seek-thumb.dragging { width: 13px !important; height: 13px !important; }
     .sticky-player.mini-mode .sticky-seek-thumb { width: 0 !important; height: 0 !important; }
-
-    /* ══════════════════════════════════════════
-       CHANGE 4 — Sticky player controls: bigger buttons, more spacing
-    ══════════════════════════════════════════ */
-    .sticky-controls {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      position: relative;
-      transform-origin: bottom center;
-      transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease;
-    }
-    /* CHANGE 4: Left side with more gap from center */
+    .sticky-controls { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; position: relative; transform-origin: bottom center; transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease; }
     .sticky-ctrl-left  { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-right: 20px; }
-    /* CHANGE 4: Right side with more gap from center */
     .sticky-ctrl-right { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding-left: 20px; }
-
     .sticky-player.mini-mode .sticky-controls { transform: translateY(16px) scaleY(0.15); opacity: 0; }
-
-    /* CHANGE 4: Bigger prev/next/mute — 40px touch target */
-    .sticky-ctrl-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--primary-dark);
-      width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      opacity: .75;
-      transition: opacity 0.15s ease, transform 0.15s ease, color 0.35s, background 0.15s;
-    }
+    .sticky-ctrl-btn { background: none; border: none; cursor: pointer; color: var(--primary-dark); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: .75; transition: opacity 0.15s ease, transform 0.15s ease, color 0.35s, background 0.15s; }
     .sticky-ctrl-btn:hover { opacity: 1; transform: scale(1.12); background: var(--row-hover); }
     .sticky-ctrl-btn:disabled { opacity: .25; cursor: default; transform: none; background: none; }
-    /* CHANGE 4: Icons inside ctrl buttons — 22px */
     .sticky-ctrl-btn svg { width: 22px; height: 22px; display: block; }
-
-    /* ── Main play button — ALT C spring + ripple ── */
-    .sticky-play-main {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--primary-dark);
-      border: none; cursor: pointer; color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 10px rgba(36,100,93,.35);
-      position: relative; overflow: hidden;
-      transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.42s ease;
-    }
+    .sticky-play-main { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-dark); border: none; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(36,100,93,.35); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.42s ease; }
     .sticky-play-main:hover { box-shadow: 0 4px 20px rgba(36,100,93,.45); }
     .sticky-play-main.red { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
     .sticky-play-main.red:hover { box-shadow: 0 4px 20px rgba(192,57,43,.50); }
-
-    @keyframes spmSpring {
-      0%   { transform: scale(1); }
-      28%  { transform: scale(0.80); }
-      62%  { transform: scale(1.13); }
-      84%  { transform: scale(0.95); }
-      100% { transform: scale(1); }
-    }
+    @keyframes spmSpring { 0% { transform: scale(1); } 28% { transform: scale(0.80); } 62% { transform: scale(1.13); } 84% { transform: scale(0.95); } 100% { transform: scale(1); } }
     .sticky-play-main.springing { animation: spmSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
-
-    .spm-ripple {
-      position: absolute; border-radius: 50%;
-      width: 48px; height: 48px; left: 0; top: 0;
-      background: rgba(255,255,255,0.22);
-      transform: scale(0); pointer-events: none;
-      animation: spmRipple 0.55s ease-out forwards;
-    }
-
-    /* CHANGE 3: Play icon perfectly centered via absolute positioning */
-    .spm-icon-wrap {
-      position: relative;
-      width: 22px; height: 22px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .spm-icon-wrap svg {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      transition: opacity 0.26s cubic-bezier(0.4,0,0.2,1),
-                  transform 0.26s cubic-bezier(0.4,0,0.2,1);
-    }
+    .spm-ripple { position: absolute; border-radius: 50%; width: 48px; height: 48px; left: 0; top: 0; background: rgba(255,255,255,0.22); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
+    @keyframes spmRipple { to { transform: scale(2.6); opacity: 0; } }
+    .spm-icon-wrap { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .spm-icon-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.26s cubic-bezier(0.4,0,0.2,1), transform 0.26s cubic-bezier(0.4,0,0.2,1); }
     .spm-play  { opacity: 1; transform: translate(calc(-50% + 1px), -50%) scale(1) !important; }
     .spm-pause { opacity: 0; transform: translate(-50%, -50%) scale(0.45) !important; }
-
     .sticky-play-main.red .spm-play  { opacity: 0; transform: translate(calc(-50% + 1px), -50%) scale(0.45) !important; }
     .sticky-play-main.red .spm-pause { opacity: 1; transform: translate(-50%, -50%) scale(1) !important; }
-
     .player-mini { position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; background: var(--mini-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 18px 18px 0 0; border-top: 1px solid var(--player-border); box-shadow: 0 -4px 24px rgba(0,0,0,.10); overflow: hidden; transform: translateY(100%) scaleY(0.4); transform-origin: bottom center; opacity: 0; pointer-events: none; transition: transform 0.52s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease 0.06s, background 0.35s, border-color 0.35s; will-change: transform, opacity; }
     .sticky-player.mini-mode .player-mini { transform: translateY(0) scaleY(1); opacity: 1; pointer-events: auto; }
     .mini-bar-track { width: 100%; height: 22px; background: transparent; flex-shrink: 0; position: relative; display: flex; align-items: center; cursor: grab; touch-action: none; overflow: visible; }
@@ -925,8 +721,19 @@
     .mini-text-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 9px; }
     .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
     .mini-time { font-size: .65rem; color: var(--muted-2); font-variant-numeric: tabular-nums; transition: color 0.35s; }
-
     .sticky-mute-btn.muted { opacity: 1 !important; color: #e05555 !important; }
+
+    /* ── PLAY BUTTONS ── */
+    .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.15s ease; }
+    .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
+    .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
+    .play-btn svg { display: block; position: relative; z-index: 1; }
+    @keyframes playBtnSpring { 0% { transform: scale(1); } 28% { transform: scale(0.78); } 62% { transform: scale(1.14); } 84% { transform: scale(0.94); } 100% { transform: scale(1); } }
+    .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
+    .play-btn-ripple { position: absolute; border-radius: 50%; width: 32px; height: 32px; left: 0; top: 0; background: rgba(255,255,255,0.28); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
+    .td-audio { text-align: center; width: 36px; padding: 12px 4px 12px 8px; }
+    .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
+    .moon-icon svg { display: block; }
 
     /* ── FILTER ── */
     .filter-wrap { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -964,12 +771,10 @@
 <body>
 
 <header>
-  <!-- EXACT IMAGE TOGGLE: wide pill, label inside, dark sphere thumb -->
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Byt tema">
     <div class="ios-track" id="ios-track">
       <span class="ios-track-label" id="toggle-label">LJUST<br>LÄGE</span>
       <div class="ios-thumb" id="ios-thumb">
-        <!-- Sun icon — shown in light mode -->
         <span class="ios-thumb-icon ios-thumb-sun">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4"/>
@@ -983,7 +788,6 @@
             <line x1="17.66" y1="6.34"  x2="19.78" y2="4.22"/>
           </svg>
         </span>
-        <!-- Moon icon — shown in dark mode -->
         <span class="ios-thumb-icon ios-thumb-moon">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="white" stroke="none">
             <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
@@ -1010,7 +814,7 @@
   </div>
 </header>
 
-<!-- CHANGE 1: Backdrop for mobile moon tooltip -->
+<!-- Mobile backdrop for moon bubble -->
 <div class="moon-tooltip-backdrop" id="moon-tooltip-backdrop"></div>
 
 <div class="wave">
@@ -1193,6 +997,8 @@
   const today = _now.getFullYear() + '-' + _p2(_now.getMonth()+1) + '-' + _p2(_now.getDate());
   const isAfterRamadan = today > '2026-03-18';
 
+  const DEFAULT_MOON_TEXT = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
+
   function scrollToToday() {
     const isMobile = window.innerWidth <= 640;
     const el = document.getElementById(isMobile ? 'today-row-mobile' : 'today-row-desktop');
@@ -1202,74 +1008,101 @@
   }
 
   /* ══════════════════════════════════════════
-     CHANGE 1: Mobile moon tooltip — full-screen slide-up
+     MOON BUBBLE LOGIC
+     - Desktop: hover opens, click toggles, outside click closes
+     - Mobile: tap opens full-screen bottom sheet with backdrop
   ══════════════════════════════════════════ */
   const backdrop = document.getElementById('moon-tooltip-backdrop');
-  let _activeMoonEl = null;
+  let _activeMoonWrap = null;
 
   function isMobile() { return window.innerWidth <= 640; }
 
-  function openMoonTooltip(wrapEl) {
-    if (!isMobile()) return;
-    closeMoonTooltip(false);
-    const tip = wrapEl.querySelector('.moon-tooltip, .today-moon-tooltip');
-    if (!tip) return;
-    _activeMoonEl = { wrap: wrapEl, tip };
-    backdrop.classList.add('visible');
-    backdrop.classList.remove('hiding');
-    tip.classList.add('visible');
-    tip.classList.remove('hiding');
-  }
-
-  function closeMoonTooltip(animate = true) {
-    if (!_activeMoonEl) return;
-    const { tip } = _activeMoonEl;
-    if (animate) {
-      tip.classList.add('hiding');
+  function closeBubble(animate = true) {
+    if (!_activeMoonWrap) return;
+    const bubble = _activeMoonWrap.querySelector('.moon-bubble');
+    _activeMoonWrap.classList.remove('bubble-open');
+    if (bubble) {
+      if (animate) {
+        bubble.classList.add('bubble-closing');
+        const onEnd = () => {
+          bubble.classList.remove('bubble-closing');
+          bubble.style.visibility = '';
+          bubble.style.opacity = '';
+          bubble.style.transform = '';
+        };
+        bubble.addEventListener('animationend', onEnd, { once: true });
+        // Fallback if animationend doesn't fire
+        setTimeout(onEnd, 350);
+      } else {
+        bubble.classList.remove('bubble-closing');
+        bubble.style.visibility = '';
+        bubble.style.opacity = '';
+        bubble.style.transform = '';
+      }
+    }
+    if (isMobile()) {
       backdrop.classList.add('hiding');
       backdrop.classList.remove('visible');
-      tip.addEventListener('animationend', () => {
-        tip.classList.remove('visible', 'hiding');
-      }, { once: true });
-      backdrop.addEventListener('animationend', () => {
-        backdrop.classList.remove('hiding');
-      }, { once: true });
-    } else {
-      tip.classList.remove('visible', 'hiding');
-      backdrop.classList.remove('visible', 'hiding');
+      backdrop.addEventListener('animationend', () => backdrop.classList.remove('hiding'), { once: true });
     }
-    // remove active from wrap
-    document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
-    _activeMoonEl = null;
+    _activeMoonWrap = null;
   }
 
-  backdrop.addEventListener('click', () => closeMoonTooltip(true));
+  function openBubble(wrapEl) {
+    if (_activeMoonWrap === wrapEl) { closeBubble(true); return; }
+    if (_activeMoonWrap) closeBubble(false);
+    _activeMoonWrap = wrapEl;
+    const bubble = wrapEl.querySelector('.moon-bubble');
+    if (bubble) {
+      bubble.style.visibility = '';
+      bubble.style.opacity = '';
+    }
+    wrapEl.classList.add('bubble-open');
+    if (isMobile()) {
+      backdrop.classList.add('visible');
+      backdrop.classList.remove('hiding');
+    }
+  }
+
+  backdrop.addEventListener('click', () => closeBubble(true));
 
   document.addEventListener('click', (e) => {
+    // Close surah tooltips
     if (!e.target.closest('.surah-cell') && !e.target.closest('.dcm-surahs'))
       document.querySelectorAll('.tooltip-box.visible, .dcm-tooltip.visible').forEach(el => el.classList.remove('visible'));
 
+    // Moon bubble click handling
     const moonWrap = e.target.closest('.moon-wrap, .today-moon-wrap');
     if (moonWrap) {
       if (isMobile()) {
-        openMoonTooltip(moonWrap);
+        openBubble(moonWrap);
       } else {
-        const isActive = moonWrap.classList.contains('active');
-        document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
-        if (!isActive) moonWrap.classList.add('active');
+        // Desktop: toggle on click (hover also works via CSS)
+        const isOpen = moonWrap.classList.contains('bubble-open');
+        if (_activeMoonWrap && _activeMoonWrap !== moonWrap) closeBubble(false);
+        isOpen ? closeBubble(true) : openBubble(moonWrap);
       }
       e.stopPropagation();
       return;
     }
 
-    // Close moon tooltips on outside click (desktop)
-    if (!e.target.closest('.moon-wrap') && !e.target.closest('.today-moon-wrap')) {
-      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
-      if (isMobile()) closeMoonTooltip(true);
+    // Close on outside click
+    if (_activeMoonWrap && !e.target.closest('.moon-wrap') && !e.target.closest('.today-moon-wrap')) {
+      closeBubble(true);
     }
   });
 
-  // Build desktop table
+  /* ── Build moon bubble HTML — identical for ALL last-ten days ── */
+  function makeMoonBubble(text) {
+    return `<div class="moon-bubble"><span class="moon-bubble-label">🌙 Laylatul-Qadr</span><span class="moon-bubble-text">${text}</span></div>`;
+  }
+
+  /* ── Moon icon SVG ── */
+  function moonSvg(fill, size) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${fill}"/></svg>`;
+  }
+
+  /* ── Build desktop table ── */
   const tbody = document.getElementById('table-body');
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
@@ -1279,13 +1112,16 @@
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
     const isLastTen = row.day >= 21;
     if (isLastTen) tr.classList.add('last-ten');
-    const isOddNight = row.day % 2 !== 0;
-    const moonClass = isOddNight ? 'moon-icon moon-odd' : 'moon-icon';
-    const defaultMoonText = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
-    const thisMoonText = row.moonText || defaultMoonText;
-    const moonFill = isOddNight ? '#fff2c0' : 'white';
-    const tooltipClass = isOddNight ? 'moon-tooltip gold-tooltip' : 'moon-tooltip';
-    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="${moonClass}"><svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${moonFill}"/></svg></span><span class="${tooltipClass}"><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${thisMoonText}</span></span>` : '';
+
+    const isOdd = row.day % 2 !== 0;
+    const moonFill = isOdd ? '#fff2c0' : 'white';
+    const moonClass = isOdd ? 'moon-icon moon-odd' : 'moon-icon';
+    const moonText = row.moonText || DEFAULT_MOON_TEXT;
+
+    const moonCell = isLastTen
+      ? `<span class="moon-wrap"><span class="${moonClass}">${moonSvg(moonFill, 12)}</span>${makeMoonBubble(moonText)}</span>`
+      : '';
+
     tr.innerHTML = `
       <td class="td-dag">${row.day}</td>
       <td class="td-sidor">${row.sidor}</td>
@@ -1296,21 +1132,23 @@
       <td><span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span></td>
       <td class="td-datum ${isToday ? 'today-date' : ''}">${row.datum}${badge}</td>
       <td class="td-audio" id="audio-desktop-${row.datum}"></td>
-      <td class="td-moon">${moonIcon}</td>
+      <td class="td-moon">${moonCell}</td>
       <td class="td-veckodag ${veckaClass}">${row.vecka}</td>
     `;
     const cell = tr.querySelector('.surah-cell');
-    cell.addEventListener('click', (e) => {
-      const tip = cell.querySelector('.tooltip-box');
-      const isVisible = tip.classList.contains('visible');
-      document.querySelectorAll('.tooltip-box.visible').forEach(el => el.classList.remove('visible'));
-      if (!isVisible) tip.classList.add('visible');
-      e.stopPropagation();
-    });
+    if (cell) {
+      cell.addEventListener('click', (e) => {
+        const tip = cell.querySelector('.tooltip-box');
+        const isVisible = tip.classList.contains('visible');
+        document.querySelectorAll('.tooltip-box.visible').forEach(el => el.classList.remove('visible'));
+        if (!isVisible) tip.classList.add('visible');
+        e.stopPropagation();
+      });
+    }
     tbody.appendChild(tr);
   });
 
-  // Build mobile cards
+  /* ── Build mobile cards ── */
   const container = document.getElementById('mobile-cards');
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
@@ -1320,13 +1158,15 @@
     if (isToday) card.id = 'today-row-mobile';
     const veckaClass = row.vecka === 'Fredag' ? 'fredag' : row.vecka === 'Lördag' ? 'lordag' : row.vecka === 'Söndag' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge">Idag</span>' : '';
-    const isOddNightM = row.day % 2 !== 0;
-    const moonClassM = isOddNightM ? 'moon-icon moon-odd' : 'moon-icon';
-    const defaultMoonTextM = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
-    const thisMoonTextM = row.moonText || defaultMoonTextM;
-    const moonFillM = isOddNightM ? '#fff2c0' : 'white';
-    const tooltipClassM = isOddNightM ? 'moon-tooltip gold-tooltip' : 'moon-tooltip';
-    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='${moonClassM}'><svg width='11' height='11' viewBox='0 0 24 24'><path d='M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z' fill='${moonFillM}'/></svg></span><span class='${tooltipClassM}' style='right:auto;left:0;'><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${thisMoonTextM}</span></span>` : '';
+    const isOdd = row.day % 2 !== 0;
+    const moonFill = isOdd ? '#fff2c0' : 'white';
+    const moonClass = isOdd ? 'moon-icon moon-odd' : 'moon-icon';
+    const moonText = row.moonText || DEFAULT_MOON_TEXT;
+
+    const moonSpan = isLastTenM
+      ? `<span class="moon-wrap" style="margin-left:5px;"><span class="${moonClass}">${moonSvg(moonFill, 11)}</span>${makeMoonBubble(moonText)}</span>`
+      : '';
+
     card.innerHTML = `
       <div class="dcm-top">
         <div class="dcm-dag ${isToday ? 'today-day' : ''}">${row.day}</div>
@@ -1361,7 +1201,7 @@
     container.appendChild(card);
   });
 
-  // Today card
+  /* ── Today card ── */
   if (isAfterRamadan) document.getElementById('eid-card').style.display = 'block';
 
   const todayData = SCHEDULE.find(r => r.datum === today);
@@ -1374,15 +1214,16 @@
       const dateEl = document.getElementById('today-date-label');
       dateEl.textContent = dateLabel;
       const isTodayOdd = todayData.day % 2 !== 0;
-      const todayMoonText = todayData.moonText || 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
+      const todayMoonText = todayData.moonText || DEFAULT_MOON_TEXT;
+      const moonFill = isTodayOdd ? '#fff2c0' : 'white';
+      const oddClass = isTodayOdd ? ' moon-odd-today' : '';
       const moonWrap = document.createElement('span');
       moonWrap.className = 'today-moon-wrap';
       moonWrap.style.marginLeft = '8px';
-      const oddClass = isTodayOdd ? ' moon-odd-today' : '';
-      const todayMoonFill = isTodayOdd ? '#fff2c0' : 'white';
-      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${todayMoonFill}"/></svg></span><span class="today-moon-tooltip"><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${todayMoonText}</span>`;
+      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}">${moonSvg(moonFill, 12)}</span>${makeMoonBubble(todayMoonText)}`;
       dateEl.parentNode.appendChild(moonWrap);
 
+      // Inline hadith in today-card header
       const headerContent = document.querySelector('.today-card-header-content');
       const hadithDiv = document.createElement('div');
       hadithDiv.className = 'today-hadith-inline';
@@ -1431,23 +1272,20 @@
     }, 3000);
   }
 
-  // ── AUDIO ──
+  /* ── AUDIO ── */
   const audioState = {};
   let _stickyScrollTimer = null;
   let _activeDatum = null;
 
-  /* CHANGE 3 — reuse same spring+ripple for table play buttons */
   const PLAY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block;margin-left:1px"><polygon points="7,3 21,12 7,21"/></svg>`;
   const PAUSE_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
   const SPIN_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="animation:spin 0.9s linear infinite;display:block"><path d="M12 2a10 10 0 1 0 10 10"/></svg>`;
 
   function triggerPlayBtnSpring(btn) {
-    // Remove class, force reflow, re-add for restart
     btn.classList.remove('springing');
     void btn.offsetWidth;
     btn.classList.add('springing');
     btn.addEventListener('animationend', () => btn.classList.remove('springing'), { once: true });
-    // Ripple
     const rip = document.createElement('span');
     rip.className = 'play-btn-ripple';
     btn.appendChild(rip);
@@ -1485,7 +1323,7 @@
     btn.innerHTML = PLAY_SVG;
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      triggerPlayBtnSpring(btn);   // CHANGE 3: spring on table btn click
+      triggerPlayBtnSpring(btn);
       toggleAudio(datum);
     });
     return btn;
@@ -1747,7 +1585,7 @@
       .catch(() => { fetch(url).then(res => { if (res.ok) injectPlayButtons(row.datum); }).catch(() => {}); });
   });
 
-  // ── ISHA COUNTDOWN ──
+  /* ── ISHA COUNTDOWN ── */
   const ISHA_TIMES = {
     '2026-02-17':'18:56','2026-02-18':'18:58','2026-02-19':'19:00',
     '2026-02-20':'19:03','2026-02-21':'19:05','2026-02-22':'19:07',
@@ -1774,7 +1612,6 @@
     const notifLabel   = document.getElementById('notif-btn-label');
     if (!countdownEl) return;
     countdownEl.style.display = 'block';
-
     let _hasTriggeredDone = false;
 
     function updateNotifBtn() {
@@ -1829,9 +1666,7 @@
   }
   startIshaCountdown();
 
-  // ══════════════════════════════════════════
-  // CHANGE 2 — iPhone toggle theme
-  // ══════════════════════════════════════════
+  /* ── THEME TOGGLE ── */
   const THEME_KEY = 'tarawih-theme';
   const _root = document.documentElement;
 
@@ -1851,11 +1686,6 @@
 
   function toggleTheme() {
     const next = _root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    // Trigger thumb squish via a transient class
-    const thumb = document.getElementById('ios-thumb');
-    if (thumb) {
-      thumb.style.transition = 'transform 0.36s cubic-bezier(0.34,1.56,0.64,1), width 0.10s ease';
-    }
     _applyTheme(next);
   }
 
@@ -1869,7 +1699,7 @@
     if (!localStorage.getItem(THEME_KEY)) _applyTheme(e.matches ? 'dark' : 'light');
   });
 
-  // ── FILTER ──
+  /* ── FILTER ── */
   let activeFilter = null;
   function toggleFilter(imam) {
     activeFilter = (activeFilter === imam) ? null : imam;
@@ -1940,7 +1770,6 @@
         <div class="sticky-seek-thumb" id="sticky-thumb"></div>
       </div>
     </div>
-    <!-- CHANGE 4: Bigger buttons, more spacing, same-size mute -->
     <div class="sticky-controls">
       <div class="sticky-ctrl-left">
         <button class="sticky-ctrl-btn" id="sticky-prev" title="Föregående dag">
