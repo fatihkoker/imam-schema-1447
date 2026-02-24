@@ -120,74 +120,96 @@
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; }
 
     /* ══════════════════════════════════════════════
-       CHANGE 2 — iPhone-style toggle (replaces text pill)
+       EXACT IMAGE TOGGLE — wide pill, label inside, dark circle thumb
     ══════════════════════════════════════════════ */
     .theme-toggle {
-      position: absolute; top: 14px; right: 16px; z-index: 10;
-      display: inline-flex; align-items: center; gap: 9px;
+      position: absolute; top: 10px; right: 12px; z-index: 10;
+      display: inline-flex; align-items: center;
       background: none; border: none; padding: 0;
       cursor: pointer; font-family: inherit;
       -webkit-tap-highlight-color: transparent;
     }
-    /* sun / moon emoji label */
-    .toggle-emoji {
-      font-size: 1.0rem;
-      line-height: 1;
-      transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
-      display: inline-block;
-      filter: drop-shadow(0 0 4px rgba(255,220,80,0.4));
-    }
-    [data-theme="dark"] .toggle-emoji {
-      filter: drop-shadow(0 0 6px rgba(180,160,255,0.5));
-    }
-    .theme-toggle:hover .toggle-emoji { transform: rotate(22deg) scale(1.15); }
 
-    /* The iOS track */
+    /* The wide pill track */
     .ios-track {
       position: relative;
-      width: 51px; height: 31px;
+      width: 76px;
+      height: 30px;
       border-radius: 999px;
-      background: var(--ios-track-off);
-      transition: background 0.3s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.08);
+      background: #e8e8e8;
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.30),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.12);
       flex-shrink: 0;
+      transition: background 0.38s cubic-bezier(0.4,0,0.2,1),
+                  box-shadow 0.38s ease;
+      overflow: hidden;
     }
-    [data-theme="dark"] .ios-track { background: var(--ios-track-on); }
+    [data-theme="dark"] .ios-track {
+      background: #1c1c1e;
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.50),
+        inset 0 1px 3px rgba(255,255,255,0.04),
+        inset 0 -1px 3px rgba(0,0,0,0.5);
+    }
 
-    /* The iOS thumb */
+    /* Label text inside the track */
+    .ios-track-label {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.38rem;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
+      user-select: none;
+      left: 7px;
+      right: auto;
+      color: rgba(70,70,70,0.80);
+      transition: color 0.3s ease;
+    }
+    [data-theme="dark"] .ios-track-label {
+      left: auto;
+      right: 7px;
+      color: rgba(160,160,160,0.70);
+    }
+
+    /* Dark circle thumb */
     .ios-thumb {
       position: absolute;
-      top: 2px; left: 2px;
-      width: 27px; height: 27px;
+      top: 3px;
+      left: calc(100% - 3px - 24px);
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: var(--ios-thumb);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.12);
-      transition: transform 0.36s cubic-bezier(0.34,1.56,0.64,1),
-                  width 0.12s ease;
-      will-change: transform;
+      background: radial-gradient(circle at 38% 35%, #4a4a4a, #1a1a1a);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.50),
+        0 1px 2px rgba(0,0,0,0.35),
+        inset 0 1px 1px rgba(255,255,255,0.08);
+      transition:
+        left 0.38s cubic-bezier(0.34,1.45,0.64,1),
+        width 0.10s ease;
+      will-change: left;
+      z-index: 2;
     }
-    [data-theme="dark"] .ios-thumb { transform: translateX(20px); }
+    [data-theme="dark"] .ios-thumb {
+      left: 3px;
+      background: radial-gradient(circle at 38% 35%, #555, #222);
+    }
 
     /* Squish on press */
     .theme-toggle:active .ios-thumb {
-      width: 31px;
+      width: 28px;
     }
-    /* Squish right-to-left (dark → light) */
     [data-theme="dark"] .theme-toggle:active .ios-thumb {
-      width: 31px;
-      transform: translateX(16px);
-    }
-
-    /* Ripple burst on toggle */
-    @keyframes iosRipple {
-      0%   { transform: scale(0.6); opacity: 0.5; }
-      100% { transform: scale(2.4); opacity: 0; }
-    }
-    .ios-ripple {
-      position: absolute; inset: 0; border-radius: 50%;
-      background: rgba(255,255,255,0.45);
-      pointer-events: none;
-      animation: iosRipple 0.5s ease-out forwards;
+      width: 28px;
+      left: 3px;
     }
 
     /* ── HEADER ── */
@@ -879,10 +901,10 @@
 <body>
 
 <header>
-  <!-- CHANGE 2: iPhone-style toggle -->
+  <!-- EXACT IMAGE TOGGLE: wide pill, label inside, dark sphere thumb -->
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Byt tema">
-    <span class="toggle-emoji" id="toggle-emoji">☀️</span>
     <div class="ios-track" id="ios-track">
+      <span class="ios-track-label" id="toggle-label">LIGHT<br>MODE</span>
       <div class="ios-thumb" id="ios-thumb"></div>
     </div>
   </button>
@@ -1731,13 +1753,13 @@
 
   function _applyTheme(theme) {
     _root.setAttribute('data-theme', theme);
-    const emoji    = document.getElementById('toggle-emoji');
+    const label    = document.getElementById('toggle-label');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
-      if (emoji)    emoji.textContent = '🌙';
+      if (label)    label.innerHTML = 'DARK<br>MODE';
       if (wavePath) wavePath.setAttribute('fill', '#131f1b');
     } else {
-      if (emoji)    emoji.textContent = '☀️';
+      if (label)    label.innerHTML = 'LIGHT<br>MODE';
       if (wavePath) wavePath.setAttribute('fill', '#24645d');
     }
     localStorage.setItem(THEME_KEY, theme);
