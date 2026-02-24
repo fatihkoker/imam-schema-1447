@@ -496,10 +496,43 @@
     /* ── TOOLTIP (surah) ── */
     .surah-cell { position: relative; cursor: pointer; }
     .surah-names { font-size: .78rem; color: var(--primary-dark); line-height: 1.5; transition: color 0.35s; }
-    .tooltip-box { display: none; position: absolute; left: 0; top: calc(100% + 6px); background: var(--primary-dark); color: #fff; font-size: .75rem; font-weight: 500; padding: 7px 12px; border-radius: 8px; white-space: nowrap; z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,.25); letter-spacing: .02em; pointer-events: none; }
-    .tooltip-box::before { content: ''; position: absolute; top: -5px; left: 12px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid var(--primary-dark); }
-    @media (hover: hover) { .surah-cell:hover .tooltip-box { display: block; } }
-    .tooltip-box.visible { display: block; }
+
+    @keyframes tooltipSlideUp {
+      0%   { opacity: 0; transform: translateY(10px) scale(0.97); }
+      60%  { opacity: 1; transform: translateY(-2px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes tooltipSlideDown {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(8px) scale(0.97); }
+    }
+
+    .tooltip-box {
+      display: none;
+      position: absolute;
+      left: 0; top: calc(100% + 8px);
+      background: #12211f;
+      border: 1px solid rgba(201,168,76,0.40);
+      color: rgba(255,255,255,0.88);
+      font-size: .75rem; font-weight: 400; font-style: italic;
+      padding: 9px 14px; border-radius: 10px;
+      white-space: nowrap; z-index: 100;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+      letter-spacing: .02em; pointer-events: none;
+      transform-origin: top left;
+    }
+    .tooltip-box::before { display: none; }
+    .tooltip-box::after { display: none; }
+    @media (hover: hover) {
+      .surah-cell:hover .tooltip-box {
+        display: block;
+        animation: tooltipSlideUp 0.38s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      }
+    }
+    .tooltip-box.visible {
+      display: block;
+      animation: tooltipSlideUp 0.38s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
 
     /* ══════════════════════════════════════════
        CHANGE 1 — Moon tooltip: full-width slide-up on mobile
