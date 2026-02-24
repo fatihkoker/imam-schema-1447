@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tarawih Schema — Ramadan 2026</title>
+  <title>Tarawih Schema — Kämpingehallen | Ramadan 2026</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
@@ -21,7 +21,7 @@
       --yacquub: #7d3aac;
       --abdelsalam: #7b3f00;
       --hatem: #2d6a4f;
-      --ibrahim: #1a6b8a;
+      --ibrahim: #1a3a6b;
 
       --bg:              #f7f4ef;
       --surface:         #ffffff;
@@ -483,7 +483,8 @@
     .imam-abdurrahman { background: var(--abdurrahman); }
     .imam-saed { background: var(--saed); color: #1a1a1a !important; }
     .imam-saed .dot { background: rgba(0,0,0,.15) !important; }
-    .imam-noor { background: var(--noor); }
+    .imam-noor { background: #ffffff; color: #1a1a1a !important; }
+    .imam-noor .dot { background: rgba(0,0,0,.15) !important; }
     .imam-abdul { background: var(--abdul); }
     .imam-mohammed { background: var(--mohammed); }
     .imam-yacquub { background: var(--yacquub); }
@@ -963,7 +964,7 @@
     <div class="orn-diamond"></div><div class="orn-dot"></div>
     <div class="orn-line r"></div>
   </div>
-  <h1>Tarawih Schema<br>Ramadan 2026</h1>
+  <h1>Tarawih Schema för<br>Kämpingehallen<br><span style="font-size:0.65em;letter-spacing:0.04em;opacity:0.85;">Ramadan 2026</span></h1>
   <div class="header-address">
     <div class="addr-text">
       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -1082,7 +1083,7 @@
     <div class="filter-chips" id="filter-chips">
       <button class="filter-chip" data-imam="abdurrahman" onclick="toggleFilter('abdurrahman')"><span class="filter-dot" style="background:var(--abdurrahman)"></span>Abdurrahman Sudani</button>
       <button class="filter-chip" data-imam="saed" onclick="toggleFilter('saed')"><span class="filter-dot" style="background:var(--saed);border:1px solid #bbb"></span>Saed Magan</button>
-      <button class="filter-chip" data-imam="noor" onclick="toggleFilter('noor')"><span class="filter-dot" style="background:var(--noor)"></span>Noor</button>
+      <button class="filter-chip" data-imam="noor" onclick="toggleFilter('noor')"><span class="filter-dot" style="background:#ffffff;border:1px solid #bbb"></span>Noor</button>
       <button class="filter-chip" data-imam="abdul" onclick="toggleFilter('abdul')"><span class="filter-dot" style="background:var(--abdul)"></span>Abdul Qadir</button>
       <button class="filter-chip" data-imam="mohammed" onclick="toggleFilter('mohammed')"><span class="filter-dot" style="background:var(--mohammed)"></span>Mohammed Haji</button>
       <button class="filter-chip" data-imam="yacquub" onclick="toggleFilter('yacquub')"><span class="filter-dot" style="background:var(--yacquub)"></span>Yacquub</button>
@@ -1365,7 +1366,7 @@
     const avatarPulseColors = {
       abdurrahman:'rgba(232,99,10,0.55)', saed:'rgba(212,168,0,0.55)', noor:'rgba(41,128,185,0.55)',
       abdul:'rgba(100,100,100,0.55)', mohammed:'rgba(33,145,80,0.55)', yacquub:'rgba(125,58,172,0.55)',
-      ibrahim:'rgba(26,107,138,0.55)', abdelsalam:'rgba(123,63,0,0.55)', hatem:'rgba(45,106,79,0.55)',
+      ibrahim:'rgba(26,58,107,0.55)', abdelsalam:'rgba(123,63,0,0.55)', hatem:'rgba(45,106,79,0.55)',
     };
     const todayCard = document.getElementById('today-card');
     todayCard.style.display = 'block';
@@ -1851,7 +1852,7 @@
   function applyFilter() {
     document.body.style.width = document.body.offsetWidth + 'px';
     document.body.style.overflowY = 'hidden';
-    const imamColors = { abdurrahman:'rgba(232,99,10,0.5)', saed:'rgba(212,168,0,0.5)', noor:'rgba(41,128,185,0.5)', abdul:'rgba(44,44,44,0.5)', mohammed:'rgba(33,145,80,0.5)', yacquub:'rgba(125,58,172,0.5)', ibrahim:'rgba(26,107,138,0.5)', abdelsalam:'rgba(123,63,0,0.5)', hatem:'rgba(45,106,79,0.5)' };
+    const imamColors = { abdurrahman:'rgba(232,99,10,0.5)', saed:'rgba(212,168,0,0.5)', noor:'rgba(41,128,185,0.5)', abdul:'rgba(44,44,44,0.5)', mohammed:'rgba(33,145,80,0.5)', yacquub:'rgba(125,58,172,0.5)', ibrahim:'rgba(26,58,107,0.5)', abdelsalam:'rgba(123,63,0,0.5)', hatem:'rgba(45,106,79,0.5)' };
     document.querySelectorAll('.filter-chip').forEach(btn => {
       const isActive = btn.dataset.imam === activeFilter;
       btn.classList.toggle('active', isActive);
