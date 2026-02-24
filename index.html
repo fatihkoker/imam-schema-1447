@@ -530,7 +530,7 @@
     .sticky-seek-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .sticky-seek { flex: 1; height: 4px; border-radius: 4px; background: var(--seek-bg); position: relative; cursor: pointer; transition: background 0.35s; }
     .sticky-seek-fill { height: 100%; border-radius: 4px; background: var(--primary-dark); width: 0%; pointer-events: none; transition: background 0.35s; }
-    .sticky-seek-thumb { position: absolute; top: 50%; left: 0%; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-dark); border: 2px solid var(--thumb-border); box-shadow: 0 1px 4px rgba(0,0,0,.2); transform: translate(-50%, -50%); pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease, background 0.35s, border-color 0.35s; }
+    .sticky-seek-thumb { position: absolute; top: 50%; left: 0%; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-dark); border: 2px solid var(--thumb-border); box-shadow: 0 1px 4px rgba(0,0,0,.2); transform: translate(-50%, -50%); pointer-events: none; touch-action: none; transition: opacity 0.22s ease, transform 0.22s ease, background 0.35s, border-color 0.35s; }
     .sticky-player.mini-mode .sticky-seek-thumb { opacity: 0; transform: translate(-50%,-50%) scale(0.1); }
     .sticky-controls { display: flex; align-items: center; justify-content: center; gap: 24px; transform-origin: bottom center; transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease; }
     .sticky-player.mini-mode .sticky-controls { transform: translateY(16px) scaleY(0.15); opacity: 0; }
@@ -550,7 +550,28 @@
     .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
     .mini-time { font-size: .65rem; color: var(--muted-2); font-variant-numeric: tabular-nums; transition: color 0.35s; }
 
-    /* ── FILTER ── */
+    /* ── SEEK DRAG STATE ── */
+    /* Thumb grows when grabbed — tactile feedback */
+    .sticky-seek-thumb.dragging,
+    .sticky-seek:active .sticky-seek-thumb {
+      transform: translate(-50%, -50%) scale(1.45);
+      box-shadow: 0 0 0 6px rgba(58,144,136,0.22), 0 2px 8px rgba(0,0,0,.25);
+    }
+    /* Cursor becomes grabbing during drag */
+    .sticky-seek { cursor: grab; touch-action: none; }
+    .sticky-seek.seeking { cursor: grabbing; }
+    /* Enlarge hit area so small thumbs are easy to grab on touch */
+    .sticky-seek { padding: 10px 0; margin: -10px 0; }
+    /* Mini bar also draggable */
+    .mini-bar-track { cursor: grab; touch-action: none; }
+    .mini-bar-track.seeking { cursor: grabbing; }
+    #mini-thumb.dragging {
+      opacity: 1 !important;
+      transform: translate(-50%, -50%) scale(1.3) !important;
+      box-shadow: 0 0 0 5px rgba(58,144,136,0.20), 0 2px 6px rgba(0,0,0,.2);
+    }
+    /* Prevent page scroll while scrubbing on mobile */
+    .sticky-seek.seeking, .mini-bar-track.seeking { touch-action: none; }
     .filter-wrap { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
     .filter-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip-bg); border: 1.5px solid transparent; border-radius: 30px; padding: 5px 12px 5px 8px; box-shadow: var(--chip-shadow); font-size: .78rem; font-weight: 500; font-family: inherit; cursor: pointer; color: var(--text); transition: all 0.2s ease; }
@@ -1061,18 +1082,110 @@
     toggleAudio(datum);
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    const seekEl = document.getElementById('sticky-seek');
-    if (seekEl) seekEl.addEventListener('click', e => {
+  // ── SEEK DRAG — shared utility ──
+  // Works for both full player seek bar and mini player bar.
+  // Supports mouse, touch and stylus via Pointer Events API.
+  function makeDraggableSeek(trackEl, thumbEl, onSeek) {
+    if (!trackEl) return;
+    let _dragging = false;
+
+    function getPct(clientX) {
+      const rect = trackEl.getBoundingClientRect();
+      return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    }
+
+    function applyPct(pct) {
+      // Update visuals immediately so it feels instant, no waiting for timeupdate
+      if (thumbEl) thumbEl.style.left = (pct * 100) + '%';
+      const fill = trackEl.querySelector('[id$="-fill"], .mini-bar-fill');
+      if (fill) fill.style.width = (pct * 100) + '%';
+    }
+
+    function commitSeek(pct) {
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       audio.currentTime = pct * audio.duration;
       updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
+    }
+
+    // ── pointerdown — start drag ──
+    trackEl.addEventListener('pointerdown', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      const audio = audioState[_activeDatum];
+      if (!audio.duration) return;
+      _dragging = true;
+      trackEl.setPointerCapture(e.pointerId);   // keep events even if pointer leaves track
+      trackEl.classList.add('seeking');
+      if (thumbEl) thumbEl.classList.add('dragging');
+      const pct = getPct(e.clientX);
+      applyPct(pct);
+      e.stopPropagation();
+      e.preventDefault();
+    }, { passive: false });
+
+    // ── pointermove — scrub visuals in real-time ──
+    trackEl.addEventListener('pointermove', e => {
+      if (!_dragging) return;
+      const pct = getPct(e.clientX);
+      applyPct(pct);
+      // Also update time display while scrubbing so user sees position
+      if (_activeDatum && audioState[_activeDatum] && audioState[_activeDatum].duration) {
+        const audio = audioState[_activeDatum];
+        const scrubTime = pct * audio.duration;
+        const cur = document.getElementById('sticky-cur');
+        const mTime = document.getElementById('mini-time-display');
+        if (cur) cur.textContent = fmtTime(scrubTime);
+        if (mTime) mTime.textContent = fmtTime(scrubTime) + ' / ' + fmtTime(audio.duration);
+      }
       e.stopPropagation();
     });
+
+    // ── pointerup — commit seek ──
+    trackEl.addEventListener('pointerup', e => {
+      if (!_dragging) return;
+      _dragging = false;
+      trackEl.classList.remove('seeking');
+      if (thumbEl) thumbEl.classList.remove('dragging');
+      trackEl.releasePointerCapture(e.pointerId);
+      const pct = getPct(e.clientX);
+      applyPct(pct);
+      commitSeek(pct);
+      e.stopPropagation();
+    });
+
+    // ── pointercancel — bail out cleanly ──
+    trackEl.addEventListener('pointercancel', e => {
+      _dragging = false;
+      trackEl.classList.remove('seeking');
+      if (thumbEl) thumbEl.classList.remove('dragging');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Full player seek
+    const seekEl  = document.getElementById('sticky-seek');
+    const thumbEl = document.getElementById('sticky-thumb');
+    makeDraggableSeek(seekEl, thumbEl);
+
+    // Mini player bar — also draggable
+    const miniTrack = document.querySelector('.mini-bar-track');
+    const miniFill  = document.getElementById('mini-fill');
+    if (miniTrack) {
+      // Mini has no separate thumb — we'll add one dynamically
+      const miniThumb = document.createElement('div');
+      miniThumb.id = 'mini-thumb';
+      miniThumb.style.cssText = 'position:absolute;top:50%;left:0%;width:14px;height:14px;border-radius:50%;background:var(--primary-dark);border:2px solid var(--thumb-border);transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity 0.18s ease, transform 0.18s ease, background 0.35s, border-color 0.35s;';
+      miniTrack.style.position = 'relative';
+      miniTrack.style.overflow = 'visible';
+      miniTrack.appendChild(miniThumb);
+      // Show thumb on hover / during drag
+      miniTrack.addEventListener('pointerenter', () => { miniThumb.style.opacity = '1'; });
+      miniTrack.addEventListener('pointerleave', () => { if (!miniTrack.classList.contains('seeking')) miniThumb.style.opacity = '0'; });
+      makeDraggableSeek(miniTrack, miniThumb);
+      // Keep mini-fill in sync via its own fill ref
+    }
+
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
     const prevBtn = document.getElementById('sticky-prev');
