@@ -1273,15 +1273,15 @@
       <td class="td-moon">${moonCell}</td>
       <td class="td-veckodag ${veckaClass}">${row.vecka}</td>
     `;
-    // Injicera sweep-div i today desktop-rad
+    // Injicera EN sweep-div som täcker hela today desktop-raden
     if (isToday) {
-      tr.querySelectorAll('td').forEach(td => {
-        td.style.position = 'relative';
-        td.style.overflow = 'hidden';
-        const sweep = document.createElement('div');
-        sweep.className = 'td-sweep';
-        td.appendChild(sweep);
-      });
+      tr.style.position = 'relative';
+      const sweepTd = document.createElement('td');
+      sweepTd.style.cssText = 'position:absolute;inset:0;padding:0;border:none;pointer-events:none;overflow:hidden;';
+      const sweep = document.createElement('div');
+      sweep.className = 'td-sweep';
+      sweepTd.appendChild(sweep);
+      tr.appendChild(sweepTd);
     }
     const cell = tr.querySelector('.surah-cell');
     if (cell) {
