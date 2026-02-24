@@ -632,12 +632,12 @@
 
     /* Mobile keyframes */
     @keyframes moonBubbleMobileOpen {
-      0%   { opacity: 0; transform: translateY(40px); }
-      100% { opacity: 1; transform: translateY(0); }
+      0%   { transform: translateY(100%); }
+      100% { transform: translateY(0); }
     }
     @keyframes moonBubbleMobileClose {
-      0%   { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(30px); }
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(100%); }
     }
 
     /* ── Last 10 nights: table row & today card adjustments ── */
@@ -697,36 +697,24 @@
         top: auto !important;
         width: 100% !important;
         max-width: 100% !important;
-        /* NO transform here — animation controls it entirely */
         border-radius: 22px 22px 0 0 !important;
         padding: 24px 22px 40px !important;
         font-size: 0.88rem !important;
         line-height: 1.7 !important;
-        /* Above sticky player (9999) AND backdrop (10000) */
         z-index: 10001 !important;
         pointer-events: none !important;
-        /* Hidden off-screen via translate in the keyframe starting point */
-        opacity: 0 !important;
+        opacity: 1 !important;
         visibility: hidden !important;
         transform: translateY(100%) !important;
         transition: none !important;
         border-bottom: none !important;
-        will-change: transform, opacity;
+        will-change: transform;
       }
-      /* Handle bar at top */
-      .moon-bubble::before {
-        content: '' !important;
-        position: absolute !important; top: 10px !important; left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 36px !important; height: 4px !important;
-        background: rgba(255,255,255,0.25) !important;
-        border-radius: 99px !important;
-        right: auto !important; bottom: auto !important;
-      }
-      /* No arrow on mobile */
+      /* No handle bar, no arrow on mobile */
+      .moon-bubble::before { display: none !important; }
       .moon-bubble::after { display: none !important; }
 
-      /* Open state — slides up from bottom, overrides everything */
+      /* Open state — slides up from bottom */
       .moon-wrap.bubble-open .moon-bubble,
       .today-moon-wrap.bubble-open .moon-bubble {
         visibility: visible !important;
@@ -1177,9 +1165,8 @@
       if (isMobile()) {
         bubble.style.cssText = `
           visibility: visible !important;
-          opacity: 1 !important;
           pointer-events: auto !important;
-          animation: moonBubbleMobileOpen 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
+          animation: moonBubbleMobileOpen 0.5s cubic-bezier(0.32, 0.72, 0, 1) both !important;
         `;
       } else {
         bubble.style.cssText = '';
