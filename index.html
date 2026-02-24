@@ -154,28 +154,30 @@
         inset 0 -1px 3px rgba(0,0,0,0.5);
     }
 
-    /* Label text inside the track */
+    /* Label text inside the track — centred in the gap opposite the thumb */
     .ios-track-label {
       position: absolute;
       top: 50%;
+      /* Light mode: thumb on right (occupies 49–76px). Centre of left zone (0–49px) = 24.5px */
+      left: 0;
+      right: calc(24px + 3px);   /* keep label out of thumb zone */
       transform: translateY(-50%);
       font-size: 0.38rem;
       font-weight: 800;
-      letter-spacing: 0.10em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       line-height: 1.2;
       text-align: center;
       pointer-events: none;
       white-space: nowrap;
       user-select: none;
-      left: 7px;
-      right: auto;
       color: rgba(70,70,70,0.80);
-      transition: color 0.3s ease;
+      transition: color 0.3s ease, left 0s, right 0s;
     }
     [data-theme="dark"] .ios-track-label {
-      left: auto;
-      right: 7px;
+      /* Dark mode: thumb on left (occupies 3–27px). Centre of right zone (27–76px). */
+      left: calc(24px + 3px);
+      right: 0;
       color: rgba(160,160,160,0.70);
     }
 
@@ -197,11 +199,24 @@
         width 0.10s ease;
       will-change: left;
       z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     [data-theme="dark"] .ios-thumb {
       left: 3px;
       background: radial-gradient(circle at 38% 35%, #555, #222);
     }
+    /* Icon inside thumb — cross-dissolve between sun and moon */
+    .ios-thumb-icon {
+      position: absolute;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .ios-thumb-sun  { opacity: 1;  transform: scale(1)   rotate(0deg); }
+    .ios-thumb-moon { opacity: 0;  transform: scale(0.5) rotate(-30deg); }
+    [data-theme="dark"] .ios-thumb-sun  { opacity: 0;  transform: scale(0.5) rotate(30deg); }
+    [data-theme="dark"] .ios-thumb-moon { opacity: 1;  transform: scale(1)   rotate(0deg); }
 
     /* Squish on press */
     .theme-toggle:active .ios-thumb {
@@ -904,8 +919,29 @@
   <!-- EXACT IMAGE TOGGLE: wide pill, label inside, dark sphere thumb -->
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Byt tema">
     <div class="ios-track" id="ios-track">
-      <span class="ios-track-label" id="toggle-label">LIGHT<br>MODE</span>
-      <div class="ios-thumb" id="ios-thumb"></div>
+      <span class="ios-track-label" id="toggle-label">LJUST<br>LÄGE</span>
+      <div class="ios-thumb" id="ios-thumb">
+        <!-- Sun icon — shown in light mode -->
+        <span class="ios-thumb-icon ios-thumb-sun">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <line x1="12" y1="2"  x2="12" y2="5"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="4.22" y1="4.22"  x2="6.34" y2="6.34"/>
+            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+            <line x1="2"  y1="12" x2="5"  y2="12"/>
+            <line x1="19" y1="12" x2="22" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+            <line x1="17.66" y1="6.34"  x2="19.78" y2="4.22"/>
+          </svg>
+        </span>
+        <!-- Moon icon — shown in dark mode -->
+        <span class="ios-thumb-icon ios-thumb-moon">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="white" stroke="none">
+            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+          </svg>
+        </span>
+      </div>
     </div>
   </button>
   <div class="ornament">
@@ -1756,10 +1792,10 @@
     const label    = document.getElementById('toggle-label');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
-      if (label)    label.innerHTML = 'DARK<br>MODE';
+      if (label)    label.innerHTML = 'MÖRKT<br>LÄGE';
       if (wavePath) wavePath.setAttribute('fill', '#131f1b');
     } else {
-      if (label)    label.innerHTML = 'LIGHT<br>MODE';
+      if (label)    label.innerHTML = 'LJUST<br>LÄGE';
       if (wavePath) wavePath.setAttribute('fill', '#24645d');
     }
     localStorage.setItem(THEME_KEY, theme);
