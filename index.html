@@ -527,14 +527,12 @@
 
     /* Spring "blow up" animation */
     @keyframes moonBubbleOpen {
-      0%   { opacity: 0; transform: translateX(-50%) scale(0.2) translateY(8px); }
-      55%  { opacity: 1; transform: translateX(-50%) scale(1.06) translateY(-2px); }
-      75%  { transform: translateX(-50%) scale(0.97) translateY(1px); }
-      100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+      0%   { opacity: 0; transform: translateX(-50%) translateY(18px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
     @keyframes moonBubbleClose {
-      0%   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) scale(0.15) translateY(8px); }
+      0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(12px); }
     }
 
     .moon-bubble {
@@ -614,13 +612,13 @@
     .moon-wrap.bubble-open .moon-bubble {
       visibility: visible;
       pointer-events: auto;
-      animation: moonBubbleOpen 0.52s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      animation: moonBubbleOpen 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
     /* Close animation */
     .moon-bubble.bubble-closing {
       visibility: visible;
-      animation: moonBubbleClose 0.22s cubic-bezier(0.4,0,0.8,1) forwards !important;
+      animation: moonBubbleClose 0.28s cubic-bezier(0.4,0,0.8,1) forwards !important;
     }
 
     /* Desktop hover trigger */
@@ -628,20 +626,18 @@
       .moon-wrap:hover .moon-bubble {
         visibility: visible;
         pointer-events: auto;
-        animation: moonBubbleOpen 0.52s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        animation: moonBubbleOpen 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
       }
     }
 
     /* Mobile keyframes */
     @keyframes moonBubbleMobileOpen {
-      0%   { opacity: 0; transform: translateY(100%); }
-      60%  { opacity: 1; transform: translateY(-4px); }
-      80%  { transform: translateY(2px); }
+      0%   { opacity: 0; transform: translateY(40px); }
       100% { opacity: 1; transform: translateY(0); }
     }
     @keyframes moonBubbleMobileClose {
       0%   { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(100%); }
+      100% { opacity: 0; transform: translateY(30px); }
     }
 
     /* ── Last 10 nights: table row & today card adjustments ── */
@@ -1183,7 +1179,7 @@
           visibility: visible !important;
           opacity: 1 !important;
           pointer-events: auto !important;
-          animation: moonBubbleMobileOpen 0.42s cubic-bezier(0.34,1.20,0.64,1) both !important;
+          animation: moonBubbleMobileOpen 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
         `;
       } else {
         bubble.style.cssText = '';
