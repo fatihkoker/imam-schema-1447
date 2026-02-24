@@ -23,7 +23,6 @@
       --hatem: #2d6a4f;
       --ibrahim: #1a6b8a;
 
-      /* ── LIGHT MODE TOKENS ── */
       --bg:              #f7f4ef;
       --surface:         #ffffff;
       --surface-2:       #f0ece4;
@@ -47,8 +46,8 @@
       --countdown-bdr:   rgba(36,100,93,0.09);
       --notif-border:    rgba(36,100,93,0.20);
       --seek-bg:         rgba(36,100,93,0.15);
-      --seek-fill:       #ffffff;   /* bright white played pill in light mode */
-      --scrubber-notch:  rgba(26,74,68,0.60); /* dark teal notch on white fill */
+      --seek-fill:       #ffffff;
+      --scrubber-notch:  rgba(26,74,68,0.60);
       --thumb-border:    #ffffff;
       --player-bg:       #ffffff;
       --player-border:   rgba(36,100,93,0.10);
@@ -64,12 +63,12 @@
       --wave-fill:       #24645d;
       --footer-bg:       #1a4a44;
       --legend-bg:       #ffffff;
-      --toggle-bg:       rgba(255,255,255,0.15);
-      --toggle-bdr:      rgba(255,255,255,0.25);
-      --toggle-clr:      rgba(255,255,255,0.92);
+      /* iPhone toggle light */
+      --ios-track-off:   #e5e5ea;
+      --ios-track-on:    #34c759;
+      --ios-thumb:       #ffffff;
     }
 
-    /* ── DARK MODE TOKENS ── */
     [data-theme="dark"] {
       --bg:              #0f1614;
       --surface:         #1a2420;
@@ -94,8 +93,8 @@
       --countdown-bdr:   rgba(255,255,255,0.08);
       --notif-border:    rgba(255,255,255,0.12);
       --seek-bg:         rgba(255,255,255,0.10);
-      --seek-fill:       rgba(255,255,255,0.88); /* bright pill in dark mode */
-      --scrubber-notch:  rgba(15,22,20,0.70);    /* dark notch on bright fill */
+      --seek-fill:       rgba(255,255,255,0.88);
+      --scrubber-notch:  rgba(15,22,20,0.70);
       --thumb-border:    #1a2420;
       --player-bg:       #1a2420;
       --player-border:   rgba(255,255,255,0.07);
@@ -105,40 +104,95 @@
       --dcm-surahs-bg:   rgba(255,255,255,0.05);
       --fredag-clr:      #e09840;
       --lordag-clr:      #7ecec8;
-      /* Option B dark header — same gradient family as today-card top */
       --header-bg:       linear-gradient(145deg, rgba(10,26,20,0.99) 0%, rgba(14,36,28,0.99) 40%, rgba(18,48,38,0.99) 70%, rgba(24,64,54,0.99) 100%);
       --header-a-bg:     rgba(255,255,255,0.10);
       --header-a-clr:    rgba(255,255,255,0.88);
       --wave-fill:       #131f1b;
       --footer-bg:       #0d1714;
       --legend-bg:       #1e2c28;
-      --toggle-bg:       rgba(0,0,0,0.30);
-      --toggle-bdr:      rgba(255,255,255,0.15);
-      --toggle-clr:      rgba(255,255,255,0.85);
+      /* iPhone toggle dark */
+      --ios-track-off:   #3a3a3c;
+      --ios-track-on:    #30d158;
+      --ios-thumb:       #ffffff;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; }
 
-    /* ── THEME TOGGLE ── */
+    /* ══════════════════════════════════════════════
+       CHANGE 2 — iPhone-style toggle (replaces text pill)
+    ══════════════════════════════════════════════ */
     .theme-toggle {
       position: absolute; top: 14px; right: 16px; z-index: 10;
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--toggle-bg); border: 1px solid var(--toggle-bdr);
-      border-radius: 100px; padding: 5px 13px 5px 9px;
-      cursor: pointer; font-family: inherit; font-size: 0.70rem; font-weight: 600;
-      color: var(--toggle-clr); letter-spacing: 0.05em;
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 9px;
+      background: none; border: none; padding: 0;
+      cursor: pointer; font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
     }
-    .theme-toggle:hover { transform: scale(1.05); }
-    .theme-toggle-icon { font-size: 0.85rem; line-height: 1; transition: transform 0.4s ease; display: inline-block; }
-    .theme-toggle:hover .theme-toggle-icon { transform: rotate(18deg); }
+    /* sun / moon emoji label */
+    .toggle-emoji {
+      font-size: 1.0rem;
+      line-height: 1;
+      transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+      display: inline-block;
+      filter: drop-shadow(0 0 4px rgba(255,220,80,0.4));
+    }
+    [data-theme="dark"] .toggle-emoji {
+      filter: drop-shadow(0 0 6px rgba(180,160,255,0.5));
+    }
+    .theme-toggle:hover .toggle-emoji { transform: rotate(22deg) scale(1.15); }
+
+    /* The iOS track */
+    .ios-track {
+      position: relative;
+      width: 51px; height: 31px;
+      border-radius: 999px;
+      background: var(--ios-track-off);
+      transition: background 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .ios-track { background: var(--ios-track-on); }
+
+    /* The iOS thumb */
+    .ios-thumb {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      background: var(--ios-thumb);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.12);
+      transition: transform 0.36s cubic-bezier(0.34,1.56,0.64,1),
+                  width 0.12s ease;
+      will-change: transform;
+    }
+    [data-theme="dark"] .ios-thumb { transform: translateX(20px); }
+
+    /* Squish on press */
+    .theme-toggle:active .ios-thumb {
+      width: 31px;
+    }
+    /* Squish right-to-left (dark → light) */
+    [data-theme="dark"] .theme-toggle:active .ios-thumb {
+      width: 31px;
+      transform: translateX(16px);
+    }
+
+    /* Ripple burst on toggle */
+    @keyframes iosRipple {
+      0%   { transform: scale(0.6); opacity: 0.5; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .ios-ripple {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: rgba(255,255,255,0.45);
+      pointer-events: none;
+      animation: iosRipple 0.5s ease-out forwards;
+    }
 
     /* ── HEADER ── */
     header { background: var(--header-bg); padding: 28px 20px 22px; text-align: center; position: relative; overflow: hidden; transition: background 0.35s ease; }
     header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%); pointer-events: none; }
-    /* Dark: add subtle gold shimmer at opposite corner too */
     [data-theme="dark"] header::before { background: radial-gradient(ellipse at 80% 25%, rgba(201,168,76,0.09) 0%, transparent 55%), radial-gradient(ellipse at 15% 70%, rgba(36,100,93,0.18) 0%, transparent 40%); }
     .ornament { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 2; }
     .orn-line { height: 1px; width: 50px; }
@@ -202,7 +256,6 @@
     .today-date-row { display: flex; align-items: center; gap: 8px; }
     .today-date-text { font-size: 0.82rem; color: rgba(255,255,255,0.55); font-weight: 400; letter-spacing: 0.02em; }
 
-    /* ── TODAY CARD moon ── */
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
     .today-moon-icon {
       display: inline-flex; align-items: center; justify-content: center;
@@ -221,8 +274,6 @@
       0%, 100% { box-shadow: 0 0 0 0 rgba(58,123,213,0.5); }
       50% { box-shadow: 0 0 0 6px rgba(58,123,213,0); }
     }
-
-    /* ── GOLD GLOW — used by both today-card odd moon and table odd moon ── */
     @keyframes moonGlow {
       0%,100% {
         box-shadow: 0 0 4px 1px rgba(201,168,76,0.6), 0 0 10px 2px rgba(201,168,76,0.35), 0 0 22px 4px rgba(201,168,76,0.15);
@@ -232,7 +283,6 @@
       }
     }
 
-    /* Today card tooltip — dark + gold border (always odd night when shown) */
     .today-moon-tooltip {
       position: absolute;
       bottom: calc(100% + 8px); left: 50%;
@@ -264,7 +314,6 @@
       opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
     }
 
-    /* ── Body of today card ── */
     .today-card-body { padding: 16px 28px 20px; display: flex; flex-direction: column; gap: 0; background: var(--surface); transition: background 0.35s; }
     .today-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--info-gap); border-radius: 14px; overflow: hidden; margin-bottom: 14px; transition: background 0.35s; }
     .today-info-cell { background: var(--cell-bg); padding: 12px 16px; transition: background 0.35s; }
@@ -279,7 +328,6 @@
     .today-info-value { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 600; color: var(--primary-dark); line-height: 1.2; display: block; transition: color 0.35s; }
     .today-info-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; display: block; line-height: 1.4; transition: color 0.35s; }
 
-    /* Countdown */
     .today-countdown-section { display: none; background: var(--countdown-bg); border: 1px solid var(--countdown-bdr); border-radius: 14px; padding: 13px 16px; margin-bottom: 14px; transition: background 0.8s ease, border-color 0.8s ease, box-shadow 0.8s ease; }
     .today-countdown-section.isha-done { background: rgba(36,186,120,0.08); border-color: rgba(36,186,120,0.25); }
     @keyframes ishaGlow { 0% { box-shadow: 0 0 0 0 rgba(61,186,126,0); } 20% { box-shadow: 0 0 0 8px rgba(61,186,126,0.18); } 50% { box-shadow: 0 0 0 16px rgba(61,186,126,0.08); } 80% { box-shadow: 0 0 0 8px rgba(61,186,126,0.12); } 100% { box-shadow: 0 0 0 0 rgba(61,186,126,0); } }
@@ -296,7 +344,6 @@
     .today-countdown-sub { font-size: 0.72rem; color: var(--muted); margin-top: 6px; display: block; transition: color 0.6s ease; }
     .isha-done .today-countdown-sub { color: #2d9e6b; }
 
-    /* Notification button */
     .notif-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--notif-border); border-radius: 100px; padding: 5px 12px; font-size: 0.68rem; font-weight: 500; font-family: inherit; color: var(--muted); cursor: pointer; white-space: nowrap; transition: border-color 0.2s, color 0.2s, background 0.2s; flex-shrink: 0; align-self: flex-start; }
     .notif-btn:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--row-hover); }
     .notif-btn.granted { border-color: rgba(36,186,120,0.35); color: #1d7a4e; background: rgba(36,186,120,0.06); cursor: default; pointer-events: none; }
@@ -306,7 +353,6 @@
     .today-scroll-btn { display: inline-flex; align-items: center; gap: 7px; background: var(--primary-dark); color: #fff; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; padding: 10px 20px; border-radius: 100px; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; box-shadow: 0 2px 12px rgba(26,74,68,0.25); transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease; }
     .today-scroll-btn:hover { background: var(--primary); box-shadow: 0 4px 20px rgba(26,74,68,0.35); transform: translateY(-1px); }
 
-    /* ── Hadith quote below date (last 10 nights) — Option B ── */
     .today-hadith-inline {
       position: relative; z-index: 2;
       margin-top: 12px;
@@ -417,6 +463,104 @@
     @media (hover: hover) { .surah-cell:hover .tooltip-box { display: block; } }
     .tooltip-box.visible { display: block; }
 
+    /* ══════════════════════════════════════════
+       CHANGE 1 — Moon tooltip: full-width slide-up on mobile
+    ══════════════════════════════════════════ */
+    @keyframes moonTooltipSlideUp {
+      0%   { opacity: 0; transform: translateY(20px) scale(0.96); }
+      60%  { opacity: 1; transform: translateY(-3px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes moonTooltipSlideDown {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(14px) scale(0.96); }
+    }
+
+    @media (max-width: 640px) {
+      /* Overlay backdrop */
+      .moon-tooltip-backdrop {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 998;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        animation: fadeIn 0.25s ease forwards;
+      }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .moon-tooltip-backdrop.visible { display: block; }
+      .moon-tooltip-backdrop.hiding  { animation: fadeOut 0.25s ease forwards; }
+      @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+      /* Override existing moon-tooltip on mobile */
+      .moon-tooltip,
+      .today-moon-tooltip {
+        position: fixed !important;
+        bottom: 0 !important; left: 0 !important; right: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        transform: none !important;
+        border-radius: 22px 22px 0 0 !important;
+        padding: 20px 22px 32px !important;
+        font-size: 0.88rem !important;
+        line-height: 1.7 !important;
+        z-index: 999 !important;
+        pointer-events: auto !important;
+        visibility: hidden;
+        opacity: 0;
+        transition: none !important;
+      }
+      .moon-tooltip.visible,
+      .today-moon-wrap.active .today-moon-tooltip,
+      .moon-wrap.active .moon-tooltip {
+        visibility: visible !important;
+        opacity: 1 !important;
+        animation: moonTooltipSlideUp 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
+      }
+      .moon-tooltip.hiding,
+      .today-moon-tooltip.hiding {
+        animation: moonTooltipSlideDown 0.28s ease forwards !important;
+      }
+
+      /* Gold variant on mobile too */
+      .moon-tooltip.gold-tooltip,
+      .today-moon-tooltip {
+        background: #12211f !important;
+        border: 1px solid rgba(201,168,76,0.40) !important;
+        border-bottom: none !important;
+        box-shadow: 0 -8px 40px rgba(0,0,0,0.5) !important;
+        color: rgba(255,255,255,0.88) !important;
+      }
+      /* Handle bar at top */
+      .moon-tooltip::before,
+      .today-moon-tooltip::before {
+        content: '' !important;
+        position: absolute !important; top: 10px !important; left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 36px !important; height: 4px !important;
+        background: rgba(255,255,255,0.25) !important;
+        border-radius: 99px !important;
+        right: auto !important;
+      }
+      /* Remove arrow */
+      .moon-tooltip::after,
+      .today-moon-tooltip::after { display: none !important; }
+
+      /* Hadith label inside mobile tooltip */
+      .moon-tooltip-title {
+        display: block;
+        font-size: 0.60rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(201,168,76,0.80);
+        margin-bottom: 10px;
+        margin-top: 10px;
+        font-style: normal;
+      }
+    }
+
     /* ── MOBILE CARDS ── */
     .mobile-cards { display: none; }
     .day-card-mobile { background: var(--surface); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--mobile-shadow); border-left: 4px solid transparent; transition: background 0.35s, box-shadow 0.35s; }
@@ -477,7 +621,6 @@
     }
     .moon-wrap:hover .moon-tooltip, .moon-wrap.active .moon-tooltip { opacity: 1; visibility: visible; transform: translateY(0); }
 
-    /* ── GOLD TOOLTIP — odd nights only ── */
     .moon-tooltip.gold-tooltip {
       background: #12211f;
       border: 1px solid rgba(201,168,76,0.40);
@@ -491,11 +634,43 @@
     }
     .moon-tooltip.gold-tooltip::after { border-top-color: #12211f; }
 
-    /* ── AUDIO PLAY BUTTON ── */
-    .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-    .play-btn:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(36,100,93,.4); }
-    .play-btn.playing { background: #c0392b; }
-    .play-btn svg { display: block; }
+    /* ══════════════════════════════════════════
+       CHANGE 3 — Table play button: same spring + ripple as sticky player
+    ══════════════════════════════════════════ */
+    .play-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none; cursor: pointer; color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(36,100,93,.3);
+      position: relative; overflow: hidden;
+      transition: background 0.42s cubic-bezier(0.4,0,0.2,1),
+                  box-shadow  0.15s ease;
+    }
+    .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
+    .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
+    .play-btn svg { display: block; position: relative; z-index: 1; }
+    /* Spring animation */
+    @keyframes playBtnSpring {
+      0%   { transform: scale(1); }
+      28%  { transform: scale(0.78); }
+      62%  { transform: scale(1.14); }
+      84%  { transform: scale(0.94); }
+      100% { transform: scale(1); }
+    }
+    .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
+    /* Ripple on table btn */
+    .play-btn-ripple {
+      position: absolute; border-radius: 50%;
+      width: 32px; height: 32px; left: 0; top: 0;
+      background: rgba(255,255,255,0.28);
+      transform: scale(0); pointer-events: none;
+      animation: spmRipple 0.55s ease-out forwards;
+    }
+    @keyframes spmRipple { to { transform: scale(2.6); opacity: 0; } }
+
     .td-audio { text-align: center; width: 36px; padding: 12px 4px 12px 8px; }
     .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
     .moon-icon svg { display: block; }
@@ -514,7 +689,9 @@
     .day-card-mobile.last-ten.today .today-badge { background: #3a7bd5; }
     .day-card-mobile.last-ten.today .dcm-dag.today-day { color: #7eb8f7 !important; }
 
-    /* ── STICKY BOTTOM PLAYER ── */
+    /* ══════════════════════════════════════════
+       STICKY BOTTOM PLAYER
+    ══════════════════════════════════════════ */
     .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; }
     .player-full { background: var(--player-bg); border-radius: 22px 22px 0 0; border-top: 1px solid var(--player-border); box-shadow: var(--player-shadow); padding: 10px 18px 10px; transform-origin: bottom center; transform: translateY(0) scaleY(1); opacity: 1; transition: transform 0.52s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease, box-shadow 0.52s ease, background 0.35s, border-color 0.35s; will-change: transform, opacity; pointer-events: none; }
     .sticky-player.visible .player-full { pointer-events: auto; }
@@ -533,76 +710,39 @@
     .sticky-times { font-size: .68rem; color: var(--muted-2); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; transition: color 0.35s; }
     .sticky-seek-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
-    /* ══════════════════════════════════════════
-       MODERN PILL SEEK BAR  (full player)
-       ══════════════════════════════════════════
-       At rest   → thin 4 px track, no thumb visible
-       Hover/drag → bar grows to 18 px pill height,
-                    a thin vertical notch appears at
-                    the playhead position (like bild 1)
-    ═══════════════════════════════════════════ */
-
-    /* Outer wrapper — sets the grab zone height */
     .sticky-seek {
-      flex: 1;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      position: relative;
-      cursor: grab;
-      touch-action: none;
+      flex: 1; height: 22px; display: flex; align-items: center;
+      position: relative; cursor: grab; touch-action: none;
     }
     .sticky-seek.seeking { cursor: grabbing; }
-
-    /* Background pill (unplayed) */
     .sticky-seek::before {
-      content: '';
-      position: absolute; inset: 0;
-      top: 50%; left: 0; right: 0;
-      height: 4px;
-      transform: translateY(-50%);
-      border-radius: 999px;
+      content: ''; position: absolute; inset: 0; top: 50%; left: 0; right: 0;
+      height: 4px; transform: translateY(-50%); border-radius: 999px;
       background: var(--seek-bg);
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-      pointer-events: none;
+      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none;
     }
-    .sticky-seek:hover::before,
-    .sticky-seek.seeking::before,
-    .sticky-seek.bar-expanded::before { height: 18px; }
-
-    /* Played pill (progress fill) */
+    .sticky-seek:hover::before, .sticky-seek.seeking::before, .sticky-seek.bar-expanded::before { height: 18px; }
     .sticky-seek-fill {
-      position: absolute; left: 0; top: 50%;
-      transform: translateY(-50%);
-      height: 4px;
-      border-radius: 999px;
-      background: var(--seek-fill);
-      width: 0%;
-      pointer-events: none;
-      z-index: 1;
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      height: 4px; border-radius: 999px; background: var(--seek-fill);
+      width: 0%; pointer-events: none; z-index: 1;
       transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
-    .sticky-seek:hover .sticky-seek-fill,
-    .sticky-seek.seeking .sticky-seek-fill,
-    .sticky-seek.bar-expanded .sticky-seek-fill { height: 18px; }
-
-    /* Scrubber notch — thin vertical line, no ball */
+    .sticky-seek:hover .sticky-seek-fill, .sticky-seek.seeking .sticky-seek-fill, .sticky-seek.bar-expanded .sticky-seek-fill { height: 18px; }
     .sticky-seek-thumb {
       position: absolute; top: 50%; left: 0%;
-      width: 3px;
-      height: 0px;
-      border-radius: 2px;
+      width: 3px; height: 0px; border-radius: 2px;
       background: var(--scrubber-notch);
-      transform: translate(-50%, -50%);
-      pointer-events: none; touch-action: none;
-      z-index: 3;
+      transform: translate(-50%, -50%); pointer-events: none; touch-action: none; z-index: 3;
       transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
-    .sticky-seek:hover .sticky-seek-thumb,
-    .sticky-seek.seeking .sticky-seek-thumb,
-    .sticky-seek.bar-expanded .sticky-seek-thumb { height: 28px; }
+    .sticky-seek:hover .sticky-seek-thumb, .sticky-seek.seeking .sticky-seek-thumb, .sticky-seek.bar-expanded .sticky-seek-thumb { height: 28px; }
     .sticky-seek-thumb.dragging { height: 28px !important; }
     .sticky-player.mini-mode .sticky-seek-thumb { height: 0 !important; }
+
+    /* ══════════════════════════════════════════
+       CHANGE 4 — Sticky player controls: bigger buttons, more spacing
+    ══════════════════════════════════════════ */
     .sticky-controls {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -611,36 +751,43 @@
       transform-origin: bottom center;
       transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease;
     }
-    /* Left side: prev */
-    .sticky-ctrl-left  { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-    /* Right side: next + mute */
-    .sticky-ctrl-right { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+    /* CHANGE 4: Left side with more gap from center */
+    .sticky-ctrl-left  { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-right: 20px; }
+    /* CHANGE 4: Right side with more gap from center */
+    .sticky-ctrl-right { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding-left: 20px; }
 
     .sticky-player.mini-mode .sticky-controls { transform: translateY(16px) scaleY(0.15); opacity: 0; }
-    .sticky-ctrl-btn { background: none; border: none; cursor: pointer; color: var(--primary-dark); padding: 4px; opacity: .7; transition: opacity 0.15s ease, transform 0.15s ease, color 0.35s; display: flex; align-items: center; justify-content: center; }
-    .sticky-ctrl-btn:hover { opacity: 1; transform: scale(1.1); }
-    .sticky-ctrl-btn:disabled { opacity: .25; cursor: default; transform: none; }
 
-    /* ── ALT C: Spring + ripple + cross-dissolve ── */
+    /* CHANGE 4: Bigger prev/next/mute — 40px touch target */
+    .sticky-ctrl-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--primary-dark);
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      opacity: .75;
+      transition: opacity 0.15s ease, transform 0.15s ease, color 0.35s, background 0.15s;
+    }
+    .sticky-ctrl-btn:hover { opacity: 1; transform: scale(1.12); background: var(--row-hover); }
+    .sticky-ctrl-btn:disabled { opacity: .25; cursor: default; transform: none; background: none; }
+    /* CHANGE 4: Icons inside ctrl buttons — 22px */
+    .sticky-ctrl-btn svg { width: 22px; height: 22px; display: block; }
+
+    /* ── Main play button — ALT C spring + ripple ── */
     .sticky-play-main {
-      width: 44px; height: 44px;
+      width: 48px; height: 48px;
       border-radius: 50%;
       background: var(--primary-dark);
       border: none; cursor: pointer; color: #fff;
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 2px 10px rgba(36,100,93,.35);
       position: relative; overflow: hidden;
-      transition: background 0.42s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow  0.42s ease;
+      transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.42s ease;
     }
     .sticky-play-main:hover { box-shadow: 0 4px 20px rgba(36,100,93,.45); }
-    .sticky-play-main.red {
-      background: #c0392b;
-      box-shadow: 0 2px 10px rgba(192,57,43,0.40);
-    }
+    .sticky-play-main.red { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
     .sticky-play-main.red:hover { box-shadow: 0 4px 20px rgba(192,57,43,.50); }
 
-    /* Spring click keyframe */
     @keyframes spmSpring {
       0%   { transform: scale(1); }
       28%  { transform: scale(0.80); }
@@ -650,87 +797,45 @@
     }
     .sticky-play-main.springing { animation: spmSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
 
-    /* Ripple */
     .spm-ripple {
       position: absolute; border-radius: 50%;
-      width: 44px; height: 44px; left: 0; top: 0;
+      width: 48px; height: 48px; left: 0; top: 0;
       background: rgba(255,255,255,0.22);
       transform: scale(0); pointer-events: none;
       animation: spmRipple 0.55s ease-out forwards;
     }
-    @keyframes spmRipple { to { transform: scale(2.6); opacity: 0; } }
 
-    /* Icon layers — cross-dissolve with scale */
+    /* CHANGE 3: Play icon perfectly centered via absolute positioning */
     .spm-icon-wrap {
       position: relative;
-      width: 20px; height: 20px;
+      width: 22px; height: 22px;
       display: flex; align-items: center; justify-content: center;
     }
     .spm-icon-wrap svg {
       position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
       transition: opacity 0.26s cubic-bezier(0.4,0,0.2,1),
                   transform 0.26s cubic-bezier(0.4,0,0.2,1);
     }
-    /* Play icon: visible by default, nudged 1px right for optical centre */
-    .spm-play  { opacity: 1; transform: scale(1) translateX(1px); }
-    .spm-pause { opacity: 0; transform: scale(0.45); }
+    .spm-play  { opacity: 1; transform: translate(calc(-50% + 1px), -50%) scale(1) !important; }
+    .spm-pause { opacity: 0; transform: translate(-50%, -50%) scale(0.45) !important; }
 
-    /* Paused state */
-    .sticky-play-main.red .spm-play  { opacity: 0; transform: scale(0.45) translateX(1px); }
-    .sticky-play-main.red .spm-pause { opacity: 1; transform: scale(1); }
+    .sticky-play-main.red .spm-play  { opacity: 0; transform: translate(calc(-50% + 1px), -50%) scale(0.45) !important; }
+    .sticky-play-main.red .spm-pause { opacity: 1; transform: translate(-50%, -50%) scale(1) !important; }
+
     .player-mini { position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; background: var(--mini-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 18px 18px 0 0; border-top: 1px solid var(--player-border); box-shadow: 0 -4px 24px rgba(0,0,0,.10); overflow: hidden; transform: translateY(100%) scaleY(0.4); transform-origin: bottom center; opacity: 0; pointer-events: none; transition: transform 0.52s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease 0.06s, background 0.35s, border-color 0.35s; will-change: transform, opacity; }
     .sticky-player.mini-mode .player-mini { transform: translateY(0) scaleY(1); opacity: 1; pointer-events: auto; }
-    .mini-bar-track {
-      width: 100%; height: 22px;
-      background: transparent;
-      flex-shrink: 0;
-      position: relative;
-      display: flex; align-items: center;
-      cursor: grab; touch-action: none;
-      overflow: visible;
-    }
+    .mini-bar-track { width: 100%; height: 22px; background: transparent; flex-shrink: 0; position: relative; display: flex; align-items: center; cursor: grab; touch-action: none; overflow: visible; }
     .mini-bar-track.seeking { cursor: grabbing; }
-    /* Visible rail */
-    .mini-bar-track::before {
-      content: '';
-      position: absolute; left: 0; right: 0; top: 50%;
-      transform: translateY(-50%);
-      height: 4px; border-radius: 999px;
-      background: var(--seek-bg);
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-      pointer-events: none;
-    }
-    .mini-bar-track:hover::before,
-    .mini-bar-track.seeking::before,
-    .mini-bar-track.bar-expanded::before { height: 14px; }
-    .mini-bar-fill {
-      position: absolute; left: 0; top: 50%;
-      transform: translateY(-50%);
-      height: 4px; width: 0%;
-      border-radius: 999px;
-      background: var(--seek-fill);
-      pointer-events: none; z-index: 1;
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-      overflow: hidden;
-    }
-    .mini-bar-track:hover .mini-bar-fill,
-    .mini-bar-track.seeking .mini-bar-fill,
-    .mini-bar-track.bar-expanded .mini-bar-fill { height: 14px; }
+    .mini-bar-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 4px; border-radius: 999px; background: var(--seek-bg); transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
+    .mini-bar-track:hover::before, .mini-bar-track.seeking::before, .mini-bar-track.bar-expanded::before { height: 14px; }
+    .mini-bar-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 4px; width: 0%; border-radius: 999px; background: var(--seek-fill); pointer-events: none; z-index: 1; transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; overflow: hidden; }
+    .mini-bar-track:hover .mini-bar-fill, .mini-bar-track.seeking .mini-bar-fill, .mini-bar-track.bar-expanded .mini-bar-fill { height: 14px; }
     .mini-bar-fill::after { content: ''; position: absolute; top: 0; left: -60%; bottom: 0; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent); animation: barShimmer 2.8s ease-in-out infinite; }
     @keyframes barShimmer { 0%{left:-60%} 65%{left:120%} 100%{left:120%} }
-    /* Mini scrubber notch */
-    #mini-thumb {
-      position: absolute; top: 50%; left: 0%;
-      width: 3px; height: 0px;
-      border-radius: 2px;
-      background: var(--scrubber-notch);
-      transform: translate(-50%, -50%);
-      pointer-events: none; z-index: 3;
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
-    }
-    .mini-bar-track:hover #mini-thumb,
-    .mini-bar-track.seeking #mini-thumb,
-    .mini-bar-track.bar-expanded #mini-thumb { height: 22px; }
+    #mini-thumb { position: absolute; top: 50%; left: 0%; width: 3px; height: 0px; border-radius: 2px; background: var(--scrubber-notch); transform: translate(-50%, -50%); pointer-events: none; z-index: 3; transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; }
+    .mini-bar-track:hover #mini-thumb, .mini-bar-track.seeking #mini-thumb, .mini-bar-track.bar-expanded #mini-thumb { height: 22px; }
     #mini-thumb.dragging { height: 22px !important; }
     .mini-text-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 9px; }
     .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
@@ -774,9 +879,12 @@
 <body>
 
 <header>
+  <!-- CHANGE 2: iPhone-style toggle -->
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Byt tema">
-    <span class="theme-toggle-icon" id="toggle-icon">☀️</span>
-    <span id="toggle-label">Ljust</span>
+    <span class="toggle-emoji" id="toggle-emoji">☀️</span>
+    <div class="ios-track" id="ios-track">
+      <div class="ios-thumb" id="ios-thumb"></div>
+    </div>
   </button>
   <div class="ornament">
     <div class="orn-line l"></div><div class="orn-dot"></div>
@@ -795,6 +903,9 @@
     </a>
   </div>
 </header>
+
+<!-- CHANGE 1: Backdrop for mobile moon tooltip -->
+<div class="moon-tooltip-backdrop" id="moon-tooltip-backdrop"></div>
 
 <div class="wave">
   <svg viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -984,20 +1095,71 @@
     window.scrollTo({ top: y, behavior: 'smooth' });
   }
 
+  /* ══════════════════════════════════════════
+     CHANGE 1: Mobile moon tooltip — full-screen slide-up
+  ══════════════════════════════════════════ */
+  const backdrop = document.getElementById('moon-tooltip-backdrop');
+  let _activeMoonEl = null;
+
+  function isMobile() { return window.innerWidth <= 640; }
+
+  function openMoonTooltip(wrapEl) {
+    if (!isMobile()) return;
+    closeMoonTooltip(false);
+    const tip = wrapEl.querySelector('.moon-tooltip, .today-moon-tooltip');
+    if (!tip) return;
+    _activeMoonEl = { wrap: wrapEl, tip };
+    backdrop.classList.add('visible');
+    backdrop.classList.remove('hiding');
+    tip.classList.add('visible');
+    tip.classList.remove('hiding');
+  }
+
+  function closeMoonTooltip(animate = true) {
+    if (!_activeMoonEl) return;
+    const { tip } = _activeMoonEl;
+    if (animate) {
+      tip.classList.add('hiding');
+      backdrop.classList.add('hiding');
+      backdrop.classList.remove('visible');
+      tip.addEventListener('animationend', () => {
+        tip.classList.remove('visible', 'hiding');
+      }, { once: true });
+      backdrop.addEventListener('animationend', () => {
+        backdrop.classList.remove('hiding');
+      }, { once: true });
+    } else {
+      tip.classList.remove('visible', 'hiding');
+      backdrop.classList.remove('visible', 'hiding');
+    }
+    // remove active from wrap
+    document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
+    _activeMoonEl = null;
+  }
+
+  backdrop.addEventListener('click', () => closeMoonTooltip(true));
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.surah-cell') && !e.target.closest('.dcm-surahs'))
       document.querySelectorAll('.tooltip-box.visible, .dcm-tooltip.visible').forEach(el => el.classList.remove('visible'));
-    if (!e.target.closest('.moon-wrap') && !e.target.closest('.today-moon-wrap'))
-      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
-  });
 
-  document.addEventListener('click', (e) => {
     const moonWrap = e.target.closest('.moon-wrap, .today-moon-wrap');
     if (moonWrap) {
-      const isActive = moonWrap.classList.contains('active');
-      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
-      if (!isActive) moonWrap.classList.add('active');
+      if (isMobile()) {
+        openMoonTooltip(moonWrap);
+      } else {
+        const isActive = moonWrap.classList.contains('active');
+        document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
+        if (!isActive) moonWrap.classList.add('active');
+      }
       e.stopPropagation();
+      return;
+    }
+
+    // Close moon tooltips on outside click (desktop)
+    if (!e.target.closest('.moon-wrap') && !e.target.closest('.today-moon-wrap')) {
+      document.querySelectorAll('.moon-wrap.active, .today-moon-wrap.active').forEach(el => el.classList.remove('active'));
+      if (isMobile()) closeMoonTooltip(true);
     }
   });
 
@@ -1015,10 +1177,9 @@
     const moonClass = isOddNight ? 'moon-icon moon-odd' : 'moon-icon';
     const defaultMoonText = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
     const thisMoonText = row.moonText || defaultMoonText;
-    // UPDATED: proper SVG crescent + gold-tooltip for odd nights
     const moonFill = isOddNight ? '#fff2c0' : 'white';
     const tooltipClass = isOddNight ? 'moon-tooltip gold-tooltip' : 'moon-tooltip';
-    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="${moonClass}"><svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${moonFill}"/></svg></span><span class="${tooltipClass}">${thisMoonText}</span></span>` : '';
+    const moonIcon = isLastTen ? `<span class="moon-wrap"><span class="${moonClass}"><svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${moonFill}"/></svg></span><span class="${tooltipClass}"><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${thisMoonText}</span></span>` : '';
     tr.innerHTML = `
       <td class="td-dag">${row.day}</td>
       <td class="td-sidor">${row.sidor}</td>
@@ -1057,10 +1218,9 @@
     const moonClassM = isOddNightM ? 'moon-icon moon-odd' : 'moon-icon';
     const defaultMoonTextM = 'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." [al-Bukhari och Muslim]';
     const thisMoonTextM = row.moonText || defaultMoonTextM;
-    // UPDATED: proper SVG crescent + gold-tooltip for odd nights
     const moonFillM = isOddNightM ? '#fff2c0' : 'white';
     const tooltipClassM = isOddNightM ? 'moon-tooltip gold-tooltip' : 'moon-tooltip';
-    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='${moonClassM}'><svg width='11' height='11' viewBox='0 0 24 24'><path d='M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z' fill='${moonFillM}'/></svg></span><span class='${tooltipClassM}' style='right:auto;left:0;'>${thisMoonTextM}</span></span>` : '';
+    const moonSpan = isLastTenM ? `<span class='moon-wrap' style='margin-left:5px;'><span class='${moonClassM}'><svg width='11' height='11' viewBox='0 0 24 24'><path d='M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z' fill='${moonFillM}'/></svg></span><span class='${tooltipClassM}' style='right:auto;left:0;'><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${thisMoonTextM}</span></span>` : '';
     card.innerHTML = `
       <div class="dcm-top">
         <div class="dcm-dag ${isToday ? 'today-day' : ''}">${row.day}</div>
@@ -1112,13 +1272,11 @@
       const moonWrap = document.createElement('span');
       moonWrap.className = 'today-moon-wrap';
       moonWrap.style.marginLeft = '8px';
-      // UPDATED: odd class + proper SVG crescent + gold fill
       const oddClass = isTodayOdd ? ' moon-odd-today' : '';
       const todayMoonFill = isTodayOdd ? '#fff2c0' : 'white';
-      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${todayMoonFill}"/></svg></span><span class="today-moon-tooltip">${todayMoonText}</span>`;
+      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${todayMoonFill}"/></svg></span><span class="today-moon-tooltip"><span class="moon-tooltip-title">🌙 Laylatul-Qadr</span>${todayMoonText}</span>`;
       dateEl.parentNode.appendChild(moonWrap);
 
-      // Option B: hadith gold left-border quote inside the dark header
       const headerContent = document.querySelector('.today-card-header-content');
       const hadithDiv = document.createElement('div');
       hadithDiv.className = 'today-hadith-inline';
@@ -1131,7 +1289,6 @@
     document.getElementById('today-pages').textContent = 'Sidor ' + todayData.sidor;
     document.getElementById('today-surahs-name').textContent = todayData.surahs;
     document.getElementById('today-surahs-ref').textContent = todayData.tooltip;
-
 
     const avatarPulseColors = {
       abdurrahman:'rgba(232,99,10,0.55)', saed:'rgba(212,168,0,0.55)', noor:'rgba(41,128,185,0.55)',
@@ -1173,24 +1330,35 @@
   let _stickyScrollTimer = null;
   let _activeDatum = null;
 
-  const PLAY_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21" transform="translate(1,0)"/></svg>`;
-  const PAUSE_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
-  const SPIN_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="animation:spin 0.9s linear infinite"><path d="M12 2a10 10 0 1 0 10 10"/></svg>`;
+  /* CHANGE 3 — reuse same spring+ripple for table play buttons */
+  const PLAY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block;margin-left:1px"><polygon points="7,3 21,12 7,21"/></svg>`;
+  const PAUSE_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
+  const SPIN_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="animation:spin 0.9s linear infinite;display:block"><path d="M12 2a10 10 0 1 0 10 10"/></svg>`;
+
+  function triggerPlayBtnSpring(btn) {
+    // Remove class, force reflow, re-add for restart
+    btn.classList.remove('springing');
+    void btn.offsetWidth;
+    btn.classList.add('springing');
+    btn.addEventListener('animationend', () => btn.classList.remove('springing'), { once: true });
+    // Ripple
+    const rip = document.createElement('span');
+    rip.className = 'play-btn-ripple';
+    btn.appendChild(rip);
+    rip.addEventListener('animationend', () => rip.remove(), { once: true });
+  }
 
   function updateStickyPlayBtn(isPlaying) {
     const btn = document.getElementById('sticky-play-btn');
     if (!btn) return;
-    // Spring animation
     btn.classList.remove('springing');
-    void btn.offsetWidth; // reflow to restart
+    void btn.offsetWidth;
     btn.classList.add('springing');
     btn.addEventListener('animationend', () => btn.classList.remove('springing'), { once: true });
-    // Ripple burst
     const rip = document.createElement('span');
     rip.className = 'spm-ripple';
     btn.appendChild(rip);
     rip.addEventListener('animationend', () => rip.remove(), { once: true });
-    // Toggle state — CSS cross-dissolve handles icon swap
     if (isPlaying) { btn.classList.add('red'); }
     else           { btn.classList.remove('red'); }
   }
@@ -1208,8 +1376,12 @@
     btn.className = 'play-btn';
     btn.setAttribute('data-datum', datum);
     btn.title = 'Spela upp recitation';
-    btn.innerHTML = PLAY_ICON;
-    btn.addEventListener('click', e => { e.stopPropagation(); toggleAudio(datum); });
+    btn.innerHTML = PLAY_SVG;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      triggerPlayBtnSpring(btn);   // CHANGE 3: spring on table btn click
+      toggleAudio(datum);
+    });
     return btn;
   }
 
@@ -1258,17 +1430,14 @@
   }, { passive: true });
 
   function navigateTo(datum) {
-    if (_activeDatum && audioState[_activeDatum]) { audioState[_activeDatum].pause(); setBtns(_activeDatum, PLAY_ICON, false); closePlayer(_activeDatum); }
+    if (_activeDatum && audioState[_activeDatum]) { audioState[_activeDatum].pause(); setBtns(_activeDatum, PLAY_SVG, false); closePlayer(_activeDatum); }
     toggleAudio(datum);
   }
 
-  // ── SEEK DRAG — shared utility ──
   function makeDraggableSeek(trackEl, thumbEl) {
     if (!trackEl) return;
     let _dragging = false;
     let _collapseTimer = null;
-
-    // Resolve fill element once, not every frame
     const fillEl = trackEl.id === 'sticky-seek'
       ? document.getElementById('sticky-fill')
       : document.getElementById('mini-fill');
@@ -1277,65 +1446,41 @@
       const rect = trackEl.getBoundingClientRect();
       return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     }
-
     function applyPct(pct) {
-      // Notch position
       if (thumbEl) thumbEl.style.left = (pct * 100) + '%';
-      // Also sync mini-thumb if inside this track
       const mt = trackEl.querySelector('#mini-thumb');
       if (mt) mt.style.left = (pct * 100) + '%';
-      // Fill width — set directly, no querySelector guessing
       if (fillEl) fillEl.style.width = (pct * 100) + '%';
     }
-
-    function expand() {
-      clearTimeout(_collapseTimer);
-      trackEl.classList.add('bar-expanded');
-    }
-
+    function expand() { clearTimeout(_collapseTimer); trackEl.classList.add('bar-expanded'); }
     function scheduleCollapse() {
-      // Wait 800ms after last interaction before collapsing
       clearTimeout(_collapseTimer);
-      _collapseTimer = setTimeout(() => {
-        if (!_dragging) trackEl.classList.remove('bar-expanded');
-      }, 800);
+      _collapseTimer = setTimeout(() => { if (!_dragging) trackEl.classList.remove('bar-expanded'); }, 800);
     }
-
     function commitSeek(pct) {
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
-      // Block timeupdate from overwriting our position for 300ms
       audio._seekLock = true;
       audio.currentTime = pct * audio.duration;
-      // Force the UI to show the committed position immediately
       updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
       clearTimeout(audio._seekLockTimer);
       audio._seekLockTimer = setTimeout(() => { audio._seekLock = false; }, 300);
     }
-
-    // ── pointerdown ──
     trackEl.addEventListener('pointerdown', e => {
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
-      _dragging = true;
-      audio._seekLock = true;   // freeze timeupdate while dragging
+      _dragging = true; audio._seekLock = true;
       trackEl.setPointerCapture(e.pointerId);
       trackEl.classList.add('seeking');
       if (thumbEl) thumbEl.classList.add('dragging');
-      expand();
-      applyPct(getPct(e.clientX));
-      e.stopPropagation();
-      e.preventDefault();
+      expand(); applyPct(getPct(e.clientX));
+      e.stopPropagation(); e.preventDefault();
     }, { passive: false });
-
-    // ── pointermove ──
     trackEl.addEventListener('pointermove', e => {
       if (!_dragging) return;
-      const pct = getPct(e.clientX);
-      applyPct(pct);
-      // Update time display while scrubbing
+      const pct = getPct(e.clientX); applyPct(pct);
       if (_activeDatum && audioState[_activeDatum]?.duration) {
         const scrubTime = pct * audioState[_activeDatum].duration;
         const cur = document.getElementById('sticky-cur');
@@ -1345,59 +1490,34 @@
       }
       e.stopPropagation();
     });
-
-    // ── pointerup ──
     trackEl.addEventListener('pointerup', e => {
       if (!_dragging) return;
-      _dragging = false;
-      trackEl.classList.remove('seeking');
+      _dragging = false; trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging');
       trackEl.releasePointerCapture(e.pointerId);
-      const pct = getPct(e.clientX);
-      applyPct(pct);
-      commitSeek(pct);
-      scheduleCollapse();   // collapse after 800ms idle
+      commitSeek(getPct(e.clientX)); scheduleCollapse();
       e.stopPropagation();
     });
-
-    // ── pointercancel ──
     trackEl.addEventListener('pointercancel', () => {
-      _dragging = false;
-      trackEl.classList.remove('seeking');
-      if (thumbEl) thumbEl.classList.remove('dragging');
-      scheduleCollapse();
+      _dragging = false; trackEl.classList.remove('seeking');
+      if (thumbEl) thumbEl.classList.remove('dragging'); scheduleCollapse();
     });
-
-    // Mouse-leave collapses bar when not dragging
-    trackEl.addEventListener('pointerleave', () => {
-      if (!_dragging) scheduleCollapse();
-    });
-    // Mouse-enter expands (desktop hover)
-    trackEl.addEventListener('pointerenter', () => {
-      expand();
-    });
+    trackEl.addEventListener('pointerleave', () => { if (!_dragging) scheduleCollapse(); });
+    trackEl.addEventListener('pointerenter', () => { expand(); });
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Full player seek
     const seekEl  = document.getElementById('sticky-seek');
     const thumbEl = document.getElementById('sticky-thumb');
     makeDraggableSeek(seekEl, thumbEl);
-
-    // Mini player bar — also draggable
-    // #mini-thumb is rendered via CSS (::before pseudo + #mini-thumb in HTML)
     const miniTrack = document.querySelector('.mini-bar-track');
     const miniThumb = document.getElementById('mini-thumb');
-    if (miniTrack) {
-      makeDraggableSeek(miniTrack, miniThumb);
-    }
+    if (miniTrack) makeDraggableSeek(miniTrack, miniThumb);
 
     const muteBtn = document.getElementById('sticky-mute');
     if (muteBtn) muteBtn.addEventListener('click', e => {
       const isMuted = muteBtn.classList.toggle('muted');
-      // Mute/unmute all existing audio elements
       Object.values(audioState).forEach(a => { a.muted = isMuted; });
-      // Store for new audio elements created later
       window._globalMuted = isMuted;
       document.getElementById('mute-icon-on').style.display  = isMuted ? 'none' : '';
       document.getElementById('mute-icon-off').style.display = isMuted ? ''     : 'none';
@@ -1480,26 +1600,26 @@
 
   function toggleAudio(datum) {
     Object.keys(audioState).forEach(d => {
-      if (d !== datum && audioState[d] && !audioState[d].paused) { audioState[d].pause(); closePlayer(d); setBtns(d, PLAY_ICON, false); }
+      if (d !== datum && audioState[d] && !audioState[d].paused) { audioState[d].pause(); closePlayer(d); setBtns(d, PLAY_SVG, false); }
     });
     if (!audioState[datum]) {
       const a = new Audio();
       a.muted = !!window._globalMuted;
       a.src = audioUrls[datum];
-      a.addEventListener('waiting',  () => setBtns(datum, SPIN_ICON, true));
-      a.addEventListener('playing',  () => { setBtns(datum, PAUSE_ICON, true); openPlayer(datum); });
+      a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
+      a.addEventListener('playing',  () => { setBtns(datum, PAUSE_SVG, true); openPlayer(datum); });
       a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
-      a.addEventListener('ended', () => { closePlayer(datum); setBtns(datum, PLAY_ICON, false); updatePlayerUI(datum, 0, a.duration); });
+      a.addEventListener('ended', () => { closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration); });
       audioState[datum] = a;
     }
     const audio = audioState[datum];
     if (audio.paused) {
-      setBtns(datum, SPIN_ICON, true);
-      audio.play().then(() => {}).catch(err => { console.warn('Play failed:', err); setBtns(datum, PLAY_ICON, false); });
+      setBtns(datum, SPIN_SVG, true);
+      audio.play().then(() => {}).catch(err => { console.warn('Play failed:', err); setBtns(datum, PLAY_SVG, false); });
     } else {
       audio.pause();
-      setBtns(datum, PLAY_ICON, false);
+      setBtns(datum, PLAY_SVG, false);
       updateStickyPlayBtn(false);
     }
   }
@@ -1603,39 +1723,42 @@
   }
   startIshaCountdown();
 
-  // ── THEME ──
+  // ══════════════════════════════════════════
+  // CHANGE 2 — iPhone toggle theme
+  // ══════════════════════════════════════════
   const THEME_KEY = 'tarawih-theme';
   const _root = document.documentElement;
 
   function _applyTheme(theme) {
     _root.setAttribute('data-theme', theme);
-    const icon  = document.getElementById('toggle-icon');
-    const label = document.getElementById('toggle-label');
+    const emoji    = document.getElementById('toggle-emoji');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
-      if (icon)  icon.textContent  = '🌙';
-      if (label) label.textContent = 'Mörkt';
+      if (emoji)    emoji.textContent = '🌙';
       if (wavePath) wavePath.setAttribute('fill', '#131f1b');
     } else {
-      if (icon)  icon.textContent  = '☀️';
-      if (label) label.textContent = 'Ljust';
+      if (emoji)    emoji.textContent = '☀️';
       if (wavePath) wavePath.setAttribute('fill', '#24645d');
     }
     localStorage.setItem(THEME_KEY, theme);
   }
 
   function toggleTheme() {
-    _applyTheme(_root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    const next = _root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    // Trigger thumb squish via a transient class
+    const thumb = document.getElementById('ios-thumb');
+    if (thumb) {
+      thumb.style.transition = 'transform 0.36s cubic-bezier(0.34,1.56,0.64,1), width 0.10s ease';
+    }
+    _applyTheme(next);
   }
 
-  // Init: saved preference → system preference
   (function() {
     const saved = localStorage.getItem(THEME_KEY);
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     _applyTheme(saved || (prefersDark ? 'dark' : 'light'));
   })();
 
-  // React to system changes when no manual override
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     if (!localStorage.getItem(THEME_KEY)) _applyTheme(e.matches ? 'dark' : 'light');
   });
@@ -1711,39 +1834,35 @@
         <div class="sticky-seek-thumb" id="sticky-thumb"></div>
       </div>
     </div>
+    <!-- CHANGE 4: Bigger buttons, more spacing, same-size mute -->
     <div class="sticky-controls">
-      <!-- Left: prev -->
       <div class="sticky-ctrl-left">
         <button class="sticky-ctrl-btn" id="sticky-prev" title="Föregående dag">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
         </button>
       </div>
-      <!-- Centre: play/pause — always perfectly centred in grid -->
       <button class="sticky-play-main" id="sticky-play-btn" aria-label="Spela/Pausa">
         <span class="spm-icon-wrap" aria-hidden="true">
-          <!-- Play triangle -->
-          <svg class="spm-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="7,3 21,12 7,21" transform="translate(1,0)"/>
+          <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="7,3 21,12 7,21"/>
           </svg>
-          <!-- Pause bars -->
-          <svg class="spm-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="3" width="4" height="18" rx="1.5"/>
             <rect x="14" y="3" width="4" height="18" rx="1.5"/>
           </svg>
         </span>
       </button>
-      <!-- Right: next + mute -->
       <div class="sticky-ctrl-right">
         <button class="sticky-ctrl-btn" id="sticky-next" title="Nästa dag">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zm-3.5 6L6 6v12z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zm-3.5 6L6 6v12z"/></svg>
         </button>
         <button class="sticky-ctrl-btn sticky-mute-btn" id="sticky-mute" title="Ljud av/på">
-          <svg id="mute-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg id="mute-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
           </svg>
-          <svg id="mute-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <svg id="mute-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <line x1="23" y1="9" x2="17" y2="15"/>
             <line x1="17" y1="9" x2="23" y2="15"/>
