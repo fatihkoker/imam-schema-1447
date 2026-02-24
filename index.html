@@ -1342,8 +1342,8 @@
     document.getElementById('today-imam-name').textContent = todayData.imamLabel;
     const dateLabel = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
 
-    // Hijri datum — räknas utifrån dag i Ramadan (dag 1 = 1 Ramadan 1447)
-    const hijriDay = todayData.day;
+    // Hijri datum — dag 3 i schemat = 1 Ramadan 1447 (offset -2)
+    const hijriDay = todayData.day - 2;
     const hijriStr = hijriDay + ' Ramadan 1447';
 
     if (todayData.day >= 21) {
