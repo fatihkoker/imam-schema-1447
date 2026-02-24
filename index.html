@@ -567,7 +567,8 @@
       pointer-events: none;
     }
     .sticky-seek:hover::before,
-    .sticky-seek.seeking::before { height: 18px; }
+    .sticky-seek.seeking::before,
+    .sticky-seek.bar-expanded::before { height: 18px; }
 
     /* Played pill (progress fill) */
     .sticky-seek-fill {
@@ -575,7 +576,6 @@
       transform: translateY(-50%);
       height: 4px;
       border-radius: 999px;
-      /* Light/warm white in light mode, muted teal in dark */
       background: var(--seek-fill);
       width: 0%;
       pointer-events: none;
@@ -583,14 +583,14 @@
       transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
     .sticky-seek:hover .sticky-seek-fill,
-    .sticky-seek.seeking .sticky-seek-fill { height: 18px; }
+    .sticky-seek.seeking .sticky-seek-fill,
+    .sticky-seek.bar-expanded .sticky-seek-fill { height: 18px; }
 
     /* Scrubber notch — thin vertical line, no ball */
     .sticky-seek-thumb {
       position: absolute; top: 50%; left: 0%;
-      /* Thin vertical notch */
       width: 3px;
-      height: 0px;               /* hidden at rest */
+      height: 0px;
       border-radius: 2px;
       background: var(--scrubber-notch);
       transform: translate(-50%, -50%);
@@ -599,10 +599,8 @@
       transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
     .sticky-seek:hover .sticky-seek-thumb,
-    .sticky-seek.seeking .sticky-seek-thumb {
-      height: 28px;   /* taller than pill so it pokes out top/bottom */
-    }
-    /* No extra scale on drag — the notch stays the same, just visible */
+    .sticky-seek.seeking .sticky-seek-thumb,
+    .sticky-seek.bar-expanded .sticky-seek-thumb { height: 28px; }
     .sticky-seek-thumb.dragging { height: 28px !important; }
     .sticky-player.mini-mode .sticky-seek-thumb { height: 0 !important; }
     .sticky-controls { display: flex; align-items: center; justify-content: center; gap: 24px; transform-origin: bottom center; transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease; }
@@ -636,7 +634,8 @@
       pointer-events: none;
     }
     .mini-bar-track:hover::before,
-    .mini-bar-track.seeking::before { height: 14px; }
+    .mini-bar-track.seeking::before,
+    .mini-bar-track.bar-expanded::before { height: 14px; }
     .mini-bar-fill {
       position: absolute; left: 0; top: 50%;
       transform: translateY(-50%);
@@ -648,7 +647,8 @@
       overflow: hidden;
     }
     .mini-bar-track:hover .mini-bar-fill,
-    .mini-bar-track.seeking .mini-bar-fill { height: 14px; }
+    .mini-bar-track.seeking .mini-bar-fill,
+    .mini-bar-track.bar-expanded .mini-bar-fill { height: 14px; }
     .mini-bar-fill::after { content: ''; position: absolute; top: 0; left: -60%; bottom: 0; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent); animation: barShimmer 2.8s ease-in-out infinite; }
     @keyframes barShimmer { 0%{left:-60%} 65%{left:120%} 100%{left:120%} }
     /* Mini scrubber notch */
@@ -661,7 +661,9 @@
       pointer-events: none; z-index: 3;
       transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
-    .mini-bar-track:hover #mini-thumb { height: 22px; }
+    .mini-bar-track:hover #mini-thumb,
+    .mini-bar-track.seeking #mini-thumb,
+    .mini-bar-track.bar-expanded #mini-thumb { height: 22px; }
     #mini-thumb.dragging { height: 22px !important; }
     .mini-text-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 9px; }
     .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
@@ -1183,11 +1185,15 @@
   }
 
   // ── SEEK DRAG — shared utility ──
-  // Works for both full player seek bar and mini player bar.
-  // Supports mouse, touch and stylus via Pointer Events API.
-  function makeDraggableSeek(trackEl, thumbEl, onSeek) {
+  function makeDraggableSeek(trackEl, thumbEl) {
     if (!trackEl) return;
     let _dragging = false;
+    let _collapseTimer = null;
+
+    // Resolve fill element once, not every frame
+    const fillEl = trackEl.id === 'sticky-seek'
+      ? document.getElementById('sticky-fill')
+      : document.getElementById('mini-fill');
 
     function getPct(clientX) {
       const rect = trackEl.getBoundingClientRect();
@@ -1195,59 +1201,74 @@
     }
 
     function applyPct(pct) {
-      // Update thumb position immediately — no waiting for timeupdate
+      // Notch position
       if (thumbEl) thumbEl.style.left = (pct * 100) + '%';
-      // Find the fill element: works for both sticky-fill and mini-bar-fill
-      const fill = trackEl.querySelector('#sticky-fill, .mini-bar-fill') ||
-                   trackEl.closest('#sticky-seek')   && document.getElementById('sticky-fill') ||
-                   trackEl.closest('.mini-bar-track') && document.getElementById('mini-fill');
-      if (fill) fill.style.width = (pct * 100) + '%';
-      // Also update the dynamic mini-thumb if it exists inside trackEl
+      // Also sync mini-thumb if inside this track
       const mt = trackEl.querySelector('#mini-thumb');
       if (mt) mt.style.left = (pct * 100) + '%';
+      // Fill width — set directly, no querySelector guessing
+      if (fillEl) fillEl.style.width = (pct * 100) + '%';
+    }
+
+    function expand() {
+      clearTimeout(_collapseTimer);
+      trackEl.classList.add('bar-expanded');
+    }
+
+    function scheduleCollapse() {
+      // Wait 800ms after last interaction before collapsing
+      clearTimeout(_collapseTimer);
+      _collapseTimer = setTimeout(() => {
+        if (!_dragging) trackEl.classList.remove('bar-expanded');
+      }, 800);
     }
 
     function commitSeek(pct) {
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
+      // Block timeupdate from overwriting our position for 300ms
+      audio._seekLock = true;
       audio.currentTime = pct * audio.duration;
+      // Force the UI to show the committed position immediately
       updatePlayerUI(_activeDatum, audio.currentTime, audio.duration);
+      clearTimeout(audio._seekLockTimer);
+      audio._seekLockTimer = setTimeout(() => { audio._seekLock = false; }, 300);
     }
 
-    // ── pointerdown — start drag ──
+    // ── pointerdown ──
     trackEl.addEventListener('pointerdown', e => {
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
       _dragging = true;
-      trackEl.setPointerCapture(e.pointerId);   // keep events even if pointer leaves track
+      audio._seekLock = true;   // freeze timeupdate while dragging
+      trackEl.setPointerCapture(e.pointerId);
       trackEl.classList.add('seeking');
       if (thumbEl) thumbEl.classList.add('dragging');
-      const pct = getPct(e.clientX);
-      applyPct(pct);
+      expand();
+      applyPct(getPct(e.clientX));
       e.stopPropagation();
       e.preventDefault();
     }, { passive: false });
 
-    // ── pointermove — scrub visuals in real-time ──
+    // ── pointermove ──
     trackEl.addEventListener('pointermove', e => {
       if (!_dragging) return;
       const pct = getPct(e.clientX);
       applyPct(pct);
-      // Also update time display while scrubbing so user sees position
-      if (_activeDatum && audioState[_activeDatum] && audioState[_activeDatum].duration) {
-        const audio = audioState[_activeDatum];
-        const scrubTime = pct * audio.duration;
+      // Update time display while scrubbing
+      if (_activeDatum && audioState[_activeDatum]?.duration) {
+        const scrubTime = pct * audioState[_activeDatum].duration;
         const cur = document.getElementById('sticky-cur');
         const mTime = document.getElementById('mini-time-display');
         if (cur) cur.textContent = fmtTime(scrubTime);
-        if (mTime) mTime.textContent = fmtTime(scrubTime) + ' / ' + fmtTime(audio.duration);
+        if (mTime) mTime.textContent = fmtTime(scrubTime) + ' / ' + fmtTime(audioState[_activeDatum].duration);
       }
       e.stopPropagation();
     });
 
-    // ── pointerup — commit seek ──
+    // ── pointerup ──
     trackEl.addEventListener('pointerup', e => {
       if (!_dragging) return;
       _dragging = false;
@@ -1257,14 +1278,25 @@
       const pct = getPct(e.clientX);
       applyPct(pct);
       commitSeek(pct);
+      scheduleCollapse();   // collapse after 800ms idle
       e.stopPropagation();
     });
 
-    // ── pointercancel — bail out cleanly ──
-    trackEl.addEventListener('pointercancel', e => {
+    // ── pointercancel ──
+    trackEl.addEventListener('pointercancel', () => {
       _dragging = false;
       trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging');
+      scheduleCollapse();
+    });
+
+    // Mouse-leave collapses bar when not dragging
+    trackEl.addEventListener('pointerleave', () => {
+      if (!_dragging) scheduleCollapse();
+    });
+    // Mouse-enter expands (desktop hover)
+    trackEl.addEventListener('pointerenter', () => {
+      expand();
     });
   }
 
@@ -1378,7 +1410,7 @@
       a.src = audioUrls[datum];
       a.addEventListener('waiting',  () => setBtns(datum, SPIN_ICON, true));
       a.addEventListener('playing',  () => { setBtns(datum, PAUSE_ICON, true); openPlayer(datum); });
-      a.addEventListener('timeupdate', () => updatePlayerUI(datum, a.currentTime, a.duration));
+      a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
       a.addEventListener('ended', () => { closePlayer(datum); setBtns(datum, PLAY_ICON, false); updatePlayerUI(datum, 0, a.duration); });
       audioState[datum] = a;
