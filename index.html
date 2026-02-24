@@ -527,20 +527,20 @@
 
     /* Spring "blow up" animation */
     @keyframes moonBubbleOpen {
-      0%   { opacity: 0; transform: translateX(-50%) translateY(18px); }
-      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      0%   { opacity: 0; transform: translateY(18px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
     @keyframes moonBubbleClose {
-      0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(12px); }
+      0%   { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(12px); }
     }
 
     .moon-bubble {
       position: absolute;
       bottom: calc(100% + 10px);
-      left: 50%;
-      transform: translateX(-50%);
-      transform-origin: bottom center;
+      right: -10px;
+      transform: none;
+      transform-origin: bottom right;
 
       width: 260px;
       max-width: 90vw;
@@ -565,7 +565,7 @@
       visibility: hidden;
     }
 
-    /* Gold shimmer line at top */
+
     .moon-bubble::before {
       content: '';
       position: absolute;
@@ -574,12 +574,12 @@
       border-radius: 999px;
     }
 
-    /* Downward tail pointing at the moon */
+    /* Downward tail pointing at the moon — far right */
     .moon-bubble::after {
       content: '';
       position: absolute;
-      top: 100%; left: 50%;
-      transform: translateX(-50%);
+      top: 100%; right: 12px; left: auto;
+      transform: none;
       width: 0; height: 0;
       border-left: 7px solid transparent;
       border-right: 7px solid transparent;
@@ -608,11 +608,11 @@
       font-style: italic;
     }
 
-    /* Open on hover (desktop) */
+    /* Open on click/hover (desktop) — pulse rule above handles animation */
     .moon-wrap.bubble-open .moon-bubble {
       visibility: visible;
+      opacity: 1;
       pointer-events: auto;
-      animation: moonBubbleOpen 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
     /* Close animation */
@@ -636,8 +636,8 @@
       100% { transform: translateY(0); }
     }
     @keyframes moonBubbleMobileClose {
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(100%); }
+      0%   { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(0); }
     }
 
     /* ── Last 10 nights: table row & today card adjustments ── */
@@ -721,14 +721,13 @@
         pointer-events: auto !important;
         opacity: 1 !important;
         transform: translateY(0) !important;
-        animation: moonBubbleMobileOpen 0.42s cubic-bezier(0.34,1.20,0.64,1) both !important;
+        animation: moonBubbleMobileOpen 0.5s cubic-bezier(0.32, 0.72, 0, 1) both !important;
       }
-      /* Close animation */
+      /* Close — fade ut för att undvika glitch */
       .moon-bubble.bubble-closing {
         visibility: visible !important;
         pointer-events: none !important;
-        opacity: 0 !important;
-        animation: moonBubbleMobileClose 0.26s ease both !important;
+        animation: moonBubbleMobileClose 0.35s ease both !important;
       }
       /* Never show on CSS hover (touch) */
       .moon-wrap:hover .moon-bubble { visibility: hidden !important; animation: none !important; }
@@ -1127,13 +1126,13 @@
     const bubble = _activeMoonWrap.querySelector('.moon-bubble');
     _activeMoonWrap.classList.remove('bubble-open');
     if (bubble) {
+      
       if (animate && isMobile()) {
-        bubble.style.animation = 'moonBubbleMobileClose 0.26s ease both';
-        bubble.style.visibility = 'visible';
+        bubble.style.cssText = 'visibility: visible !important; animation: moonBubbleMobileClose 0.35s ease both !important;';
         setTimeout(() => {
           bubble.style.cssText = '';
           bubble.classList.remove('bubble-closing');
-        }, 300);
+        }, 380);
       } else if (animate) {
         bubble.classList.add('bubble-closing');
         const onEnd = () => {
@@ -1162,15 +1161,25 @@
     const bubble = wrapEl.querySelector('.moon-bubble');
     if (bubble) {
       bubble.classList.remove('bubble-closing');
+      
       if (isMobile()) {
         bubble.style.cssText = `
           visibility: visible !important;
           pointer-events: auto !important;
           animation: moonBubbleMobileOpen 0.5s cubic-bezier(0.32, 0.72, 0, 1) both !important;
         `;
+        // Lägg till puls efter open-animation
+        setTimeout(() => {
+          bubble.style.cssText = `
+            visibility: visible !important;
+            pointer-events: auto !important;
+            transform: translateY(0) !important;
+          `;
+          
+        }, 520);
       } else {
         bubble.style.cssText = '';
-        // After rendering, check if bubble overlaps the sticky player and push it up
+        setTimeout(() => {  }, 560);
         requestAnimationFrame(() => {
           const playerEl = document.getElementById('sticky-player');
           if (!playerEl || !playerEl.classList.contains('visible')) return;
