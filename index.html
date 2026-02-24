@@ -45,9 +45,9 @@
       --countdown-bg:    rgba(36,100,93,0.04);
       --countdown-bdr:   rgba(36,100,93,0.09);
       --notif-border:    rgba(36,100,93,0.20);
-      --seek-bg:         rgba(36,100,93,0.15);
-      --seek-fill:       #ffffff;
-      --scrubber-notch:  rgba(26,74,68,0.60);
+      --seek-bg:         rgba(0,0,0,0.10);
+      --seek-fill:       #1a4a44;
+      --scrubber-notch:  #1a4a44;
       --thumb-border:    #ffffff;
       --player-bg:       #ffffff;
       --player-border:   rgba(36,100,93,0.10);
@@ -748,34 +748,48 @@
     .sticky-seek-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
     .sticky-seek {
-      flex: 1; height: 22px; display: flex; align-items: center;
+      flex: 1; height: 28px; display: flex; align-items: center;
       position: relative; cursor: grab; touch-action: none;
     }
     .sticky-seek.seeking { cursor: grabbing; }
+    /* Track (unplayed) */
     .sticky-seek::before {
-      content: ''; position: absolute; inset: 0; top: 50%; left: 0; right: 0;
-      height: 4px; transform: translateY(-50%); border-radius: 999px;
+      content: ''; position: absolute; left: 0; right: 0; top: 50%;
+      height: 3px; transform: translateY(-50%); border-radius: 999px;
       background: var(--seek-bg);
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none;
+      transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s;
+      pointer-events: none;
     }
-    .sticky-seek:hover::before, .sticky-seek.seeking::before, .sticky-seek.bar-expanded::before { height: 18px; }
+    .sticky-seek:hover::before, .sticky-seek.seeking::before, .sticky-seek.bar-expanded::before { height: 5px; }
+    /* Fill (played) */
     .sticky-seek-fill {
       position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      height: 4px; border-radius: 999px; background: var(--seek-fill);
+      height: 3px; border-radius: 999px;
+      background: var(--seek-fill);
       width: 0%; pointer-events: none; z-index: 1;
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
+      transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s;
     }
-    .sticky-seek:hover .sticky-seek-fill, .sticky-seek.seeking .sticky-seek-fill, .sticky-seek.bar-expanded .sticky-seek-fill { height: 18px; }
+    .sticky-seek:hover .sticky-seek-fill,
+    .sticky-seek.seeking .sticky-seek-fill,
+    .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
+    /* Scrubber dot — hidden at rest, round dot on hover/drag */
     .sticky-seek-thumb {
       position: absolute; top: 50%; left: 0%;
-      width: 3px; height: 0px; border-radius: 2px;
+      width: 0px; height: 0px;
+      border-radius: 50%;
       background: var(--scrubber-notch);
-      transform: translate(-50%, -50%); pointer-events: none; touch-action: none; z-index: 3;
-      transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      transform: translate(-50%, -50%);
+      pointer-events: none; touch-action: none; z-index: 3;
+      transition: width  0.18s cubic-bezier(0.34,1.56,0.64,1),
+                  height 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                  background 0.35s;
     }
-    .sticky-seek:hover .sticky-seek-thumb, .sticky-seek.seeking .sticky-seek-thumb, .sticky-seek.bar-expanded .sticky-seek-thumb { height: 28px; }
-    .sticky-seek-thumb.dragging { height: 28px !important; }
-    .sticky-player.mini-mode .sticky-seek-thumb { height: 0 !important; }
+    .sticky-seek:hover .sticky-seek-thumb,
+    .sticky-seek.seeking .sticky-seek-thumb,
+    .sticky-seek.bar-expanded .sticky-seek-thumb { width: 13px; height: 13px; }
+    .sticky-seek-thumb.dragging { width: 13px !important; height: 13px !important; }
+    .sticky-player.mini-mode .sticky-seek-thumb { width: 0 !important; height: 0 !important; }
 
     /* ══════════════════════════════════════════
        CHANGE 4 — Sticky player controls: bigger buttons, more spacing
@@ -865,15 +879,15 @@
     .sticky-player.mini-mode .player-mini { transform: translateY(0) scaleY(1); opacity: 1; pointer-events: auto; }
     .mini-bar-track { width: 100%; height: 22px; background: transparent; flex-shrink: 0; position: relative; display: flex; align-items: center; cursor: grab; touch-action: none; overflow: visible; }
     .mini-bar-track.seeking { cursor: grabbing; }
-    .mini-bar-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 4px; border-radius: 999px; background: var(--seek-bg); transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
-    .mini-bar-track:hover::before, .mini-bar-track.seeking::before, .mini-bar-track.bar-expanded::before { height: 14px; }
-    .mini-bar-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 4px; width: 0%; border-radius: 999px; background: var(--seek-fill); pointer-events: none; z-index: 1; transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; overflow: hidden; }
-    .mini-bar-track:hover .mini-bar-fill, .mini-bar-track.seeking .mini-bar-fill, .mini-bar-track.bar-expanded .mini-bar-fill { height: 14px; }
-    .mini-bar-fill::after { content: ''; position: absolute; top: 0; left: -60%; bottom: 0; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent); animation: barShimmer 2.8s ease-in-out infinite; }
+    .mini-bar-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 3px; border-radius: 999px; background: var(--seek-bg); transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
+    .mini-bar-track:hover::before, .mini-bar-track.seeking::before, .mini-bar-track.bar-expanded::before { height: 5px; }
+    .mini-bar-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; width: 0%; border-radius: 999px; background: var(--seek-fill); pointer-events: none; z-index: 1; transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; overflow: hidden; }
+    .mini-bar-track:hover .mini-bar-fill, .mini-bar-track.seeking .mini-bar-fill, .mini-bar-track.bar-expanded .mini-bar-fill { height: 5px; }
+    .mini-bar-fill::after { content: ''; position: absolute; top: 0; left: -60%; bottom: 0; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent); animation: barShimmer 2.8s ease-in-out infinite; }
     @keyframes barShimmer { 0%{left:-60%} 65%{left:120%} 100%{left:120%} }
-    #mini-thumb { position: absolute; top: 50%; left: 0%; width: 3px; height: 0px; border-radius: 2px; background: var(--scrubber-notch); transform: translate(-50%, -50%); pointer-events: none; z-index: 3; transition: height 0.20s cubic-bezier(0.4,0,0.2,1), background 0.35s; }
-    .mini-bar-track:hover #mini-thumb, .mini-bar-track.seeking #mini-thumb, .mini-bar-track.bar-expanded #mini-thumb { height: 22px; }
-    #mini-thumb.dragging { height: 22px !important; }
+    #mini-thumb { position: absolute; top: 50%; left: 0%; width: 0px; height: 0px; border-radius: 50%; background: var(--scrubber-notch); box-shadow: 0 1px 4px rgba(0,0,0,0.25); transform: translate(-50%, -50%); pointer-events: none; z-index: 3; transition: width 0.18s cubic-bezier(0.34,1.56,0.64,1), height 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.35s; }
+    .mini-bar-track:hover #mini-thumb, .mini-bar-track.seeking #mini-thumb, .mini-bar-track.bar-expanded #mini-thumb { width: 11px; height: 11px; }
+    #mini-thumb.dragging { width: 11px !important; height: 11px !important; }
     .mini-text-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 9px; }
     .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
     .mini-time { font-size: .65rem; color: var(--muted-2); font-variant-numeric: tabular-nums; transition: color 0.35s; }
