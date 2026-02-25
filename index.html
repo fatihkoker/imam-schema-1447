@@ -450,13 +450,17 @@
     .lordag { color: var(--lordag-clr); }
     .sondag { color: var(--fredag-clr); }
     /* ── Hijri label ── */
-    .hijri-label { display: flex; align-items: center; gap: 3px; margin-top: 3px; font-size: .65rem; color: rgba(201,168,76,0.55); white-space: nowrap; }
-    .hijri-label .hijri-moon { font-size: .65rem; opacity: .55; }
+    .hijri-label { display: flex; align-items: center; gap: 3px; margin-top: 3px; font-size: .65rem; color: rgba(160,120,20,0.85); white-space: nowrap; }
+    .hijri-label .hijri-moon { font-size: .65rem; opacity: .75; }
+    [data-theme="dark"] .hijri-label { color: rgba(201,168,76,0.55); }
+    [data-theme="dark"] .hijri-label .hijri-moon { opacity: .55; }
     tbody tr.today .hijri-label { color: rgba(201,168,76,0.95); }
     tbody tr.today .hijri-label .hijri-moon { opacity: 1; }
     /* mobile */
-    .dcm-hijri { display: flex; align-items: center; gap: 3px; font-size: .65rem; color: rgba(201,168,76,0.55); white-space: nowrap; }
-    .dcm-hijri .hijri-moon { opacity: .55; }
+    .dcm-hijri { display: flex; align-items: center; gap: 3px; font-size: .65rem; color: rgba(160,120,20,0.85); white-space: nowrap; }
+    .dcm-hijri .hijri-moon { opacity: .75; }
+    [data-theme="dark"] .dcm-hijri { color: rgba(201,168,76,0.55); }
+    [data-theme="dark"] .dcm-hijri .hijri-moon { opacity: .55; }
     .day-card-mobile.today .dcm-hijri { color: rgba(201,168,76,0.95); }
     .day-card-mobile.today .dcm-hijri .hijri-moon { opacity: 1; }
     .imam-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 30px; font-size: .78rem; font-weight: 500; color: #fff; white-space: nowrap; }
@@ -866,6 +870,19 @@
       .today-imam-name { font-size: 1.6rem; }
     }
 
+
+    /* ── Instagram / Kamera-knapp i today-card ── */
+    .today-cam-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; background: rgba(201,168,76,0.10);
+      border: 1px solid rgba(201,168,76,0.28); color: var(--gold-light);
+      padding: 9px 16px; border-radius: 100px;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      cursor: pointer; transition: all .25s; font-family: inherit; white-space: nowrap;
+    }
+    .today-cam-btn:hover { background: rgba(201,168,76,0.20); border-color: rgba(201,168,76,0.55); transform: translateY(-1px); }
+    #img-canvas { display: none; }
+
     /* ── HEADER CONTROLS (left side) ── */
     .header-controls-left {
       position: absolute; top: 10px; left: 12px; z-index: 10;
@@ -877,15 +894,14 @@
       }
     }
 
-    /* Share button */
+    /* Share button — icon only */
     .share-btn {
-      display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
       background: rgba(201,168,76,0.12);
       border: 1px solid rgba(201,168,76,0.32);
       color: var(--gold-light);
-      padding: 5px 12px; border-radius: 100px;
-      font-size: .68rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
-      cursor: pointer; transition: all .25s; font-family: inherit;
+      cursor: pointer; transition: all .25s; font-family: inherit; flex-shrink: 0;
     }
     .share-btn:hover { background: rgba(201,168,76,0.22); border-color: rgba(201,168,76,0.6); transform: translateY(-1px); }
     .share-btn.share-copied { background: rgba(61,186,126,0.15); border-color: rgba(61,186,126,0.45); color: #3dba7e; }
@@ -980,12 +996,8 @@
       <span data-i18n="findUs">Hitta hit</span>
     </a>
   </div>
-  <!-- HEADER CONTROLS LEFT: Dela + Språk -->
+  <!-- HEADER CONTROLS LEFT: Språk + Dela -->
   <div class="header-controls-left">
-    <button class="share-btn" id="share-btn" onclick="handleShare()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      <span id="share-label">Dela schema</span>
-    </button>
     <div class="lang-wrap" id="lang-wrap">
       <div class="lang-trigger" id="lang-trigger">
         <span class="lang-flag" id="lang-flag">🇸🇪</span>
@@ -1001,6 +1013,9 @@
         <div class="lang-item" data-lang="so" data-flag="🇸🇴" data-code="SO"><span class="li-flag">🇸🇴</span><span class="li-native">Soomaali</span><span class="li-code">SO</span></div>
       </div>
     </div>
+    <button class="share-btn" id="share-btn" onclick="handleShare()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
   </div>
   <!-- SHARE TOAST -->
   <div class="share-toast" id="share-toast"></div>
@@ -1107,7 +1122,11 @@
           </button>
         </div>
       </div>
-      <div class="today-card-footer">
+      <div class="today-card-footer" style="justify-content:space-between;">
+        <button class="today-cam-btn" id="today-cam-btn" onclick="exportInstagramCard()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="12" cy="12" r="4"/><path d="M9 5V3h6v2"/></svg>
+          <span data-i18n="shareImg">Dela bild</span>
+        </button>
         <button class="today-scroll-btn" onclick="scrollToToday()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           <span data-i18n="scrollBtn">Se i schemat</span>
@@ -1116,6 +1135,7 @@
     </div>
   </div>
   </div>
+  <canvas id="img-canvas"></canvas>
 
   <!-- SECTION TITLE -->
   <div class="section-title">
@@ -1195,8 +1215,6 @@
       findUs:          'Hitta hit',
       lightMode:       'LJUST<br>LÄGE',
       darkMode:        'MÖRKT<br>LÄGE',
-      shareLabel:      'Dela schema',
-      shareCopied:     'Kopierat!',
       shareToast:      '✓ Länk kopierad till urklipp',
       badgeText:       'Dagens Imam',
       labelPages:      'Sidor idag',
@@ -1208,6 +1226,7 @@
       ishaDone:        'Isha-bönen är inne sedan kl. ',
       notifyMe:        'Notifiera mig',
       scrollBtn:       'Se i schemat',
+      shareImg:        'Dela bild',
       sectionHeading:  'Imamernas Böneledning',
       thPages:         'Sidor',
       thSurahs:        'Suror',
@@ -1237,8 +1256,6 @@
       findUs:          'اعثر علينا',
       lightMode:       'فاتح',
       darkMode:        'داكن',
-      shareLabel:      'مشاركة',
-      shareCopied:     'تم النسخ!',
       shareToast:      '✓ تم نسخ الرابط',
       badgeText:       'إمام اليوم',
       labelPages:      'الصفحات اليوم',
@@ -1250,6 +1267,7 @@
       ishaDone:        'صلاة العشاء بدأت الساعة ',
       notifyMe:        'أشعرني',
       scrollBtn:       'عرض في الجدول',
+      shareImg:        'مشاركة صورة',
       sectionHeading:  'إمامة الصلاة',
       thPages:         'الصفحات',
       thSurahs:        'السور',
@@ -1279,8 +1297,6 @@
       findUs:          'Get directions',
       lightMode:       'LIGHT<br>MODE',
       darkMode:        'DARK<br>MODE',
-      shareLabel:      'Share',
-      shareCopied:     'Copied!',
       shareToast:      '✓ Link copied to clipboard',
       badgeText:       "Today's Imam",
       labelPages:      "Today's pages",
@@ -1292,6 +1308,7 @@
       ishaDone:        'Isha prayer started at ',
       notifyMe:        'Notify me',
       scrollBtn:       'View in schedule',
+      shareImg:        'Share image',
       sectionHeading:  'Prayer Leadership',
       thPages:         'Pages',
       thSurahs:        'Surahs',
@@ -1321,8 +1338,6 @@
       findUs:          'Yol tarifi',
       lightMode:       'AÇIK<br>MOD',
       darkMode:        'KOYU<br>MOD',
-      shareLabel:      'Paylaş',
-      shareCopied:     'Kopyalandı!',
       shareToast:      '✓ Bağlantı panoya kopyalandı',
       badgeText:       'Günün İmamı',
       labelPages:      'Bugünün sayfaları',
@@ -1334,6 +1349,7 @@
       ishaDone:        'Yatsı namazı başladı, saat ',
       notifyMe:        'Beni bildir',
       scrollBtn:       'Programda göster',
+      shareImg:        'Resim paylaş',
       sectionHeading:  'İmam Programı',
       thPages:         'Sayfalar',
       thSurahs:        'Sureler',
@@ -1363,8 +1379,6 @@
       findUs:          'Raadi halka',
       lightMode:       'IFTI<br>MOD',
       darkMode:        'MADOW<br>MOD',
-      shareLabel:      'La wadaag',
-      shareCopied:     'Nuqul!',
       shareToast:      '✓ Xiriirka la koobiyeeyay',
       badgeText:       'Imaamka Maanta',
       labelPages:      'Bogagga maanta',
@@ -1376,6 +1390,7 @@
       ishaDone:        'Salaadda Cishaa waxay bilaabatay ',
       notifyMe:        'I ogeysiiso',
       scrollBtn:       'Arag jadwalka',
+      shareImg:        'Wadaag sawir',
       sectionHeading:  'Hogaanka Salaadda',
       thPages:         'Bogagga',
       thSurahs:        'Surooyin',
@@ -2101,10 +2116,6 @@
       if (t[key] !== undefined) el.textContent = t[key];
     });
 
-    // Share button label
-    const shareLabel = document.getElementById('share-label');
-    if (shareLabel) shareLabel.textContent = t.shareLabel;
-
     // Mobile cards surah label (dynamically rendered)
     document.querySelectorAll('.dcm-surahs-label').forEach(el => {
       el.textContent = t.surahsDetail;
@@ -2222,23 +2233,263 @@
     });
   });
 
+
+  /* ── Instagram Story canvas export ── */
+  function exportInstagramCard() {
+    const todayRow = SCHEDULE.find(r => r.datum === today);
+    if (!todayRow) return;
+
+    // Vänta på att Google Fonts är laddade — annars ritar canvas med system-font
+    // document.fonts.ready är en Promise som löser sig direkt om fonts redan är klara
+    document.fonts.ready.then(() => _drawAndExport(todayRow));
+  }
+
+  function _drawAndExport(todayRow) {
+    const t = T[_currentLang];
+    const W = 1080, H = 1350;
+    const canvas = document.getElementById('img-canvas');
+    canvas.width  = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // ── Hjälp: roundRect med fallback för gamla iOS Safari ──
+    function rrect(x, y, w, h, r) {
+      if (ctx.roundRect) {
+        ctx.roundRect(x, y, w, h, r);
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+    }
+
+    // ── Hjälp: radbryt text ──
+    function wrapText(text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (const word of words) {
+        const test = line ? line + ' ' + word : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, x, y);
+          line = word;
+          y += lineHeight;
+        } else { line = test; }
+      }
+      if (line) ctx.fillText(line, x, y);
+      return y;
+    }
+
+    // ── Bakgrund ──
+    const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
+    bg.addColorStop(0,   '#0c2018');
+    bg.addColorStop(0.5, '#152e24');
+    bg.addColorStop(1,   '#1e4a3c');
+    ctx.fillStyle = bg;
+    rrect(0, 0, W, H, 0);
+    ctx.fill();
+
+    // Guld glow uppe höger
+    const glow = ctx.createRadialGradient(W * 0.82, H * 0.06, 0, W * 0.82, H * 0.06, W * 0.6);
+    glow.addColorStop(0,   'rgba(201,168,76,0.18)');
+    glow.addColorStop(0.5, 'rgba(201,168,76,0.06)');
+    glow.addColorStop(1,   'rgba(201,168,76,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtil grön glow nere vänster
+    const glow2 = ctx.createRadialGradient(W * 0.15, H * 0.88, 0, W * 0.15, H * 0.88, W * 0.5);
+    glow2.addColorStop(0,   'rgba(36,100,93,0.22)');
+    glow2.addColorStop(1,   'rgba(36,100,93,0)');
+    ctx.fillStyle = glow2;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Ornament uppe ──
+    const OY = 148;
+    ctx.strokeStyle = 'rgba(201,168,76,0.40)';
+    ctx.lineWidth = 2;
+    // Vänster linje
+    ctx.beginPath(); ctx.moveTo(100, OY); ctx.lineTo(W/2 - 34, OY); ctx.stroke();
+    // Höger linje
+    ctx.beginPath(); ctx.moveTo(W/2 + 34, OY); ctx.lineTo(W - 100, OY); ctx.stroke();
+    // Prickar
+    [W/2 - 16, W/2 + 16].forEach(px => {
+      ctx.beginPath(); ctx.arc(px, OY, 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(201,168,76,0.55)'; ctx.fill();
+    });
+    // Diamond mitt
+    ctx.save();
+    ctx.translate(W/2, OY); ctx.rotate(Math.PI/4);
+    ctx.fillStyle = 'rgba(201,168,76,0.90)';
+    ctx.fillRect(-9, -9, 18, 18);
+    ctx.restore();
+
+    // ── Mosque badge uppe ──
+    ctx.font = '500 38px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.60)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('🕌  Kämpingehallen', W/2, 230);
+
+    // ── Ramadan / natt-label ──
+    const nightLabel = (t.night || 'Natt') + ' ' + todayRow.day;
+    const hijriDay   = todayRow.day - 1;
+    ctx.font = '400 34px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    const hijriPart = hijriDay > 0 ? '  ·  ' + hijriDay + ' رمضان 1447' : '  ·  Ramadan 1447';
+    ctx.fillText(nightLabel + hijriPart, W/2, 290);
+
+    // ── "Dagens Imam" pill ──
+    const pillLabel = (t.badgeText || 'Dagens Imam').toUpperCase();
+    ctx.font = '600 26px "DM Sans", sans-serif';
+    const pillW = ctx.measureText(pillLabel).width + 60;
+    const pillH = 48, pillX = W/2 - pillW/2, pillY = 340;
+    ctx.fillStyle = 'rgba(201,168,76,0.12)';
+    rrect(pillX, pillY, pillW, pillH, pillH/2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(201,168,76,0.35)';
+    ctx.lineWidth = 1.5;
+    rrect(pillX, pillY, pillW, pillH, pillH/2);
+    ctx.stroke();
+    // Prick
+    ctx.beginPath(); ctx.arc(pillX + 24, pillY + pillH/2, 5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(201,168,76,0.8)'; ctx.fill();
+    ctx.fillStyle = 'rgba(201,168,76,0.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText(pillLabel, W/2 + 6, pillY + 32);
+
+    // ── Imam-namn ──
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    const imamName = todayRow.imamLabel;
+    // Välj storlek dynamiskt baserat på längd
+    const fontSize = imamName.length > 18 ? 96 : imamName.length > 14 ? 110 : 128;
+    ctx.font = '600 ' + fontSize + 'px "Cormorant Garamond", serif';
+    const nameMaxW = W - 120;
+    if (ctx.measureText(imamName).width > nameMaxW) {
+      const parts = imamName.split(' ');
+      const mid = Math.ceil(parts.length / 2);
+      ctx.fillText(parts.slice(0, mid).join(' '), W/2, 530);
+      ctx.fillText(parts.slice(mid).join(' '),    W/2, 530 + fontSize + 12);
+    } else {
+      ctx.fillText(imamName, W/2, 560);
+    }
+
+    // ── Guld-divider ──
+    const divY = 700;
+    const dg = ctx.createLinearGradient(W/2 - 200, 0, W/2 + 200, 0);
+    dg.addColorStop(0,   'rgba(201,168,76,0)');
+    dg.addColorStop(0.3, 'rgba(201,168,76,0.5)');
+    dg.addColorStop(0.5, 'rgba(232,201,122,0.9)');
+    dg.addColorStop(0.7, 'rgba(201,168,76,0.5)');
+    dg.addColorStop(1,   'rgba(201,168,76,0)');
+    ctx.strokeStyle = dg;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W/2 - 200, divY); ctx.lineTo(W/2 + 200, divY); ctx.stroke();
+    // Diamond i mitten av divider
+    ctx.save();
+    ctx.translate(W/2, divY); ctx.rotate(Math.PI/4);
+    ctx.fillStyle = 'rgba(201,168,76,0.7)';
+    ctx.fillRect(-6, -6, 12, 12);
+    ctx.restore();
+
+    // ── Datum ──
+    ctx.font = '400 42px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.textAlign = 'center';
+    ctx.fillText(getDateLabel(new Date(today)), W/2, 790);
+
+    // ── Info-grid: Sidor | Suror ──
+    const gridY = 860, gridX1 = 100, gridX2 = W/2 + 40, gridW = W/2 - 140;
+
+    // Labels
+    ctx.font = '600 28px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.65)';
+    ctx.textAlign = 'left';
+    ctx.letterSpacing = '0.1em';
+    ctx.fillText((t.thPages  || 'SIDOR').toUpperCase(),  gridX1, gridY);
+    ctx.fillText((t.thSurahs || 'SUROR').toUpperCase(), gridX2, gridY);
+    ctx.letterSpacing = '0';
+
+    // Vertikal separator
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W/2 + 14, gridY - 30); ctx.lineTo(W/2 + 14, gridY + 280); ctx.stroke();
+
+    // Sidor-värde
+    ctx.font = '600 64px "Cormorant Garamond", serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(todayRow.sidor, gridX1, gridY + 76);
+
+    // Suror — radbryt
+    ctx.font = '400 32px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    const surahList = todayRow.surahs.split(', ');
+    let sLine = '', sY = gridY + 46, sMaxW = gridW;
+    for (let i = 0; i < surahList.length; i++) {
+      const sep = i < surahList.length - 1 ? ', ' : '';
+      const test = sLine ? sLine + ', ' + surahList[i] : surahList[i];
+      if (ctx.measureText(test + sep).width > sMaxW && sLine) {
+        ctx.fillText(sLine + ',', gridX2, sY);
+        sLine = surahList[i]; sY += 42;
+        if (sY > gridY + 280) { ctx.fillText('…', gridX2, sY); break; }
+      } else { sLine = test; }
+    }
+    if (sLine && sY <= gridY + 280) ctx.fillText(sLine, gridX2, sY);
+
+    // ── Ornament nere ──
+    const botOY = H - 200;
+    ctx.strokeStyle = 'rgba(201,168,76,0.20)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(100, botOY); ctx.lineTo(W - 100, botOY); ctx.stroke();
+
+    // ── Branding ──
+    ctx.font = '500 32px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Ramadan 2026  ·  tarawih.se', W/2, botOY + 54);
+    ctx.font = '500 30px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.50)';
+    ctx.fillText('@sverigesimamer', W/2, botOY + 100);
+
+    // ── Exportera: native share på mobil, nedladdning på desktop ──
+    canvas.toBlob(blob => {
+      const fname = 'tarawih-natt-' + todayRow.day + '.png';
+      const file  = new File([blob], fname, { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Tarawih ' + nightLabel }).catch(() => {});
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = fname;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+      }
+    }, 'image/png');
+  }
+
   /* ── Share ── */
   function handleShare() {
     const t = T[_currentLang];
     const btn = document.getElementById('share-btn');
-    const label = document.getElementById('share-label');
     const toast = document.getElementById('share-toast');
     if (navigator.share) {
       navigator.share({ title: 'Tarawih Schema — Kämpingehallen', url: window.location.href });
       return;
     }
     navigator.clipboard.writeText(window.location.href).catch(() => {});
-    label.textContent = t.shareCopied;
     btn.classList.add('share-copied');
     toast.textContent = t.shareToast;
     toast.classList.add('visible');
     setTimeout(() => {
-      label.textContent = t.shareLabel;
       btn.classList.remove('share-copied');
       toast.classList.remove('visible');
     }, 2200);
