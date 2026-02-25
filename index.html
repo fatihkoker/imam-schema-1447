@@ -957,25 +957,37 @@
     .lang-wrap.open .lang-chevron { transform: rotate(180deg); }
     .lang-dropdown {
       position: absolute; top: calc(100% + 8px); left: 0;
-      background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
+      background: #1a2e24; border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px; padding: 6px; min-width: 172px; z-index: 10010;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.55);
       opacity: 0; transform: translateY(-6px) scale(0.97);
       pointer-events: none; transition: all .22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    /* Light mode: ljus bakgrund — byt text till mörk */
+    [data-theme="light"] .lang-dropdown {
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.10);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
     }
     .lang-wrap.open .lang-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .lang-item {
       display: flex; align-items: center; gap: 10px; padding: 8px 10px;
       border-radius: 9px; cursor: pointer; transition: background .15s;
     }
-    .lang-item:hover { background: rgba(255,255,255,0.07); }
-    .lang-item.active { background: rgba(36,100,93,0.35); }
+    .lang-item:hover { background: rgba(255,255,255,0.09); }
+    [data-theme="light"] .lang-item:hover { background: rgba(0,0,0,0.05); }
+    .lang-item.active { background: rgba(36,100,93,0.45); }
+    [data-theme="light"] .lang-item.active { background: rgba(36,100,93,0.12); }
     .lang-item .li-flag { font-size: .9rem; }
-    .lang-item .li-native { font-size: .75rem; font-weight: 500; color: rgba(255,255,255,.7); flex: 1; }
-    .lang-item .li-code { font-size: .6rem; font-weight: 700; letter-spacing: .06em; color: rgba(255,255,255,.28); }
+    .lang-item .li-native { font-size: .75rem; font-weight: 500; color: rgba(255,255,255,.85); flex: 1; }
+    [data-theme="light"] .lang-item .li-native { color: rgba(20,40,30,.85); }
+    .lang-item .li-code { font-size: .6rem; font-weight: 700; letter-spacing: .06em; color: rgba(255,255,255,.40); }
+    [data-theme="light"] .lang-item .li-code { color: rgba(20,40,30,.35); }
     .lang-item.active .li-native { color: #fff; }
-    .lang-item.active .li-code { color: rgba(201,168,76,.75); }
+    [data-theme="light"] .lang-item.active .li-native { color: #0f2820; }
+    .lang-item.active .li-code { color: rgba(201,168,76,.85); }
     .lang-divider-line { height: 1px; background: rgba(255,255,255,.06); margin: 4px 2px; }
+    [data-theme="light"] .lang-divider-line { background: rgba(0,0,0,.07); }
   </style>
 </head>
 <body>
