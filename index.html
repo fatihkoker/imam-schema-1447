@@ -241,11 +241,37 @@
     .today-info-cell { background: var(--cell-bg); padding: 12px 16px; transition: background 0.35s; }
     .today-info-cell:first-child { border-radius: 14px 0 0 14px; }
     .today-info-cell:last-child  { border-radius: 0 14px 14px 0; }
-    @media (max-width: 480px) {
-      .today-info-grid { grid-template-columns: 1fr; }
-      .today-info-cell:first-child { border-radius: 14px 14px 0 0; }
-      .today-info-cell:last-child  { border-radius: 0 0 14px 14px; }
+    /* Grid håller alltid 2 kolumner — suror-cellen expanderar vid behov */
+    /* Expanderbar suror-cell */
+    .surahs-cell { cursor: default; }
+    .surahs-cell.expandable { cursor: pointer; }
+    .surahs-value-wrap {
+      position: relative;
     }
+    .surahs-value-wrap.collapsed {
+      max-height: 3.6em;
+      overflow: hidden;
+    }
+    .surahs-value-wrap.collapsed::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1.8em;
+      background: linear-gradient(to bottom, transparent, var(--cell-bg));
+      pointer-events: none;
+      transition: background 0.35s;
+    }
+    .surahs-expand-hint {
+      display: none;
+      font-size: 0.60rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--primary-dark);
+      margin-top: 6px; opacity: 0.6;
+    }
+    .surahs-cell.expandable .surahs-expand-hint { display: block; }
+    .surahs-cell.expanded .surahs-value-wrap { max-height: none; overflow: visible; }
+    .surahs-cell.expanded .surahs-value-wrap::after { display: none; }
+    .surahs-cell.expanded .surahs-expand-hint { opacity: 0.4; }
+
     .today-info-label { font-size: 0.60rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 5px; transition: color 0.35s; }
     .today-info-value { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 600; color: var(--primary-dark); line-height: 1.2; display: block; transition: color 0.35s; }
     .today-info-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; display: block; line-height: 1.4; transition: color 0.35s; }
@@ -1086,10 +1112,13 @@
           <span class="today-info-label" data-i18n="labelPages">Sidor idag</span>
           <span class="today-info-value" id="today-pages">—</span>
         </div>
-        <div class="today-info-cell">
+        <div class="today-info-cell surahs-cell" id="surahs-cell">
           <span class="today-info-label" data-i18n="labelSurahs">Suror</span>
-          <span class="today-info-value" style="font-size:1rem; font-family:'DM Sans',sans-serif; font-weight:500;" id="today-surahs-name">—</span>
-          <span class="today-info-sub" id="today-surahs-ref"></span>
+          <div class="surahs-value-wrap" id="surahs-value-wrap">
+            <span class="today-info-value" style="font-size:1rem; font-family:'DM Sans',sans-serif; font-weight:500;" id="today-surahs-name">—</span>
+            <span class="today-info-sub" id="today-surahs-ref"></span>
+          </div>
+          <span class="surahs-expand-hint" id="surahs-expand-hint" data-i18n="showMore">Visa alla ▾</span>
         </div>
       </div>
       <div class="today-countdown-section" id="isha-countdown">
@@ -1225,6 +1254,8 @@
       ishaPrefix:      'Isha-bönen börjar kl. ',
       ishaDone:        'Isha-bönen är inne sedan kl. ',
       notifyMe:        'Notifiera mig',
+      showMore:         'Visa alla ▾',
+      showLess:        'Visa mindre ▴',
       scrollBtn:       'Se i schemat',
       shareImg:        'Dela bild',
       sectionHeading:  'Imamernas Böneledning',
@@ -1266,6 +1297,8 @@
       ishaPrefix:      'صلاة العشاء تبدأ الساعة ',
       ishaDone:        'صلاة العشاء بدأت الساعة ',
       notifyMe:        'أشعرني',
+      showMore:         'عرض الكل ▾',
+      showLess:        'عرض أقل ▴',
       scrollBtn:       'عرض في الجدول',
       shareImg:        'مشاركة صورة',
       sectionHeading:  'إمامة الصلاة',
@@ -1307,6 +1340,8 @@
       ishaPrefix:      'Isha prayer begins at ',
       ishaDone:        'Isha prayer started at ',
       notifyMe:        'Notify me',
+      showMore:         'Show all ▾',
+      showLess:        'Show less ▴',
       scrollBtn:       'View in schedule',
       shareImg:        'Share image',
       sectionHeading:  'Prayer Leadership',
@@ -1348,6 +1383,8 @@
       ishaPrefix:      'Yatsı namazı saat ',
       ishaDone:        'Yatsı namazı başladı, saat ',
       notifyMe:        'Beni bildir',
+      showMore:         'Tümünü göster ▾',
+      showLess:        'Daha az ▴',
       scrollBtn:       'Programda göster',
       shareImg:        'Resim paylaş',
       sectionHeading:  'İmam Programı',
@@ -1389,6 +1426,8 @@
       ishaPrefix:      'Salaadda Cishaa waxay bilaabataa ',
       ishaDone:        'Salaadda Cishaa waxay bilaabatay ',
       notifyMe:        'I ogeysiiso',
+      showMore:         'Muuji dhammaan ▾',
+      showLess:        'Muuji yar ▴',
       scrollBtn:       'Arag jadwalka',
       shareImg:        'Wadaag sawir',
       sectionHeading:  'Hogaanka Salaadda',
@@ -1759,6 +1798,31 @@
     pagesValEl.dataset.sidor = todayData.sidor;
     pagesValEl.textContent = (T[_currentLang].pagesPrefix || 'Sidor') + ' ' + todayData.sidor;
     document.getElementById('today-surahs-name').textContent = todayData.surahs;
+
+    // Expanderbar suror-cell — kolla om texten är för lång
+    (function() {
+      const cell    = document.getElementById('surahs-cell');
+      const wrap    = document.getElementById('surahs-value-wrap');
+      const hint    = document.getElementById('surahs-expand-hint');
+      const nameEl  = document.getElementById('today-surahs-name');
+      // Vänta en tick så webbläsaren hunnit ritat ut texten
+      requestAnimationFrame(() => {
+        const lineH   = parseFloat(getComputedStyle(nameEl).lineHeight) || 20;
+        const maxH    = lineH * 3;   // 3 rader = gräns
+        if (nameEl.scrollHeight > maxH + 4) {
+          wrap.classList.add('collapsed');
+          cell.classList.add('expandable');
+          let expanded = false;
+          cell.addEventListener('click', () => {
+            expanded = !expanded;
+            cell.classList.toggle('expanded', expanded);
+            wrap.classList.toggle('collapsed', !expanded);
+            const t = T[_currentLang];
+            hint.textContent = expanded ? (t.showLess || 'Visa mindre ▴') : (t.showMore || 'Visa alla ▾');
+          });
+        }
+      });
+    })();
     document.getElementById('today-surahs-ref').textContent = todayData.tooltip;
 
     // Visa komet-wrapper istället för pulsing
@@ -2127,6 +2191,13 @@
       const yearSpan = h1.querySelector('span');
       h1.childNodes[0].textContent = '';
       h1.innerHTML = t.headerTitle + '<br><span style="font-size:0.65em;letter-spacing:0.04em;opacity:0.85;">' + t.headerYear + '</span>';
+    }
+
+    // Suror expand hint
+    const expandHint = document.getElementById('surahs-expand-hint');
+    if (expandHint) {
+      const isExpanded = document.getElementById('surahs-cell')?.classList.contains('expanded');
+      expandHint.textContent = isExpanded ? (t.showLess || 'Visa mindre ▴') : (t.showMore || 'Visa alla ▾');
     }
 
     // Today-card date label — re-render with correct language
