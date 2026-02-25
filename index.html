@@ -450,6 +450,16 @@
     .fredag { color: var(--fredag-clr); font-weight: 700; }
     .lordag { color: var(--lordag-clr); }
     .sondag { color: var(--fredag-clr); }
+    /* ── Hijri label ── */
+    .hijri-label { display: flex; align-items: center; gap: 3px; margin-top: 3px; font-size: .65rem; color: rgba(201,168,76,0.55); white-space: nowrap; }
+    .hijri-label .hijri-moon { font-size: .65rem; opacity: .55; }
+    tbody tr.today .hijri-label { color: rgba(201,168,76,0.95); }
+    tbody tr.today .hijri-label .hijri-moon { opacity: 1; }
+    /* mobile */
+    .dcm-hijri { display: flex; align-items: center; gap: 3px; font-size: .65rem; color: rgba(201,168,76,0.55); white-space: nowrap; }
+    .dcm-hijri .hijri-moon { opacity: .55; }
+    .day-card-mobile.today .dcm-hijri { color: rgba(201,168,76,0.95); }
+    .day-card-mobile.today .dcm-hijri .hijri-moon { opacity: 1; }
     .imam-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 30px; font-size: .78rem; font-weight: 500; color: #fff; white-space: nowrap; }
     .imam-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); flex-shrink: 0; }
     .imam-abdurrahman { background: var(--abdurrahman); }
@@ -1072,16 +1082,16 @@
     {day:17, sidor:'486–495',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-05', vecka:'Torsdag',  surahs:'Ash-Shura, Az-Zukhruf',                                                                                             tooltip:'42:27 – 43:89'},
     {day:18, sidor:'496–506',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-06', vecka:'Fredag',   surahs:'Ad-Dukhan, Al-Jathiyah, Al-Ahqaf',                                                                                  tooltip:'44:1 – 46:35'},
     {day:19, sidor:'507–515',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-07', vecka:'Lördag',   surahs:'Muhammad, Al-Fath',                                                                                                 tooltip:'47:1 – 48:29'},
-    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'Al-Hujurat, Qaf, Adh-Dhariyat',                                                                                     tooltip:'49:1 – 51:60', moonText:'Profeten ﷺ sade: "Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan." (Sahih Bukhari)'},
-    {day:21, sidor:'523–531',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag',   surahs:'At-Tur, An-Najm, Al-Qamar',                                                                                         tooltip:'52:1 – 54:55'},
-    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'Ar-Rahman, Al-Waqiah, Al-Hadid',                                                                                    tooltip:'55:1 – 57:15', moonText:'Profeten ﷺ sade: "Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan." (Sahih Bukhari)'},
-    {day:23, sidor:'539–548',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag',   surahs:'Al-Hadid, Al-Mujadilah, Al-Hashr',                                                                                  tooltip:'57:16 – 59:24'},
-    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'Al-Mumtahanah, As-Saf, Al-Jumuah, Al-Munafiqun, At-Taghabun',                                                       tooltip:'60:1 – 64:18', moonText:'Profeten ﷺ sade: "Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten." Sahih al-Bukhari 2023'},
-    {day:25, sidor:'558–566',imam:'hatem',       imamLabel:'Hatem',              datum:'2026-03-13', vecka:'Fredag',   surahs:'At-Talaq, At-Tahrim, Al-Mulk, Al-Qalam',                                                                            tooltip:'65:1 – 68:52'},
-    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'Al-Haqqah, Al-Maarij, Nuh, Al-Jinn, Al-Muzzammil',                                                                  tooltip:'69:1 – 73:20', moonText:'Profeten ﷺ sade: "Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna." (al-Bukhari och Muslim)'},
-    {day:27, sidor:'575–583',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag',   surahs:'Al-Muddaththir, Al-Qiyamah, Al-Insan, Al-Mursalat, An-Naba',                                                         tooltip:'74:1 – 78:40'},
-    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'An-Naziat, Abasa, At-Takwir, Al-Infitar, Al-Mutaffifin, Al-Inshiqaq, Al-Buruj, At-Tariq, Al-Ala',                    tooltip:'79:1 – 87:19', moonText:'Profeten ﷺ sade: "Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten." Sahih al-Bukhari 2023'},
-    {day:29, sidor:'592–604',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag',   surahs:'Al-Ghashiyah, Al-Fajr, Al-Balad, Ash-Shams, Al-Layl, Ad-Duha, Ash-Sharh, At-Tin, Al-Alaq, Al-Qadr, Al-Bayyinah, Az-Zalzalah, Al-Adiyat, Al-Qariah, At-Takathur, Al-Asr, Al-Humazah, Al-Fil, Quraysh, Al-Maun, Al-Kawthar, Al-Kafirun, An-Nasr, Al-Masad, Al-Ikhlas, Al-Falaq, An-Nas', tooltip:'88:1 – 114:6'},
+    {day:20, sidor:'515–523',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-08', vecka:'Söndag',   surahs:'Al-Hujurat, Qaf, Adh-Dhariyat',                                                                                     tooltip:'49:1 – 51:60', moonText:'Profeten ﷺ sade: \"Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan.\" (Sahih Bukhari)'},
+    {day:21, sidor:'523–531',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-09', vecka:'Måndag',   surahs:'At-Tur, An-Najm, Al-Qamar',                                                                                         tooltip:'52:1 – 54:55', moonText:'Profeten ﷺ sade: \"Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan.\" (Sahih Bukhari)'},
+    {day:22, sidor:'531–539',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-10', vecka:'Tisdag',   surahs:'Ar-Rahman, Al-Waqiah, Al-Hadid',                                                                                    tooltip:'55:1 – 57:15', moonText:'Profeten ﷺ sade: \"Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna.\" (al-Bukhari och Muslim)'},
+    {day:23, sidor:'539–548',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-11', vecka:'Onsdag',   surahs:'Al-Hadid, Al-Mujadilah, Al-Hashr',                                                                                  tooltip:'57:16 – 59:24', moonText:'Profeten ﷺ sade: \"Sök Laylat al-Qadr i de udda nätterna under de sista tio dagarna av Ramadan.\" (Sahih Bukhari)'},
+    {day:24, sidor:'549–557',imam:'abdul',       imamLabel:'Abdul Qadir',        datum:'2026-03-12', vecka:'Torsdag',  surahs:'Al-Mumtahanah, As-Saf, Al-Jumuah, Al-Munafiqun, At-Taghabun',                                                       tooltip:'60:1 – 64:18', moonText:'Profeten ﷺ sade: \"Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna.\" (al-Bukhari och Muslim)'},
+    {day:25, sidor:'558–566',imam:'hatem',       imamLabel:'Hatem',              datum:'2026-03-13', vecka:'Fredag',   surahs:'At-Talaq, At-Tahrim, Al-Mulk, Al-Qalam',                                                                            tooltip:'65:1 – 68:52', moonText:'Profeten ﷺ sade: \"Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten.\" Sahih al-Bukhari 2023'},
+    {day:26, sidor:'566–574',imam:'abdurrahman', imamLabel:'Abdurrahman Sudani', datum:'2026-03-14', vecka:'Lördag',   surahs:'Al-Haqqah, Al-Maarij, Nuh, Al-Jinn, Al-Muzzammil',                                                                  tooltip:'69:1 – 73:20', moonText:'Profeten ﷺ sade: \"Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna.\" (al-Bukhari och Muslim)'},
+    {day:27, sidor:'575–583',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-15', vecka:'Söndag',   surahs:'Al-Muddaththir, Al-Qiyamah, Al-Insan, Al-Mursalat, An-Naba',                                                         tooltip:'74:1 – 78:40', moonText:'Profeten ﷺ sade: \"Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten.\" Sahih al-Bukhari 2023'},
+    {day:28, sidor:'583–591',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-16', vecka:'Måndag',   surahs:'An-Naziat, Abasa, At-Takwir, Al-Infitar, Al-Mutaffifin, Al-Inshiqaq, Al-Buruj, At-Tariq, Al-Ala',                    tooltip:'79:1 – 87:19', moonText:'Profeten ﷺ sade: \"Den som står upp i nattbön under Laylatul-Qadr med tro och i hopp om belöning får sina tidigare synder förlåtna.\" (al-Bukhari och Muslim)'},
+    {day:29, sidor:'592–604',imam:'yacquub',     imamLabel:'Yacquub',            datum:'2026-03-17', vecka:'Tisdag',   surahs:'Al-Ghashiyah, Al-Fajr, Al-Balad, Ash-Shams, Al-Layl, Ad-Duha, Ash-Sharh, At-Tin, Al-Alaq, Al-Qadr, Al-Bayyinah, Az-Zalzalah, Al-Adiyat, Al-Qariah, At-Takathur, Al-Asr, Al-Humazah, Al-Fil, Quraysh, Al-Maun, Al-Kawthar, Al-Kafirun, An-Nasr, Al-Masad, Al-Ikhlas, Al-Falaq, An-Nas', tooltip:'88:1 – 114:6', moonText:'Profeten ﷺ sade: \"Sök efter den (Maktens natt) på den tjugonionde, tjugosjunde och tjugofemte natten.\" Sahih al-Bukhari 2023'},
     {day:30, sidor:'2–11',   imam:'noor',        imamLabel:'Noor',               datum:'2026-03-18', vecka:'Onsdag',   surahs:'Al-Baqarah',                                                                                                        tooltip:'2:1 – 2:74'},
   ];
 
@@ -1236,6 +1246,9 @@
       ? `<span class="moon-wrap"><span class="${moonClass}">${moonSvg(moonFill, 12)}</span>${makeMoonBubble(moonText)}</span>`
       : '';
 
+    const hijriDay = row.day - 1;
+    const hijriLabel = hijriDay > 0 ? `<div class="hijri-label"><span class="hijri-moon">🌙</span>${hijriDay} Ramadan</div>` : '';
+
     tr.innerHTML = `
       <td class="td-dag">${row.day}</td>
       <td class="td-sidor">${row.sidor}</td>
@@ -1244,7 +1257,7 @@
         <div class="tooltip-box">📖 ${row.tooltip}</div>
       </td>
       <td><span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span></td>
-      <td class="td-datum ${isToday ? 'today-date' : ''}">${row.datum}${badge}</td>
+      <td class="td-datum ${isToday ? 'today-date' : ''}">${row.datum}${badge}${hijriLabel}</td>
       <td class="td-audio" id="audio-desktop-${row.datum}"></td>
       <td class="td-moon">${moonCell}</td>
       <td class="td-veckodag ${veckaClass}">${row.vecka}</td>
@@ -1298,6 +1311,7 @@
           <div class="dcm-imam"><span class="imam-chip imam-${row.imam}"><span class="dot"></span>${row.imamLabel}</span></div>
           <div class="dcm-meta">
             <span class="dcm-date">${row.datum}${badge}</span>
+            ${row.day > 1 ? `<span class="dcm-hijri"><span class="hijri-moon">🌙</span>${row.day - 1} Ramadan</span>` : ''}
             ${moonSpan}
             <span class="dcm-day-label ${veckaClass}">${row.vecka}</span>
             <span class="dcm-pages">s. ${row.sidor}</span>
@@ -1342,8 +1356,8 @@
     document.getElementById('today-imam-name').textContent = todayData.imamLabel;
     const dateLabel = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
 
-    // Hijri datum — dag 3 i schemat = 1 Ramadan 1447 (offset -2)
-    const hijriDay = todayData.day - 2;
+    // Hijri datum — dag 2 i schemat = 1 Ramadan 1447 (offset -1)
+    const hijriDay = todayData.day - 1;
     const hijriStr = hijriDay + ' Ramadan 1447';
 
     if (todayData.day >= 21) {
