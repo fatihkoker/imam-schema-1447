@@ -2330,219 +2330,360 @@
   function _drawAndExport(todayRow) {
     const t   = T[_currentLang];
     const DPR = 2;
-    // Instagram Stories 9:16
     const CW  = 1080, CH = 1920;
-    const W   = CW * DPR, H = CH * DPR;
     const canvas = document.getElementById('img-canvas');
-    canvas.width  = W;
-    canvas.height = H;
+    canvas.width  = CW * DPR;
+    canvas.height = CH * DPR;
     const ctx = canvas.getContext('2d');
     ctx.scale(DPR, DPR);
+    const CX = CW / 2;
 
-    // ── Hjälpare ──
+    // ═══════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════
     function rrect(x, y, w, h, r) {
       if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
       ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
       ctx.closePath();
     }
 
-    // ── BAKGRUND ──
-    const bg = ctx.createLinearGradient(0, 0, CW * 0.5, CH);
-    bg.addColorStop(0,    '#0c1e16');
-    bg.addColorStop(0.4,  '#122a1e');
-    bg.addColorStop(0.75, '#1a3c2e');
-    bg.addColorStop(1,    '#24645d');
+    function goldLine(x1, y, x2) {
+      const g = ctx.createLinearGradient(x1, 0, x2, 0);
+      g.addColorStop(0,   'rgba(201,168,76,0)');
+      g.addColorStop(0.3, 'rgba(201,168,76,0.6)');
+      g.addColorStop(0.5, 'rgba(232,201,100,1)');
+      g.addColorStop(0.7, 'rgba(201,168,76,0.6)');
+      g.addColorStop(1,   'rgba(201,168,76,0)');
+      ctx.strokeStyle = g; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+    }
+
+    function diamond(cx, cy, size, alpha) {
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(Math.PI/4);
+      ctx.fillStyle = 'rgba(201,168,76,' + alpha + ')';
+      ctx.fillRect(-size/2, -size/2, size, size);
+      ctx.restore();
+    }
+
+    function islamicStar(cx, cy, R, r, pts, alpha) {
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i < pts * 2; i++) {
+        const angle = (i * Math.PI / pts) - Math.PI / 2;
+        const rad   = i % 2 === 0 ? R : r;
+        const x = cx + Math.cos(angle) * rad;
+        const y = cy + Math.sin(angle) * rad;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(201,168,76,' + alpha + ')';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // ═══════════════════════════════════════════
+    // 1. BAKGRUND — djup svart-smaragd
+    // ═══════════════════════════════════════════
+    const bg = ctx.createLinearGradient(0, 0, CW * 0.8, CH);
+    bg.addColorStop(0,    '#060e09');
+    bg.addColorStop(0.25, '#0a1a10');
+    bg.addColorStop(0.55, '#0e2418');
+    bg.addColorStop(0.80, '#122c1e');
+    bg.addColorStop(1,    '#163424');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, CW, CH);
 
-    // Guld glow övre höger
-    const glow = ctx.createRadialGradient(CW * 0.85, CH * 0.04, 0, CW * 0.85, CH * 0.04, CW * 0.7);
-    glow.addColorStop(0,   'rgba(201,168,76,0.18)');
-    glow.addColorStop(0.4, 'rgba(201,168,76,0.06)');
-    glow.addColorStop(1,   'rgba(201,168,76,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, CW, CH);
+    // Atmosfärisk smaragd-glow mitten-vänster
+    const g1 = ctx.createRadialGradient(CW*0.15, CH*0.42, 0, CW*0.15, CH*0.42, CW*0.9);
+    g1.addColorStop(0,   'rgba(18,90,60,0.35)');
+    g1.addColorStop(0.5, 'rgba(18,90,60,0.08)');
+    g1.addColorStop(1,   'rgba(18,90,60,0)');
+    ctx.fillStyle = g1; ctx.fillRect(0,0,CW,CH);
 
-    // ════════════════════════════════════════
-    // ÖVRE SEKTION — centrerad
-    // ════════════════════════════════════════
-    const TOP_Y  = 220;   // start Y för övre sektionen
-    const CX     = CW / 2;
+    // Guld aura uppe höger
+    const g2 = ctx.createRadialGradient(CW*0.9, CH*0.07, 0, CW*0.9, CH*0.07, CW*0.65);
+    g2.addColorStop(0,   'rgba(201,168,76,0.20)');
+    g2.addColorStop(0.35,'rgba(201,168,76,0.06)');
+    g2.addColorStop(1,   'rgba(201,168,76,0)');
+    ctx.fillStyle = g2; ctx.fillRect(0,0,CW,CH);
 
-    // ── DAGENS IMAM pill (centrerad) ──
+    // Subtil lila-guld glow nere höger
+    const g3 = ctx.createRadialGradient(CW*0.88, CH*0.88, 0, CW*0.88, CH*0.88, CW*0.5);
+    g3.addColorStop(0,   'rgba(120,80,200,0.08)');
+    g3.addColorStop(1,   'rgba(120,80,200,0)');
+    ctx.fillStyle = g3; ctx.fillRect(0,0,CW,CH);
+
+    // ═══════════════════════════════════════════
+    // 2. GEOMETRISK ISLAMISK ORNAMENT — uppe mitten
+    // ═══════════════════════════════════════════
+    // Stor stjärna som bakgrundsornament
+    ctx.globalAlpha = 0.06;
+    islamicStar(CX, 420, 480, 200, 8, 1);
+    ctx.globalAlpha = 0.04;
+    islamicStar(CX, 420, 560, 240, 12, 1);
+    ctx.globalAlpha = 1;
+
+    // Cirkel-ring bakom stjärnan
+    ctx.globalAlpha = 0.08;
+    ctx.strokeStyle = 'rgba(201,168,76,1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(CX, 420, 500, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX, 420, 440, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // ═══════════════════════════════════════════
+    // 3. HEADER ORNAMENT — toppen
+    // ═══════════════════════════════════════════
+    goldLine(60, 80, CW-60);
+    diamond(CX, 80, 18, 0.9);
+    diamond(CX - 60, 80, 8, 0.5);
+    diamond(CX + 60, 80, 8, 0.5);
+
+    // Moské-emoji stor, subtil
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.18;
+    ctx.fillText('🕌', CX, 200);
+    ctx.globalAlpha = 1;
+
+    // ═══════════════════════════════════════════
+    // 4. "DAGENS IMAM" CHIP
+    // ═══════════════════════════════════════════
     const pillTxt = (t.badgeText || 'Dagens Imam').toUpperCase();
-    ctx.font = '600 28px "DM Sans", sans-serif';
-    const pillTW = ctx.measureText(pillTxt).width;
-    const pH = 52, pW = pillTW + 64;
-    const pX = CX - pW / 2, pY = TOP_Y;
-    // Fill
-    ctx.fillStyle = 'rgba(201,168,76,0.15)';
-    rrect(pX, pY, pW, pH, pH / 2); ctx.fill();
-    // Border
-    ctx.strokeStyle = 'rgba(201,168,76,0.38)';
-    ctx.lineWidth = 1.5;
-    rrect(pX, pY, pW, pH, pH / 2); ctx.stroke();
-    // Prick
-    ctx.beginPath(); ctx.arc(pX + 22, pY + pH / 2, 6, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(201,168,76,0.85)'; ctx.fill();
-    // Text
-    ctx.fillStyle = 'rgba(201,168,76,0.90)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(pillTxt, CX + 6, pY + pH / 2);
+    ctx.font = '700 26px "DM Sans", sans-serif';
+    const pillTW  = ctx.measureText(pillTxt).width;
+    const pH = 58, pW = pillTW + 80;
+    const pX = CX - pW/2, pY = 240;
 
-    // ── Imam-namn (centrerat) ──
+    // Glassmorfism-bakgrund
+    const pillBg = ctx.createLinearGradient(pX, pY, pX+pW, pY+pH);
+    pillBg.addColorStop(0, 'rgba(201,168,76,0.22)');
+    pillBg.addColorStop(1, 'rgba(201,168,76,0.08)');
+    ctx.fillStyle = pillBg;
+    rrect(pX, pY, pW, pH, pH/2); ctx.fill();
+
+    // Border gradient
+    ctx.strokeStyle = 'rgba(201,168,76,0.55)';
+    ctx.lineWidth = 1.5;
+    rrect(pX, pY, pW, pH, pH/2); ctx.stroke();
+
+    // Prick + text
+    ctx.beginPath(); ctx.arc(pX+26, pY+pH/2, 7, 0, Math.PI*2);
+    ctx.fillStyle = '#c9a84c'; ctx.fill();
+    ctx.fillStyle = '#f0d080';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(pillTxt, CX+8, pY+pH/2);
     ctx.textBaseline = 'alphabetic';
-    const imamName = todayRow.imamLabel;
-    const nameFontSize = imamName.length > 20 ? 100 : imamName.length > 14 ? 118 : 136;
-    ctx.font = '600 ' + nameFontSize + 'px "Cormorant Garamond", serif';
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    const nameY = pY + pH + 36 + nameFontSize;
-    if (ctx.measureText(imamName).width > CW - 120) {
+
+    // ═══════════════════════════════════════════
+    // 5. IMAM-NAMN — stor, vit, dramatisk
+    // ═══════════════════════════════════════════
+    const imamName    = todayRow.imamLabel;
+    const nameFontSz  = imamName.length > 22 ? 104 : imamName.length > 16 ? 120 : imamName.length > 12 ? 140 : 156;
+    ctx.textAlign  = 'center';
+    ctx.fillStyle  = '#ffffff';
+
+    // Skugga för djup
+    ctx.shadowColor   = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur    = 30;
+    ctx.shadowOffsetY = 8;
+
+    ctx.font = '600 ' + nameFontSz + 'px "Cormorant Garamond", serif';
+    const nameY = pY + pH + 50 + nameFontSz;
+
+    if (ctx.measureText(imamName).width > CW - 80) {
       const parts = imamName.split(' ');
-      const mid = Math.ceil(parts.length / 2);
-      ctx.fillText(parts.slice(0, mid).join(' '), CX, nameY);
-      ctx.fillText(parts.slice(mid).join(' '),    CX, nameY + nameFontSize + 10);
+      const mid   = Math.ceil(parts.length / 2);
+      ctx.fillText(parts.slice(0,mid).join(' '), CX, nameY);
+      ctx.fillText(parts.slice(mid).join(' '),   CX, nameY + nameFontSz + 14);
     } else {
       ctx.fillText(imamName, CX, nameY);
     }
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-    // ── Datum + separator + Hijri (centrerat) ──
-    const hijriDay = todayRow.day - 1;
-    const dateStr  = getDateLabel(new Date(today));
+    // ═══════════════════════════════════════════
+    // 6. DATUM & HIJRI
+    // ═══════════════════════════════════════════
+    const hijriDay    = todayRow.day - 1;
+    const dateStr     = getDateLabel(new Date(today));
     const hijriLatin  = hijriDay > 0 ? hijriDay + ' Ramadan 1447' : '';
-    const hijriArabic = 'رمضان'; // رمضان
-    ctx.font = '400 36px "DM Sans", sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    const dateY = nameY + 56;
+    const hijriArabic = 'رمضان';
+    const dateY       = nameY + 64;
 
+    ctx.font = '400 38px "DM Sans", sans-serif';
     if (hijriLatin) {
-      // Mät alla delar separat för exakt centrering
       const dateW  = ctx.measureText(dateStr).width;
       const latinW = ctx.measureText(hijriLatin).width;
-      ctx.font = '400 38px "Cormorant Garamond", serif';
+      ctx.font = '400 40px "Cormorant Garamond", serif';
       const arabicW = ctx.measureText(hijriArabic).width;
-      ctx.font = '400 36px "DM Sans", sans-serif';
-      const dotGap  = 40;
-      const arabGap = 14;
-      const totalW  = dateW + dotGap + latinW + arabGap + arabicW;
-      const startX  = CX - totalW / 2;
+      ctx.font = '400 38px "DM Sans", sans-serif';
+      const DOT = 44, GAP = 16;
+      const totalW = dateW + DOT + latinW + GAP + arabicW;
+      const sx = CX - totalW/2;
 
-      // 1. Datum
       ctx.textAlign = 'left';
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.fillText(dateStr, startX, dateY);
+      ctx.fillStyle = 'rgba(255,255,255,0.60)';
+      ctx.fillText(dateStr, sx, dateY);
 
-      // 2. Separator prick
-      ctx.beginPath(); ctx.arc(startX + dateW + dotGap / 2, dateY - 11, 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(201,168,76,0.55)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(sx + dateW + DOT/2, dateY-13, 5, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(201,168,76,0.7)'; ctx.fill();
 
-      // 3. "8 Ramadan 1447"
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.font = '400 36px "DM Sans", sans-serif';
-      const latinX = startX + dateW + dotGap;
-      ctx.fillText(hijriLatin, latinX, dateY);
+      ctx.fillStyle = 'rgba(255,255,255,0.60)';
+      ctx.font = '400 38px "DM Sans", sans-serif';
+      ctx.fillText(hijriLatin, sx+dateW+DOT, dateY);
 
-      // 4. "رمضان" — guld, Cormorant för bättre arabisk rendering
-      ctx.font = '400 38px "Cormorant Garamond", serif';
-      ctx.fillStyle = 'rgba(201,168,76,0.75)';
-      ctx.fillText(hijriArabic, latinX + latinW + arabGap, dateY);
+      ctx.font = '400 42px "Cormorant Garamond", serif';
+      ctx.fillStyle = 'rgba(201,168,76,0.85)';
+      ctx.fillText(hijriArabic, sx+dateW+DOT+latinW+GAP, dateY);
     } else {
       ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255,255,255,0.60)';
       ctx.fillText(dateStr, CX, dateY);
     }
 
-    // ── Ornament-linje under datumet ──
-    const ornY = dateY + 60;
-    const ornLen = 180;
-    ctx.strokeStyle = 'rgba(201,168,76,0.35)';
+    // ═══════════════════════════════════════════
+    // 7. GULD DIVIDER med ornament
+    // ═══════════════════════════════════════════
+    const divY = dateY + 80;
+    goldLine(80, divY, CW-80);
+    diamond(CX, divY, 20, 0.95);
+    diamond(CX-90, divY, 7, 0.5);
+    diamond(CX+90, divY, 7, 0.5);
+    // Stjärnor längs linjen
+    islamicStar(CX-200, divY, 10, 4, 6, 0.3);
+    islamicStar(CX+200, divY, 10, 4, 6, 0.3);
+
+    // ═══════════════════════════════════════════
+    // 8. INFO-PANEL — glassmorfism med två kolumner
+    // ═══════════════════════════════════════════
+    const panelY  = divY + 60;
+    const panelH  = CH - panelY - 140;
+    const panelPad = 56;
+
+    // Panel bakgrund — frostat glas
+    const panelBg = ctx.createLinearGradient(0, panelY, 0, panelY+panelH);
+    panelBg.addColorStop(0, 'rgba(255,255,255,0.05)');
+    panelBg.addColorStop(1, 'rgba(255,255,255,0.02)');
+    ctx.fillStyle = panelBg;
+    rrect(panelPad, panelY, CW-panelPad*2, panelH, 36); ctx.fill();
+
+    // Panel border
+    const panelBorder = ctx.createLinearGradient(0, panelY, 0, panelY+panelH);
+    panelBorder.addColorStop(0, 'rgba(201,168,76,0.25)');
+    panelBorder.addColorStop(0.5,'rgba(255,255,255,0.06)');
+    panelBorder.addColorStop(1, 'rgba(201,168,76,0.12)');
+    ctx.strokeStyle = panelBorder;
     ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(CX - ornLen - 20, ornY); ctx.lineTo(CX - 20, ornY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(CX + 20, ornY);          ctx.lineTo(CX + ornLen + 20, ornY); ctx.stroke();
-    // Diamond
-    ctx.save();
-    ctx.translate(CX, ornY); ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = 'rgba(201,168,76,0.8)';
-    ctx.fillRect(-8, -8, 16, 16);
-    ctx.restore();
-
-    // ════════════════════════════════════════
-    // NEDRE SEKTION — info-grid
-    // ════════════════════════════════════════
-    const SEP_Y  = ornY + 70;
-    const PAD    = 80;
-    const GRID_W = CW - PAD * 2;
-    const midX   = CW / 2;
-
-    // Halvgenomsynlig mörk panel
-    ctx.fillStyle = 'rgba(8,20,16,0.45)';
-    rrect(PAD - 24, SEP_Y, GRID_W + 48, CH - SEP_Y - 80, 32);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 1;
-    rrect(PAD - 24, SEP_Y, GRID_W + 48, CH - SEP_Y - 80, 32);
-    ctx.stroke();
+    rrect(panelPad, panelY, CW-panelPad*2, panelH, 36); ctx.stroke();
 
     // Vertikal separator
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(midX, SEP_Y + 32);
-    ctx.lineTo(midX, CH - 112);
-    ctx.stroke();
+    const sepX = CW/2;
+    const sepGrad = ctx.createLinearGradient(0, panelY+40, 0, panelY+panelH-40);
+    sepGrad.addColorStop(0, 'rgba(201,168,76,0)');
+    sepGrad.addColorStop(0.3,'rgba(201,168,76,0.25)');
+    sepGrad.addColorStop(0.7,'rgba(201,168,76,0.25)');
+    sepGrad.addColorStop(1, 'rgba(201,168,76,0)');
+    ctx.strokeStyle = sepGrad; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sepX, panelY+40); ctx.lineTo(sepX, panelY+panelH-40); ctx.stroke();
 
-    const cellY  = SEP_Y + 60;
-    const col1X  = PAD + 16;
-    const col2X  = midX + 40;
-    const colMaxW = midX - PAD - 56;
+    const col1X   = panelPad + panelPad*0.5;
+    const col2X   = CW/2 + panelPad*0.5;
+    const colMaxW = CW/2 - panelPad*1.5;
+    const infoY   = panelY + 72;
 
-    // Labels
-    ctx.font = '600 24px "DM Sans", sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    // ── Kolumn 1: SIDOR ──
+    // Label
+    ctx.font = '700 22px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.60)';
     ctx.textAlign = 'left';
-    ctx.letterSpacing = '0.1em';
-    ctx.fillText((t.labelPages  || 'SIDOR IDAG').toUpperCase(), col1X, cellY);
-    ctx.fillText((t.labelSurahs || 'SUROR').toUpperCase(),      col2X, cellY);
+    ctx.letterSpacing = '0.14em';
+    ctx.fillText((t.labelPages || 'SIDOR IDAG').toUpperCase(), col1X, infoY);
     ctx.letterSpacing = '0';
 
-    // Sidor värde
-    ctx.font = '500 88px "Cormorant Garamond", serif';
-    ctx.fillStyle = '#2d9c6e';
-    ctx.fillText(todayRow.sidor, col1X, cellY + 100);
+    // Guld understrykning under label
+    ctx.strokeStyle = 'rgba(201,168,76,0.20)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(col1X, infoY+10); ctx.lineTo(col1X+180, infoY+10); ctx.stroke();
 
-    // Suror namn — radbryt
-    ctx.font = '500 56px "Cormorant Garamond", serif';
-    ctx.fillStyle = '#2d9c6e';
+    // Sidor-värde
+    ctx.font = '500 110px "Cormorant Garamond", serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(45,156,110,0.4)';
+    ctx.shadowBlur  = 20;
+    ctx.fillText(todayRow.sidor, col1X, infoY+128);
+    ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+
+    // ── Kolumn 2: SUROR ──
+    ctx.font = '700 22px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.60)';
+    ctx.letterSpacing = '0.14em';
+    ctx.fillText((t.labelSurahs || 'SUROR').toUpperCase(), col2X, infoY);
+    ctx.letterSpacing = '0';
+
+    ctx.strokeStyle = 'rgba(201,168,76,0.20)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(col2X, infoY+10); ctx.lineTo(col2X+120, infoY+10); ctx.stroke();
+
+    // Suror-namn — radbryt med fallback
+    ctx.font = '500 58px "Cormorant Garamond", serif';
+    ctx.fillStyle = '#ffffff';
     const surahParts = todayRow.surahs.split(', ');
-    let sLine = '', sY = cellY + 68, sLH = 64;
+    let sLine = '', sY = infoY+72, sLH = 68;
+    ctx.shadowColor = 'rgba(45,156,110,0.3)'; ctx.shadowBlur = 16;
     for (let i = 0; i < surahParts.length; i++) {
       const test = sLine ? sLine + ', ' + surahParts[i] : surahParts[i];
       if (ctx.measureText(test).width > colMaxW && sLine) {
         ctx.fillText(sLine + ',', col2X, sY); sY += sLH;
-        if (sY > CH - 200) { ctx.fillText('…', col2X, sY); sLine = ''; break; }
+        if (sY > panelY+panelH-140) {
+          ctx.font = '400 36px "DM Sans", sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.35)';
+          ctx.shadowBlur = 0;
+          ctx.fillText('+ ' + (surahParts.length - i) + ' till…', col2X, sY);
+          sLine = ''; break;
+        }
         sLine = surahParts[i];
       } else { sLine = test; }
     }
     if (sLine) { ctx.fillText(sLine, col2X, sY); sY += sLH; }
+    ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
 
-    // Ayat-referens
-    ctx.font = '400 34px "DM Sans", sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.38)';
-    ctx.fillText(todayRow.tooltip, col2X, sY + 4);
+    // Ayat-ref
+    ctx.font = '400 32px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.55)';
+    ctx.fillText(todayRow.tooltip, col2X, sY + 6);
 
-    // ── Branding längst ner ──
-    ctx.font = '400 28px "DM Sans", sans-serif';
-    ctx.fillStyle = 'rgba(201,168,76,0.45)';
+    // ═══════════════════════════════════════════
+    // 9. NATT-NUMMER — stor subtil bakgrundssiffra
+    // ═══════════════════════════════════════════
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.font = '700 600px "Cormorant Garamond", serif';
+    ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText('@sverigesimamer  ·  Ramadan 2026', CX, CH - 56);
+    ctx.fillText(todayRow.day, CX, panelY + panelH * 0.7);
+    ctx.restore();
 
-    // ── Exportera ──
+    // ═══════════════════════════════════════════
+    // 10. FOOTER
+    // ═══════════════════════════════════════════
+    goldLine(80, CH-120, CW-80);
+    diamond(CX, CH-120, 14, 0.7);
+
+    ctx.font = '500 30px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Kämpingehallen  ·  Ramadan 2026', CX, CH-72);
+
+    ctx.font = '600 28px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(201,168,76,0.55)';
+    ctx.fillText('@sverigesimamer', CX, CH-30);
+
+    // ═══════════════════════════════════════════
+    // EXPORT
+    // ═══════════════════════════════════════════
     const nightLabel = (t.night || 'Natt') + ' ' + todayRow.day;
     canvas.toBlob(blob => {
       const fname = 'tarawih-natt-' + todayRow.day + '.png';
