@@ -832,8 +832,21 @@
     .filter-chip.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); box-shadow: 0 4px 14px rgba(26,74,68,.3); }
     .filter-chip.active .filter-dot { border-color: rgba(255,255,255,.4) !important; }
     .filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    @keyframes chipPulse { 0% { box-shadow: 0 0 0 0 var(--pulse-color, rgba(0,0,0,0.4)); } 50% { box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
-    .filter-chip.active { animation: chipPulse 2s ease-out infinite; }
+    @keyframes chipPulse { 
+      0%   { box-shadow: 0 0 0 0 var(--pulse-color, rgba(255,255,255,0.9)), 0 4px 14px rgba(26,74,68,.3); transform: scale(1); } 
+      50%  { box-shadow: 0 0 0 5px rgba(0,0,0,0), 0 4px 14px rgba(26,74,68,.3); transform: scale(1.04); } 
+      100% { box-shadow: 0 0 0 0 rgba(0,0,0,0), 0 4px 14px rgba(26,74,68,.3); transform: scale(1); } 
+    }
+    .filter-chip.active { animation: chipPulse 3.2s ease-in-out infinite; }
+    .filter-chip[data-imam="abdurrahman"].active { --pulse-color: rgba(232,99,10,1); }
+    .filter-chip[data-imam="saed"].active        { --pulse-color: rgba(212,168,0,1); }
+    .filter-chip[data-imam="noor"].active         { --pulse-color: rgba(41,128,185,1); }
+    .filter-chip[data-imam="abdul"].active        { --pulse-color: rgba(160,160,160,0.9); }
+    .filter-chip[data-imam="mohammed"].active     { --pulse-color: rgba(33,145,80,1); }
+    .filter-chip[data-imam="yacquub"].active      { --pulse-color: rgba(200,200,200,0.9); }
+    .filter-chip[data-imam="ibrahim"].active      { --pulse-color: rgba(41,128,185,1); }
+    .filter-chip[data-imam="abdelsalam"].active   { --pulse-color: rgba(200,200,200,0.9); }
+    .filter-chip[data-imam="hatem"].active        { --pulse-color: rgba(200,200,200,0.9); }
     tbody tr.filtered-out { display: none; }
     .day-card-mobile.filtered-out { display: none; }
 
