@@ -2419,22 +2419,77 @@
     ctx.fillStyle = g3; ctx.fillRect(0,0,CW,CH);
 
     // ═══════════════════════════════════════════
-    // 2. GEOMETRISK ISLAMISK ORNAMENT — uppe mitten
+    // 2. GIRIH-MÖNSTER — täckande islamiskt geometriskt gitter
     // ═══════════════════════════════════════════
-    // Stor stjärna som bakgrundsornament
-    ctx.globalAlpha = 0.06;
-    islamicStar(CX, 420, 480, 200, 8, 1);
-    ctx.globalAlpha = 0.04;
-    islamicStar(CX, 420, 560, 240, 12, 1);
-    ctx.globalAlpha = 1;
+    (function drawGirih() {
+      ctx.save();
+      ctx.globalAlpha = 0.09;
+      ctx.strokeStyle = 'rgba(201,168,76,1)';
+      ctx.lineWidth   = 1.4;
 
-    // Cirkel-ring bakom stjärnan
-    ctx.globalAlpha = 0.08;
-    ctx.strokeStyle = 'rgba(201,168,76,1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(CX, 420, 500, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(CX, 420, 440, 0, Math.PI*2); ctx.stroke();
-    ctx.globalAlpha = 1;
+      // Girih bygger på ett gitter av regelbundna 10-hörningar (dekagoner)
+      // Varje cell har radien R, och cellerna placeras i ett offset-gitter
+      const R   = 88;          // radius på varje dekagon
+      const cos36 = Math.cos(Math.PI / 5);
+      const sin36 = Math.sin(Math.PI / 5);
+      const cos72 = Math.cos(2 * Math.PI / 5);
+      const sin72 = Math.sin(2 * Math.PI / 5);
+
+      // Cellstorlek i x och y för hexagonalt offset-gitter
+      const cellW = R * 2 * Math.sin(Math.PI / 10) * 2 + R * (1 - cos36) * 2;
+      const dx    = R * (1 + cos36) * 2;          // horisontellt avstånd cell–cell
+      const dy    = R * (sin36 + sin72);           // vertikalt avstånd
+
+      // Rita en 10-punktig girih-stjärna med inre linjer på position (cx,cy)
+      function girhiCell(cx, cy) {
+        const pts = 10;
+        const outer = [];
+        const inner = [];
+        for (let i = 0; i < pts; i++) {
+          const a = (i / pts) * Math.PI * 2 - Math.PI / 2;
+          outer.push([cx + Math.cos(a) * R,       cy + Math.sin(a) * R]);
+          inner.push([cx + Math.cos(a) * R * 0.38, cy + Math.sin(a) * R * 0.38]);
+        }
+
+        // Yttre dekagon
+        ctx.beginPath();
+        outer.forEach(([x,y],i) => i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
+        ctx.closePath(); ctx.stroke();
+
+        // 10-punktig stjärna — varje yttre punkt ansluter till varannan
+        ctx.beginPath();
+        for (let i = 0; i < pts; i++) {
+          const [x1,y1] = outer[i];
+          const [x2,y2] = outer[(i+3) % pts];
+          ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+        }
+        ctx.stroke();
+
+        // Inre "rosett" — anslut inre punkter för girih-känsla
+        ctx.beginPath();
+        for (let i = 0; i < pts; i++) {
+          const [ix,iy] = inner[i];
+          const [ox,oy] = outer[i];
+          const [ox2,oy2] = outer[(i+1)%pts];
+          const mx = (ox+ox2)/2, my = (oy+oy2)/2;
+          ctx.moveTo(ix,iy); ctx.lineTo(mx,my);
+        }
+        ctx.stroke();
+      }
+
+      // Täck hela bilden med offset-gitter
+      const cols = Math.ceil(CW / dx) + 2;
+      const rows = Math.ceil(CH / dy) + 2;
+      for (let row = -1; row < rows; row++) {
+        for (let col = -1; col < cols; col++) {
+          const cx = col * dx + (row % 2 === 0 ? 0 : dx / 2);
+          const cy = row * dy;
+          girhiCell(cx, cy);
+        }
+      }
+
+      ctx.restore();
+    })();
 
     // ═══════════════════════════════════════════
     // 3. HEADER ORNAMENT — toppen
