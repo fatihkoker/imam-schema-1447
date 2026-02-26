@@ -2647,17 +2647,32 @@
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const natt = parseInt(params.get('natt'));
-    if (natt) {
-      const row = SCHEDULE.find(r => r.day === natt);
-      if (row && audioUrls[row.datum]) {
-        setTimeout(() => {
-          toggleAudio(row.datum);
-          const target = window.innerWidth <= 640
-            ? document.querySelector('#mobile-cards .day-card-mobile[data-datum="' + row.datum + '"]')
-            : document.querySelector('tr[data-datum="' + row.datum + '"]');
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 800);
-      }
+    if (!natt) return;
+    const row = SCHEDULE.find(r => r.day === natt);
+    if (!row) return;
+
+    // Försök direkt — om HEAD-fetch inte hunnit bekräfta URL:en än,
+    // kör ändå toggleAudio (audio-elementet hanterar fel själv)
+    function tryAutoPlay() {
+      toggleAudio(row.datum);
+      const target = window.innerWidth <= 640
+        ? document.querySelector('#mobile-cards .day-card-mobile[data-datum="' + row.datum + '"]')
+        : document.querySelector('tr[data-datum="' + row.datum + '"]');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Kör efter en kort fördröjning så att DOM och audioUrls hinner initieras
+    // Om audioUrls redan är redo — kör direkt, annars vänta max 3s
+    if (audioUrls[row.datum]) {
+      setTimeout(tryAutoPlay, 400);
+    } else {
+      const deadline = Date.now() + 3000;
+      const poll = setInterval(() => {
+        if (audioUrls[row.datum] || Date.now() >= deadline) {
+          clearInterval(poll);
+          tryAutoPlay();
+        }
+      }, 100);
     }
   });
 
