@@ -773,6 +773,64 @@
       will-change: transform;
       pointer-events: none;
     }
+    /* Light mode full player */
+    [data-theme="light"] .player-full {
+      background: linear-gradient(160deg, #f0ede7 0%, #e8e4dc 100%);
+      border: 1px solid rgba(36,100,93,0.15);
+      border-bottom: none;
+      box-shadow: 0 -2px 0 rgba(201,168,76,0.20), 0 -24px 64px rgba(0,0,0,0.12),
+                  inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    [data-theme="light"] .sp-drag-handle { background: rgba(0,0,0,0.12); }
+    [data-theme="light"] .sp-imam-name { color: #1a1a1a; }
+    [data-theme="light"] .sp-meta-sub { color: rgba(0,0,0,0.45); }
+    [data-theme="light"] .sp-accent { color: var(--primary-dark); }
+    [data-theme="light"] .sp-progress-times { color: rgba(0,0,0,0.38); }
+    [data-theme="light"] .sticky-seek::before { background: rgba(0,0,0,0.10); }
+    [data-theme="light"] .sp-ring-bg { stroke: rgba(0,0,0,0.08); }
+    [data-theme="light"] .sp-ctrl-btn { color: rgba(0,0,0,0.50); }
+    [data-theme="light"] .sp-ctrl-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
+    [data-theme="light"] .sp-ctrl-btn:disabled { color: rgba(0,0,0,0.20); }
+    [data-theme="light"] .sp-ctrl-lbl { color: rgba(0,0,0,0.28); }
+    [data-theme="light"] .sp-ring-inner { box-shadow: inset 0 2px 8px rgba(0,0,0,0.12); }
+    [data-theme="light"] .sp-speed-chip {
+      color: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.10);
+    }
+    [data-theme="light"] .sp-speed-chip:hover { background: rgba(0,0,0,0.09); color: rgba(0,0,0,0.7); }
+    [data-theme="light"] .sp-mute-btn {
+      color: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.10);
+    }
+    [data-theme="light"] .sp-mute-btn:hover { background: rgba(0,0,0,0.09); color: rgba(0,0,0,0.7); }
+    [data-theme="light"] .sp-mute-btn.muted {
+      background: rgba(180,40,40,0.10) !important;
+      border-color: rgba(200,50,50,0.35) !important;
+      color: #c0392b !important;
+    }
+    [data-theme="light"] .sp-share-btn {
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.35);
+    }
+    [data-theme="light"] .sp-share-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.10); }
+    [data-theme="light"] .fav-btn { color: rgba(0,0,0,0.20); }
+    [data-theme="light"] #sp-fav-btn { color: rgba(0,0,0,0.28); border-color: rgba(0,0,0,0.08); background: rgba(0,0,0,0.04); }
+    [data-theme="light"] #sp-fav-btn.active { color: #a84040; background: rgba(168,64,64,0.06); }
+
+    /* Light mode mini player */
+    [data-theme="light"] .sp-mini-inner {
+      background: rgba(245,242,236,0.97);
+      border: 1px solid rgba(36,100,93,0.15);
+      box-shadow: 0 8px 36px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    [data-theme="light"] .sp-mini-imam { color: #1a1a1a; }
+    [data-theme="light"] .sp-mini-sub { color: rgba(0,0,0,0.40); }
+    [data-theme="light"] .sp-mini-ctrl { color: rgba(0,0,0,0.45); }
+    [data-theme="light"] .sp-mini-ctrl:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
+    [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
     .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; }
     .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; }
 
@@ -825,10 +883,10 @@
       line-height: 1.2;
     }
     .sp-meta-sub {
-      font-size: 0.68rem; color: rgba(255,255,255,0.38);
+      font-size: 0.72rem; color: rgba(255,255,255,0.62);
       margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .sp-accent { color: rgba(201,168,76,0.75); }
+    .sp-accent { color: rgba(201,168,76,0.90); font-weight: 600; }
     .sp-share-btn {
       width: 34px; height: 34px; border: none;
       background: rgba(255,255,255,0.06);
@@ -844,7 +902,7 @@
     .sp-progress-section { margin-bottom: 16px; }
     .sp-progress-times {
       display: flex; justify-content: space-between;
-      font-size: 0.62rem; color: rgba(255,255,255,0.30);
+      font-size: 0.65rem; color: rgba(255,255,255,0.50);
       font-variant-numeric: tabular-nums; margin-bottom: 9px;
     }
 
@@ -890,7 +948,7 @@
     }
     .sp-ctrl-btn {
       width: 46px; height: 46px; border: none; background: none;
-      color: rgba(255,255,255,0.55); cursor: pointer; border-radius: 50%;
+      color: rgba(255,255,255,0.70); cursor: pointer; border-radius: 50%;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 2px; transition: all 0.15s; flex-shrink: 0;
@@ -899,7 +957,7 @@
     .sp-ctrl-btn:disabled { opacity: 0.22; cursor: default; }
     .sp-ctrl-btn:disabled:hover { background: none; color: rgba(255,255,255,0.22); }
     .sp-ctrl-lbl {
-      font-size: 0.48rem; color: rgba(255,255,255,0.25);
+      font-size: 0.50rem; color: rgba(255,255,255,0.42);
       letter-spacing: 0.02em; line-height: 1;
     }
 
@@ -953,25 +1011,35 @@
       transition: all 0.15s;
     }
     .sp-speed-chip:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.65); }
-    .sp-vol-row { display: flex; align-items: center; gap: 7px; }
-    .sp-vol-icon { color: rgba(255,255,255,0.25); }
-    .sp-vol-track {
-      width: 72px; height: 3px;
-      background: rgba(255,255,255,0.08); border-radius: 2px; position: relative;
-      cursor: pointer;
-    }
-    .sp-vol-fill {
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 75%; background: rgba(255,255,255,0.38); border-radius: 2px;
-    }
     .sp-mute-btn {
-      background: none; border: none; cursor: pointer;
-      display: flex; align-items: center; gap: 7px;
-      color: rgba(255,255,255,0.25);
-      transition: color 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 4px 12px;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer; font-family: inherit;
+      font-size: 0.60rem; font-weight: 600; letter-spacing: 0.05em;
+      transition: all 0.22s ease;
     }
-    .sp-mute-btn:hover { color: rgba(255,255,255,0.6); }
-    .sp-mute-btn.muted { color: #e05555 !important; }
+    .sp-mute-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.70); }
+    .sp-mute-btn.muted {
+      background: rgba(180,40,40,0.18) !important;
+      border-color: rgba(220,60,60,0.40) !important;
+      color: #e05555 !important;
+    }
+    .sp-mute-btn .sp-vol-icon { transition: color 0.22s; }
+    .sp-mute-btn.muted .sp-vol-icon { color: #e05555; }
+    /* Mini mute indicator */
+    .sp-mini-muted-dot {
+      position: absolute; top: 8px; right: 8px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #e05555;
+      box-shadow: 0 0 6px rgba(224,85,85,0.7);
+      display: none;
+    }
+    .sticky-player.muted-state .sp-mini-muted-dot { display: block; }
+    /* Dölj gamla vol-track */
+    .sp-vol-track, .sp-vol-fill { display: none !important; }
 
     /* ── MINI PLAYER ── */
     .player-mini {
@@ -1028,20 +1096,21 @@
     .sp-mini-meta { flex: 1; min-width: 0; }
     .sp-mini-imam {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem; font-weight: 600; color: #fff;
+      font-size: 1.05rem; font-weight: 600; color: #fff;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       line-height: 1.2;
     }
     .sp-mini-sub {
-      font-size: 0.62rem; color: rgba(255,255,255,0.33); margin-top: 1px;
+      font-size: 0.66rem; color: rgba(255,255,255,0.55); margin-top: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .sp-mini-controls { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .sp-mini-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .sp-mini-ctrl {
-      width: 30px; height: 30px; border: none; background: none;
+      width: 34px; height: 34px; border: none; background: none;
       color: rgba(255,255,255,0.5); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       border-radius: 50%; transition: all 0.15s;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     }
     .sp-mini-ctrl:hover { color: #fff; background: rgba(255,255,255,0.07); }
     .sp-mini-play {
@@ -1069,6 +1138,12 @@
     .fav-btn.active svg { fill: #a84040; }
     @keyframes heartPop { 0%{transform:scale(1)} 35%{transform:scale(1.45)} 65%{transform:scale(0.88)} 100%{transform:scale(1)} }
     .fav-btn.pop { animation: heartPop 0.38s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes favRingFade {
+      0%   { box-shadow: 0 0 0 3px rgba(255,255,255,0.55); }
+      60%  { box-shadow: 0 0 0 5px rgba(255,255,255,0.20); }
+      100% { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+    }
+    .fav-btn.ring-fade { animation: favRingFade 2.5s cubic-bezier(0.4,0,1,1) forwards; }
 
     /* Hjärta i table-rader */
     .td-fav { width: 36px; text-align: center; padding: 0 2px; }
@@ -1101,14 +1176,21 @@
 
 
     /* ── PLAY BUTTONS ── */
-    .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.15s ease; }
+    .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.15s ease; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
+    .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
+    .play-btn svg { display: block; position: relative; z-index: 1; }
+    /* Extra klickyta utan att ändra visuell storlek */
+    .td-audio { text-align: center; width: 48px; padding: 8px 6px 8px 10px; }
+    .td-audio .play-btn::before {
+      content: ''; position: absolute; inset: -8px; border-radius: 50%;
+    }
     .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
     .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
     .play-btn svg { display: block; position: relative; z-index: 1; }
     @keyframes playBtnSpring { 0% { transform: scale(1); } 28% { transform: scale(0.78); } 62% { transform: scale(1.14); } 84% { transform: scale(0.94); } 100% { transform: scale(1); } }
     .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
-    .play-btn-ripple { position: absolute; border-radius: 50%; width: 32px; height: 32px; left: 0; top: 0; background: rgba(255,255,255,0.28); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
-    .td-audio { text-align: center; width: 36px; padding: 12px 4px 12px 8px; }
+    .play-btn-ripple { position: absolute; border-radius: 50%; width: 36px; height: 36px; left: 0; top: 0; background: rgba(255,255,255,0.28); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
     .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
     .moon-icon svg { display: block; }
 
@@ -2226,9 +2308,17 @@
     // Pop-animation på det klickade elementet
     if (triggerEl) {
       triggerEl.classList.remove('pop');
+      triggerEl.classList.remove('ring-fade');
       void triggerEl.offsetWidth;
       triggerEl.classList.add('pop');
       triggerEl.addEventListener('animationend', () => triggerEl.classList.remove('pop'), { once: true });
+      // Vita ring-markeringen tonas bort efter pop-animationen
+      if (idx === -1) { // nyss tillagd som favorit
+        setTimeout(() => {
+          triggerEl.classList.add('ring-fade');
+          triggerEl.addEventListener('animationend', () => triggerEl.classList.remove('ring-fade'), { once: true });
+        }, 80);
+      }
     }
   }
 
@@ -2542,20 +2632,44 @@
       const isMuted = muteBtn.classList.toggle('muted');
       Object.values(audioState).forEach(a => { a.muted = isMuted; });
       window._globalMuted = isMuted;
+      // Visa/dölj mute-indikator på sticky player och mini player
+      const stickyEl = document.getElementById('sticky-player');
+      if (stickyEl) stickyEl.classList.toggle('muted-state', isMuted);
+      // Uppdatera ikon: visa mute-ikonen eller volume-ikonen
+      const volIcon = muteBtn.querySelector('.sp-vol-icon');
+      const muteIcon = muteBtn.querySelector('#mute-icon-on');
+      if (volIcon && muteIcon) {
+        volIcon.style.display = isMuted ? 'none' : '';
+        muteIcon.style.display = isMuted ? '' : 'none';
+      }
       e.stopPropagation();
     });
 
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
 
-    // Klick på mini-inner → expandera till full
+    // Klick på mini-inner → expandera till full (men inte play/skip-knappar)
     document.querySelector('.sp-mini-inner')?.addEventListener('click', e => {
       if (e.target.closest('.sp-mini-ctrl') || e.target.closest('.sp-mini-play')) return;
       clearTimeout(_autoMiniTimer);
       showSticky();
-      _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
       e.stopPropagation();
     });
+
+    // Pausa auto-mini timer när användaren interagerar med full player,
+    // återuppta när de lämnar
+    const playerFullEl = document.querySelector('.player-full');
+    if (playerFullEl) {
+      playerFullEl.addEventListener('mouseenter', () => clearTimeout(_autoMiniTimer));
+      playerFullEl.addEventListener('touchstart', () => clearTimeout(_autoMiniTimer), { passive: true });
+      playerFullEl.addEventListener('pointerdown', () => clearTimeout(_autoMiniTimer), { passive: true });
+      const _resumeTimer = () => {
+        clearTimeout(_autoMiniTimer);
+        _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
+      };
+      playerFullEl.addEventListener('mouseleave', _resumeTimer);
+      playerFullEl.addEventListener('touchend', _resumeTimer, { passive: true });
+    }
 
     // Skip ±30s
     document.getElementById('sp-skip-back-btn')?.addEventListener('click', e => {
@@ -2683,6 +2797,13 @@
     updateStickyControls();
     updateStickyPlayBtn(true);
     setTimeout(showSticky, 200);
+    clearTimeout(_autoMiniTimer);
+    _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
+  }
+
+  // Hjälpfunktioner för att pausa/återuppta auto-mini timern
+  function _pauseAutoMini() { clearTimeout(_autoMiniTimer); }
+  function _resumeAutoMini() {
     clearTimeout(_autoMiniTimer);
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
   }
@@ -3688,6 +3809,8 @@
     </div>
 
     <div class="sp-mini-inner">
+      <!-- Mute-indikator -->
+      <div class="sp-mini-muted-dot" id="sp-mini-muted-dot" title="Ljud avstängt — tryck för att slå på"></div>
       <!-- Mini artwork -->
       <div class="sp-mini-artwork" id="sp-mini-artwork">
         <span class="sp-mini-initials" id="sp-mini-initials">–</span>
