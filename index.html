@@ -1217,6 +1217,12 @@
     .play-btn svg { display: block; position: relative; z-index: 1; }
     @keyframes playBtnSpring { 0% { transform: scale(1); } 28% { transform: scale(0.78); } 62% { transform: scale(1.14); } 84% { transform: scale(0.94); } 100% { transform: scale(1); } }
     .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes sharePulse {
+      0%   { transform: scale(1);    box-shadow: 0 2px 8px rgba(36,100,93,.3); }
+      40%  { transform: scale(1.22); box-shadow: 0 4px 22px rgba(36,100,93,.7); }
+      100% { transform: scale(1);    box-shadow: 0 2px 8px rgba(36,100,93,.3); }
+    }
+    .play-btn.share-pulse { animation: sharePulse 0.55s ease-in-out; }
     .play-btn-ripple { position: absolute; border-radius: 50%; width: 36px; height: 36px; left: 0; top: 0; background: rgba(255,255,255,0.28); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
     .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
     .moon-icon svg { display: block; }
@@ -2620,8 +2626,6 @@
   }
 
   // Auto-play from URL parameter ?natt=N
-  // Webbläsare blockerar autoplay utan user gesture — vi scrollar till rätt natt
-  // och highlightar play-knappen så användaren enkelt kan trycka
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const natt = parseInt(params.get('natt'));
@@ -2629,24 +2633,42 @@
     const row = SCHEDULE.find(r => r.day === natt);
     if (!row) return;
 
-    // Scrolla till rätt natt efter att sidan laddats klart
-    setTimeout(() => {
+    // Vänta tills play-knappen finns i DOM (injiceras async efter HEAD-fetch)
+    const deadline = Date.now() + 8000;
+
+    function tryInit() {
       const isMobile = window.innerWidth <= 640;
       const target = isMobile
-        ? document.querySelector('#mobile-cards .day-card-mobile[data-datum="' + row.datum + '"]')
+        ? document.querySelector('[data-datum="' + row.datum + '"]')
         : document.querySelector('tr[data-datum="' + row.datum + '"]');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Pulsa play-knappen så att användaren ser var den är
-        setTimeout(() => {
-          const playBtn = target.querySelector('.play-btn');
-          if (playBtn) {
-            playBtn.classList.add('springing');
-            playBtn.addEventListener('animationend', () => playBtn.classList.remove('springing'), { once: true });
-          }
-        }, 800);
+      const playBtn = target ? target.querySelector('.play-btn') : null;
+
+      if (!target || !playBtn) {
+        if (Date.now() < deadline) setTimeout(tryInit, 150);
+        return;
       }
-    }, 500);
+
+      // Scrolla till raden
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Pulsa play-knappen i 5 sekunder (repeating pulse animation)
+      let pulseCount = 0;
+      const maxPulses = 8; // ~5 sek med 600ms intervall
+      function doPulse() {
+        if (pulseCount >= maxPulses) return;
+        pulseCount++;
+        playBtn.classList.remove('share-pulse');
+        void playBtn.offsetWidth;
+        playBtn.classList.add('share-pulse');
+        playBtn.addEventListener('animationend', () => {
+          playBtn.classList.remove('share-pulse');
+          setTimeout(doPulse, 180);
+        }, { once: true });
+      }
+      setTimeout(doPulse, 400);
+    }
+
+    setTimeout(tryInit, 300);
   });
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -2885,8 +2907,16 @@
     const row = SCHEDULE[idx];
     const spPrevBtn = document.getElementById('sp-prev-btn');
     const spNextBtn = document.getElementById('sp-next-btn');
-    if (spPrevBtn) spPrevBtn.disabled = idx <= 0 || !audioUrls[SCHEDULE[idx-1]?.datum];
-    if (spNextBtn) spNextBtn.disabled = idx >= SCHEDULE.length-1 || !audioUrls[SCHEDULE[idx+1]?.datum];
+    // Kolla om play-knappen faktiskt injicerats (HEAD-fetch bekräftade att filen finns)
+    function hasAudio(datum) {
+      if (!datum) return false;
+      return !!document.getElementById('audio-desktop-' + datum)?.querySelector('.play-btn')
+          || !!document.getElementById('audio-mobile-' + datum)?.querySelector('.play-btn');
+    }
+    const prevDatum = SCHEDULE[idx-1]?.datum;
+    const nextDatum = SCHEDULE[idx+1]?.datum;
+    if (spPrevBtn) spPrevBtn.disabled = idx <= 0 || !hasAudio(prevDatum);
+    if (spNextBtn) spNextBtn.disabled = idx >= SCHEDULE.length-1 || !hasAudio(nextDatum);
 
     // Ny design — uppdatera metadata-rad och imam-färger
     if (row) {
