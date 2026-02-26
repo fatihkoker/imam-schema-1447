@@ -2778,7 +2778,7 @@
       a.addEventListener('pause', () => {
         setBtns(row.datum, PLAY_SVG, false);
         updateStickyPlayBtn(false);
-        if (window._stopWaveDraw) window._stopWaveDraw();
+        if (_activeDatum === row.datum && window._stopWaveDraw) window._stopWaveDraw();
       });
       a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(row.datum, a.currentTime, a.duration); });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
@@ -3070,13 +3070,14 @@
 
     // Stäng-knapp — stoppa ljud och dölj spelaren
     document.getElementById('sp-close-btn')?.addEventListener('click', e => {
-      if (_activeDatum) {
-        const d = _activeDatum;
-        _stopAudio(d).then(() => closePlayer(d));
-      } else {
-        hideSticky();
-      }
       e.stopPropagation();
+      if (!_activeDatum) { hideSticky(); return; }
+      if (_toggleBusy) return;
+      _toggleBusy = true;
+      const d = _activeDatum;
+      // Stäng spelaren visuellt direkt — vänta inte på audio-cleanup
+      closePlayer(d);
+      _stopAudio(d).finally(() => { _toggleBusy = false; });
     });
 
     // Share button — copy ?natt=N URL
@@ -3211,9 +3212,17 @@
   async function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return;
-    // Pausa direkt — vänta INTE på play()-promise (det orsakar fördröjt ljud vid stängning)
+    const pending = _playingPromise[datum];
     _playingPromise[datum] = null;
-    try { a.pause(); } catch(e) {}
+    if (pending) {
+      // Vänta på att play()-promise resolvar/rejectar INNAN vi pausar —
+      // annars kastar vissa webbläsare AbortError som triggar glitch-loopar
+      try { await pending; } catch(e) { /* AbortError — ignorera */ }
+    }
+    // Pausa bara om elementet faktiskt spelar fortfarande
+    if (!a.paused) {
+      try { a.pause(); } catch(e) {}
+    }
     setBtns(datum, PLAY_SVG, false);
   }
 
@@ -3245,7 +3254,8 @@
           if (window._startWaveDraw)   window._startWaveDraw();
         });
         a.addEventListener('pause', () => {
-          if (window._stopWaveDraw) window._stopWaveDraw();
+          // Kör bara stopWaveDraw om spelaren fortfarande är aktiv (inte stängd)
+          if (_activeDatum === datum && window._stopWaveDraw) window._stopWaveDraw();
         });
         a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
         a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
