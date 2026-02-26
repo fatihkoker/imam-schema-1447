@@ -1148,22 +1148,56 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 2.5px;
-      height: 28px;
+      gap: 2px;
+      height: 40px;
       flex-shrink: 0;
+      position: relative;
+    }
+    /* Varje stapel är en wrapper med bar + peak-marker */
+    .sw-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 40px;
+      position: relative;
+      width: 3px;
     }
     .sw-bar {
       width: 3px;
-      border-radius: 2px;
-      background: linear-gradient(to top, rgba(201,168,76,0.45), rgba(232,201,122,0.90));
+      border-radius: 1.5px 1.5px 1px 1px;
+      background: linear-gradient(to top,
+        #c8860a 0%,
+        #e8a020 35%,
+        #f5c842 70%,
+        #ffe87a 100%
+      );
+      box-shadow: 0 0 4px rgba(232,168,32,0.4);
       transform-origin: bottom center;
-      transform: scaleY(0.08);
-      transition: transform 0.08s ease-out;
-      height: 22px;
+      height: 36px;
+      transform: scaleY(0.06);
+      will-change: transform;
     }
-    /* Light mode: mörkare guld-ton för bättre kontrast */
+    /* Peak-markör: liten linje som hänger kvar och faller */
+    .sw-peak {
+      position: absolute;
+      width: 3px;
+      height: 2px;
+      border-radius: 1px;
+      background: #ffe87a;
+      box-shadow: 0 0 5px rgba(255,230,100,0.8), 0 0 10px rgba(255,200,50,0.4);
+      bottom: 0;
+      left: 0;
+      will-change: bottom;
+    }
+    /* Light mode */
     [data-theme="light"] .sw-bar {
-      background: linear-gradient(to top, rgba(150,100,0,0.55), rgba(190,138,10,0.85));
+      background: linear-gradient(to top, #8a5c00 0%, #c4830a 40%, #e8a820 100%);
+      box-shadow: 0 0 4px rgba(180,120,0,0.35);
+    }
+    [data-theme="light"] .sw-peak {
+      background: #c4830a;
+      box-shadow: 0 0 4px rgba(180,120,0,0.6);
     }
 
 
@@ -3009,140 +3043,161 @@
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
-      // ── Staplar ──
-      const BAR_COUNT = 17;
-      const FLOOR = [0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.12,0.11,0.10,0.09,0.08,0.07,0.06,0.06,0.05];
-      const PEAK  = [0.35,0.45,0.55,0.65,0.75,0.85,0.90,0.95,0.90,0.85,0.75,0.65,0.55,0.45,0.35,0.30,0.25];
-      const DUR   = [1.1,0.9,0.8,0.95,0.75,0.85,0.70,0.80,0.70,0.85,0.75,0.95,0.80,0.90,1.1,1.0,1.15];
-      const DELAY = [0,0.1,0.2,0.05,0.3,0.15,0.4,0.0,0.4,0.15,0.3,0.05,0.2,0.1,0.0,0.25,0.35];
-      const bars = [];
+      const BAR_COUNT = 32;
+      const FLOOR     = 0.05; // minsta stapelhöjd i vila
+
+      // Bygg 32 kolumner: varje kolumn = .sw-col > .sw-bar + .sw-peak
+      const bars  = []; // själva stapeln (scaleY)
+      const peaks = []; // peak-markör (bottom i px)
+      // peak-state per stapel
+      const peakVal  = new Float32Array(BAR_COUNT).fill(0); // 0..1 position
+      const peakHold = new Int32Array(BAR_COUNT).fill(0);   // hold-räknare (frames)
+      const smooth   = new Float32Array(BAR_COUNT).fill(0); // smoothat stapelvärde
+      const PEAK_HOLD_FRAMES = 28; // hur länge peak stannar kvar (~0.5s @ 60fps)
+      const PEAK_DECAY = 0.015;    // hur snabbt peak faller per frame (0..1)
+      const BAR_H = 36;            // px — måste matcha .sw-bar height i CSS
+
       for (let i = 0; i < BAR_COUNT; i++) {
-        const el = document.createElement('div');
-        el.className = 'sw-bar';
-        el.style.setProperty('--sw-floor', FLOOR[i]);
-        el.style.setProperty('--sw-peak',  PEAK[i]);
-        el.style.setProperty('--sw-dur',   DUR[i] + 's');
-        el.style.animationDelay = DELAY[i] + 's';
-        el.style.transform = 'scaleY(' + FLOOR[i] + ')';
-        waveEl.appendChild(el);
-        bars.push(el);
+        const col = document.createElement('div');
+        col.className = 'sw-col';
+
+        const bar = document.createElement('div');
+        bar.className = 'sw-bar';
+
+        const pk = document.createElement('div');
+        pk.className = 'sw-peak';
+        pk.style.bottom = '0px';
+
+        col.appendChild(bar);
+        col.appendChild(pk);
+        waveEl.appendChild(col);
+        bars.push(bar);
+        peaks.push(pk);
       }
 
-      // iOS Safari blockerar Web Audio — CSS-animation istället
+      // iOS: CSS-animation fallback
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      // ── State ──
-      let actx     = null;  // AudioContext
-      let analyser = null;  // AnalyserNode
-      let rafId    = null;
-      let running  = false;
-      const sources = {};   // datum → MediaElementSourceNode (skapas max 1 gång per element)
-      const smooth  = new Float32Array(BAR_COUNT).fill(0); // per-stapel smoothad värde
+      let actx    = null;
+      let analyser = null;
+      let rafId   = null;
+      let running = false;
+      const sources = {};
 
-      // ── CSS-fallback (iOS) ──
-      function startCSS() { bars.forEach(b => b.classList.add('sw-bar--animate')); }
-      function stopCSS()  {
+      // CSS-animation fallback (iOS)
+      const PEAK_CSS = [0.30,0.35,0.42,0.50,0.58,0.66,0.72,0.78,0.82,0.86,0.88,0.90,0.91,0.92,0.91,0.90,0.90,0.91,0.92,0.91,0.90,0.88,0.86,0.82,0.78,0.72,0.66,0.58,0.50,0.42,0.35,0.30];
+      const DUR_CSS  = [1.0,0.9,0.85,0.8,0.75,0.82,0.70,0.78,0.72,0.68,0.74,0.70,0.76,0.72,0.68,0.74,0.74,0.68,0.72,0.76,0.70,0.74,0.68,0.72,0.78,0.70,0.82,0.75,0.8,0.85,0.9,1.0];
+      const DLY_CSS  = [0,0.05,0.1,0.15,0.08,0.2,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.28,0.16,0.03,0.22,0.14,0.06,0.25,0.18,0.04,0.12,0.2,0.08,0.15,0.1,0.05,0];
+      function startCSS() {
         bars.forEach((b, i) => {
-          b.classList.remove('sw-bar--animate');
-          b.style.transform = 'scaleY(' + FLOOR[i] + ')';
+          b.style.setProperty('--sw-floor', FLOOR);
+          b.style.setProperty('--sw-peak',  PEAK_CSS[i]);
+          b.style.setProperty('--sw-dur',   DUR_CSS[i] + 's');
+          b.style.animationDelay = DLY_CSS[i] + 's';
+          b.classList.add('sw-bar--animate');
         });
+      }
+      function stopCSS() {
+        bars.forEach(b => {
+          b.classList.remove('sw-bar--animate');
+          b.style.transform = 'scaleY(' + FLOOR + ')';
+        });
+        peaks.forEach(p => { p.style.bottom = '0px'; });
       }
 
       // ── Draw-loop ──
-      // Använder getByteFrequencyData: varje stapel = ett eget frekvensband i filen
       function draw() {
         if (!running || !analyser) return;
         rafId = requestAnimationFrame(draw);
 
-        const bins = analyser.frequencyBinCount; // = fftSize / 2
+        const bins = analyser.frequencyBinCount;
         const freq = new Uint8Array(bins);
         analyser.getByteFrequencyData(freq);
 
-        // Logaritmisk mappning: bin 2 (~86 Hz) → bin 93 (~4000 Hz)
-        // Täcker grundtoner + övertoner för mänsklig röst
+        // Logaritmisk mappning 80 Hz → 4000 Hz
         const LO = 2, HI = Math.min(93, bins - 1);
         const logLo = Math.log2(LO), logHi = Math.log2(HI);
 
         for (let i = 0; i < BAR_COUNT; i++) {
-          const t      = i / (BAR_COUNT - 1);
-          const center = Math.round(Math.pow(2, logLo + t * (logHi - logLo)));
-          // Genomsnitt av 3 grannbins för att minska brus
+          const t   = i / (BAR_COUNT - 1);
+          const bin = Math.round(Math.pow(2, logLo + t * (logHi - logLo)));
+          // Genomsnitt 3 grannbins
           let sum = 0;
-          for (let d = -1; d <= 1; d++) {
-            sum += freq[Math.min(bins - 1, Math.max(0, center + d))];
-          }
-          const raw = (sum / 3) / 255; // 0..1
+          for (let d = -1; d <= 1; d++) sum += freq[Math.min(bins-1, Math.max(0, bin+d))];
+          const raw = (sum / 3) / 255;
 
-          // Snabb attack, långsam decay
+          // Snabb attack, långsam decay per stapel
           const prev = smooth[i];
           smooth[i]  = raw > prev
-            ? prev + (raw - prev) * 0.85  // attack: ~1-2 frames
-            : prev + (raw - prev) * 0.12; // decay:  ~8 frames
+            ? prev + (raw - prev) * 0.88   // attack
+            : prev + (raw - prev) * 0.10;  // decay
+          const val = Math.max(smooth[i], FLOOR);
 
-          bars[i].style.transform =
-            'scaleY(' + Math.min(Math.max(smooth[i], FLOOR[i]), 1.0) + ')';
+          // Stapel
+          bars[i].style.transform = 'scaleY(' + Math.min(val, 1.0) + ')';
+
+          // Peak hold
+          if (val >= peakVal[i]) {
+            // Ny topp — håll kvar
+            peakVal[i]  = val;
+            peakHold[i] = PEAK_HOLD_FRAMES;
+          } else if (peakHold[i] > 0) {
+            // Hold — stanna kvar
+            peakHold[i]--;
+          } else {
+            // Fall — sjunka långsamt
+            peakVal[i] = Math.max(FLOOR, peakVal[i] - PEAK_DECAY);
+          }
+
+          // Sätt peak-markörens position i px från botten
+          peaks[i].style.bottom = (peakVal[i] * BAR_H) + 'px';
         }
       }
 
-      // ── Hjälpfunktion: bygg upp AudioContext + AnalyserNode ──
       function buildGraph() {
-        if (actx) return true; // redan byggd
+        if (actx) return true;
         try {
           actx     = new (window.AudioContext || window.webkitAudioContext)();
           analyser = actx.createAnalyser();
-          analyser.fftSize             = 1024; // → 512 bins, ~43 Hz/bin @ 44100 Hz
-          analyser.smoothingTimeConstant = 0;  // vi sköter smoothing manuellt
+          analyser.fftSize             = 1024;
+          analyser.smoothingTimeConstant = 0;
           analyser.connect(actx.destination);
           return true;
-        } catch (e) {
-          actx = analyser = null;
-          return false;
-        }
+        } catch(e) { actx = analyser = null; return false; }
       }
 
-      // ── Anropas i user-gesture (klick) — låser upp AudioContext på mobil ──
       window._primeAudioCtx = function() {
         if (isIOS) return;
         buildGraph();
       };
 
-      // ── Anropas från 'playing'-event — kopplar källan och startar draw ──
       window._connectAnalyser = function(datum, audioEl) {
         if (isIOS) { startCSS(); return; }
-
-        if (!buildGraph()) { startCSS(); return; } // AudioContext misslyckades
-
-        // Koppla MediaElementSource (en gång per audio-element)
+        if (!buildGraph()) { startCSS(); return; }
         if (!sources[datum]) {
           try {
             const src = actx.createMediaElementSource(audioEl);
             src.connect(analyser);
             sources[datum] = src;
-          } catch (e) {
-            startCSS(); return;
-          }
+          } catch(e) { startCSS(); return; }
         }
-
-        // Starta draw — resumea context om den är suspended
         const go = () => { running = true; draw(); };
         if (actx.state === 'suspended') {
           actx.resume().then(go).catch(() => startCSS());
-        } else {
-          go();
-        }
+        } else { go(); }
       };
 
-      // ── Anropas vid paus/slut ──
       window._stopWaveDraw = function() {
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
         smooth.fill(0);
+        peakVal.fill(0);
+        peakHold.fill(0);
         stopCSS();
       };
 
-      // ── Anropas vid toggle-klick om context är suspended ──
       window._resumeAudioCtx = function() {
         if (actx && actx.state === 'suspended') actx.resume().catch(() => {});
       };
