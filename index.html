@@ -1165,8 +1165,6 @@
     [data-theme="light"] .sw-bar {
       background: linear-gradient(to top, rgba(150,100,0,0.55), rgba(190,138,10,0.85));
     }
-    /* Dölj gamla vol-track */
-    .sp-vol-track, .sp-vol-fill { display: none !important; }
 
     /* ── MINI PLAYER ── */
     .player-mini {
@@ -1255,7 +1253,6 @@
     }
     .sp-mini-play:hover { transform: scale(1.09); }
 
-    .mini-bar-track, #mini-thumb, .mini-text-row { display: none; }
     /* ── FAVORITER / HJÄRTA ── */
     .fav-btn {
       background: none; border: none; cursor: pointer;
@@ -1295,7 +1292,6 @@
     #sp-fav-btn.active svg { fill: #a84040; }
 
     /* Favorit filter-chip */
-    .filter-chip.fav-chip { }
     .filter-chip.fav-chip .fav-chip-heart { transition: color 0.2s; }
     .filter-chip.fav-chip.active .fav-chip-heart { color: #a84040; }
     .fav-count-badge {
@@ -1317,9 +1313,6 @@
     .td-audio .play-btn::before {
       content: ''; position: absolute; inset: -8px; border-radius: 50%;
     }
-    .play-btn:hover { box-shadow: 0 4px 14px rgba(36,100,93,.45); }
-    .play-btn.playing { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
-    .play-btn svg { display: block; position: relative; z-index: 1; }
     @keyframes playBtnSpring { 0% { transform: scale(1); } 28% { transform: scale(0.78); } 62% { transform: scale(1.14); } 84% { transform: scale(0.94); } 100% { transform: scale(1); } }
     .play-btn.springing { animation: playBtnSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
     @keyframes sharePulse {
@@ -2515,8 +2508,6 @@
     if (ma) ma.style.background = grad;
     const mi = document.getElementById('sp-mini-initials');
     if (mi) mi.textContent = imamInitials(imamLabel);
-    const mf = document.getElementById('mini-fill');
-    if (mf) mf.style.background = 'linear-gradient(to right, ' + base + ', ' + light + ')';
     const mpf = document.getElementById('sp-mini-pfill');
     if (mpf) mpf.style.background = 'linear-gradient(to right, ' + base + ', ' + light + ')';
     const mp = document.getElementById('sp-mini-play');
@@ -2666,9 +2657,7 @@
     if (!trackEl) return;
     let _dragging = false;
     let _collapseTimer = null;
-    const fillEl = trackEl.id === 'sticky-seek'
-      ? document.getElementById('sticky-fill')
-      : document.getElementById('mini-fill');
+    const fillEl = document.getElementById('sticky-fill');
 
     function getPct(clientX) {
       const rect = trackEl.getBoundingClientRect();
@@ -2759,7 +2748,6 @@
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
-      a.crossOrigin = 'anonymous';
       a.muted = true; // muted tillåts alltid av webbläsaren
       a.src = audioUrls[row.datum];
 
@@ -2768,6 +2756,7 @@
 
       a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
       a.addEventListener('playing',  () => {
+        if (a._stopping) return; // stopp begärdes — ignorera playing-event
         setBtns(row.datum, PAUSE_SVG, true);
         openPlayer(row.datum);
         // Unmute innan analyser kopplas — annars kan ljudet förbli tyst
@@ -3197,33 +3186,32 @@
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
   }
 
-  // Hjälpfunktioner för att pausa/återuppta auto-mini timern
-  function _pauseAutoMini() { clearTimeout(_autoMiniTimer); }
-  function _resumeAutoMini() {
-    clearTimeout(_autoMiniTimer);
-    _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
-  }
   function closePlayer(datum) { _activeDatum = null; updatePlayingRow(null); hideSticky(); updateStickyPlayBtn(false); }
 
   // Håller koll på pågående play()-promises per datum för att förhindra race conditions
   const _playingPromise = {};
   let _toggleBusy = false; // blockerar överlappande toggle-anrop
 
-  async function _stopAudio(datum) {
+  function _stopAudio(datum) {
     const a = audioState[datum];
-    if (!a) return;
+    if (!a) return Promise.resolve();
     const pending = _playingPromise[datum];
     _playingPromise[datum] = null;
     if (pending) {
-      // Vänta på att play()-promise resolvar/rejectar INNAN vi pausar —
-      // annars kastar vissa webbläsare AbortError som triggar glitch-loopar
-      try { await pending; } catch(e) { /* AbortError — ignorera */ }
+      // Vänta på att play()-promise resolvar SEDAN pausa — förhindrar AbortError-glitch.
+      // Sätt en flagga så att play-resolve inte startar om uppspelning.
+      a._stopping = true;
+      return pending
+        .catch(() => {})
+        .then(() => {
+          if (!a.paused) try { a.pause(); } catch(e) {}
+          a._stopping = false;
+          setBtns(datum, PLAY_SVG, false);
+        });
     }
-    // Pausa bara om elementet faktiskt spelar fortfarande
-    if (!a.paused) {
-      try { a.pause(); } catch(e) {}
-    }
+    if (!a.paused) try { a.pause(); } catch(e) {}
     setBtns(datum, PLAY_SVG, false);
+    return Promise.resolve();
   }
 
   async function toggleAudio(datum) {
@@ -3243,11 +3231,11 @@
 
       if (!audioState[datum]) {
         const a = new Audio();
-        a.crossOrigin = 'anonymous';
         a.muted = !!window._globalMuted;
         a.src = audioUrls[datum];
         a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
         a.addEventListener('playing',  () => {
+          if (a._stopping) return; // stopp begärdes — ignorera playing-event
           setBtns(datum, PAUSE_SVG, true);
           openPlayer(datum);
           if (window._connectAnalyser) window._connectAnalyser(datum, a);
@@ -3278,8 +3266,6 @@
       if (audio.paused) {
         setBtns(datum, SPIN_SVG, true);
         // Återuppta AudioContext om den är suspended (kräver användargest)
-        const _ctx = Object.values(window._audioCtxMap || {}).find(Boolean);
-        // Resumea alla kopplade AudioContexts för detta datum
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
         const p = audio.play();
         _playingPromise[datum] = p;
@@ -3298,8 +3284,9 @@
         await _stopAudio(datum);
         if (_activeDatum === datum) updateStickyPlayBtn(false);
       }
+    } catch(e) {
+      // ignorera
     } finally {
-      // Frigör alltid låset, även vid undantag
       _toggleBusy = false;
     }
   }
@@ -4269,24 +4256,13 @@
 
       <button class="sp-mute-btn" id="sticky-mute">
         <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-        <div class="sp-vol-track" id="sp-vol-track"><div class="sp-vol-fill" id="sp-vol-fill"></div></div>
-        <svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+<svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
       </button>
     </div>
   </div>
 
   <!-- ── MINI PLAYER ── -->
   <div class="player-mini">
-    <!-- Legacy seek bar (hidden, still used by JS) -->
-    <div class="mini-bar-track" style="display:none">
-      <div class="mini-bar-fill" id="mini-fill"></div>
-      <div id="mini-thumb"></div>
-    </div>
-    <div style="display:none">
-      <span id="mini-name-display">–</span>
-      <span id="mini-time-display">0:00 / 0:00</span>
-    </div>
-
     <div class="sp-mini-inner">
       <!-- Mute-indikator -->
       <div class="sp-mini-muted-dot" id="sp-mini-muted-dot" title="Ljud avstängt — tryck för att slå på"></div>
