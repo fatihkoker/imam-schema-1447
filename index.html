@@ -677,8 +677,8 @@
     .day-card-mobile { background: var(--surface); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--mobile-shadow); border-left: 4px solid transparent; transition: background 0.35s, box-shadow 0.35s; }
     .day-card-mobile.today { background: var(--today-bg); border-left-color: var(--today-green); }
     .dcm-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-    .dcm-audio-right .play-btn { width: 34px; height: 34px; }
-    .dcm-audio-right { display: flex; align-items: center; height: 34px; margin-left: auto; flex-shrink: 0; }
+    .dcm-audio-right .play-btn { width: 38px; height: 38px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .dcm-audio-right { display: flex; align-items: center; height: 44px; margin-left: auto; flex-shrink: 0; }
     .dcm-dag { font-weight: 700; font-size: 1.3rem; color: var(--primary-dark); min-width: 32px; text-align: center; flex-shrink: 0; transition: color 0.35s; }
     .dcm-dag.today-day { color: #1d7a4e; }
     .dcm-body { flex: 1; min-width: 0; }
@@ -874,7 +874,7 @@
     .sticky-seek.seeking .sticky-seek-fill,
     .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
     .sticky-seek-thumb {
-      position: absolute; top: 50%; width: 13px; height: 13px;
+      position: absolute; top: 50%; left: 0%; width: 13px; height: 13px;
       background: #fff; border-radius: 50%;
       transform: translate(-50%, -50%);
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -1077,8 +1077,8 @@
     .td-fav .fav-btn.active { color: #a84040; }
 
     /* Hjärta i mobil-kort */
-    .dcm-fav-wrap { display: flex; align-items: center; height: 34px; }
-    .dcm-fav-wrap .fav-btn { color: rgba(0,0,0,0.15); width: 34px; height: 34px; }
+    .dcm-fav-wrap { display: flex; align-items: center; height: 44px; }
+    .dcm-fav-wrap .fav-btn { color: rgba(0,0,0,0.15); width: 44px; height: 44px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
     [data-theme="dark"] .dcm-fav-wrap .fav-btn { color: rgba(255,255,255,0.15); }
     .dcm-fav-wrap .fav-btn.active { color: #a84040; }
 
@@ -1918,6 +1918,15 @@
   backdrop.addEventListener('click', () => closeBubble(true));
 
   document.addEventListener('click', (e) => {
+    // Klick utanför full player → mini
+    const playerEl = document.getElementById('sticky-player');
+    if (_activeDatum && playerEl && playerEl.classList.contains('visible') && !playerEl.classList.contains('mini-mode')) {
+      if (!e.target.closest('.sticky-player')) {
+        clearTimeout(_autoMiniTimer);
+        miniSticky();
+      }
+    }
+
     // Close surah tooltips
     if (!e.target.closest('.surah-cell') && !e.target.closest('.dcm-surahs'))
       document.querySelectorAll('.tooltip-box.visible, .dcm-tooltip.visible').forEach(el => el.classList.remove('visible'));
@@ -2040,7 +2049,7 @@
             <span class="dcm-pages">s. ${row.sidor}</span>
           </div>
         </div>
-        <div class="dcm-right-wrap" style="display:flex;align-items:center;gap:2px;flex-shrink:0;margin-left:auto;">
+        <div class="dcm-right-wrap" style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:auto;">
           <div class="dcm-audio-right" id="audio-mobile-${row.datum}" style="margin-left:0;"></div>
           <div class="dcm-fav-wrap"><button class="fav-btn" data-day="${row.day}" title="Spara favorit" onclick="toggleFav(${row.day}, this);event.stopPropagation()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button></div>
         </div>
@@ -2190,7 +2199,8 @@
   /* ── AUDIO ── */
   const audioState = {};
   let _stickyScrollTimer = null;
-  let _seekActive = false;   // true under pågående seek — blockerar scroll→mini
+  let _seekActive = false;
+  let _autoMiniTimer = null;   // true under pågående seek — blockerar scroll→mini
 
   // ════════════════════════════════════════
   // FAVORITER — localStorage
@@ -2386,7 +2396,9 @@
     if (fill)  fill.style.width  = pct + '%';
     if (thumb) thumb.style.left  = pct + '%';
     const sFill  = document.getElementById('sticky-fill');
+    const sThumb = document.getElementById('sticky-thumb');
     if (sFill)  sFill.style.width  = pct + '%';
+    if (sThumb) sThumb.style.left  = pct + '%';
     const spMiniPfill = document.getElementById('sp-mini-pfill');
     if (spMiniPfill) spMiniPfill.style.width = pct + '%';
 
@@ -2418,14 +2430,10 @@
 
   let _miniTimer = null;
   window.addEventListener('scroll', () => {
-    if (!_activeDatum) return;
-    if (_seekActive) return;   // pågående seek — rör inte playern
+    if (!_activeDatum || _seekActive) return;
     clearTimeout(_miniTimer);
-    clearTimeout(_stickyScrollTimer);
-    _miniTimer = setTimeout(() => {
-      if (!_seekActive) miniSticky();
-    }, 80);   // vänta 80ms — filtrerar bort scroll-blippar från seek-klick
-    _stickyScrollTimer = setTimeout(showSticky, 680);
+    clearTimeout(_autoMiniTimer);
+    _miniTimer = setTimeout(() => { if (!_seekActive) miniSticky(); }, 150);
   }, { passive: true });
 
   function navigateTo(datum) {
@@ -2522,8 +2530,9 @@
   });
 
   document.addEventListener('DOMContentLoaded', function() {
-    const seekEl = document.getElementById('sticky-seek');
-    makeDraggableSeek(seekEl, null);
+    const seekEl  = document.getElementById('sticky-seek');
+    const thumbEl = document.getElementById('sticky-thumb');
+    makeDraggableSeek(seekEl, thumbEl);
     // ── New player buttons ──
     syncAllFavBtns();
     updateFavChip();
@@ -2538,6 +2547,15 @@
 
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
+
+    // Klick på mini-inner → expandera till full
+    document.querySelector('.sp-mini-inner')?.addEventListener('click', e => {
+      if (e.target.closest('.sp-mini-ctrl') || e.target.closest('.sp-mini-play')) return;
+      clearTimeout(_autoMiniTimer);
+      showSticky();
+      _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
+      e.stopPropagation();
+    });
 
     // Skip ±30s
     document.getElementById('sp-skip-back-btn')?.addEventListener('click', e => {
@@ -2660,7 +2678,14 @@
     }
   }
 
-  function openPlayer(datum) { _activeDatum = datum; updateStickyControls(); updateStickyPlayBtn(true); setTimeout(showSticky, 200); }
+  function openPlayer(datum) {
+    _activeDatum = datum;
+    updateStickyControls();
+    updateStickyPlayBtn(true);
+    setTimeout(showSticky, 200);
+    clearTimeout(_autoMiniTimer);
+    _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
+  }
   function closePlayer(datum) { _activeDatum = null; hideSticky(); updateStickyPlayBtn(false); }
 
   function toggleAudio(datum) {
