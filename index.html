@@ -858,35 +858,34 @@
     [data-theme="light"] .sp-drag-handle { background: rgba(0,0,0,0.12); }
     #sp-close-btn {
       position: absolute;
-      top: 14px;
+      top: 16px;
       right: 16px;
-      width: 28px;
-      height: 28px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.55);
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: none;
+      color: rgba(255,255,255,0.25);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      transition: color 0.18s, background 0.18s, border-color 0.18s;
+      transition: color 0.18s;
       z-index: 10;
+      padding: 0;
     }
     #sp-close-btn:hover {
-      color: #fff !important;
-      background: rgba(255,255,255,0.13) !important;
-      border-color: rgba(255,255,255,0.22) !important;
+      color: rgba(255,255,255,0.60) !important;
+      background: none !important;
     }
     [data-theme="light"] #sp-close-btn {
-      border-color: rgba(0,0,0,0.10) !important;
-      background: rgba(0,0,0,0.04) !important;
-      color: rgba(0,0,0,0.40) !important;
+      color: rgba(0,0,0,0.22) !important;
+      border: none !important;
+      background: none !important;
     }
     [data-theme="light"] #sp-close-btn:hover {
-      color: rgba(0,0,0,0.75) !important;
-      background: rgba(0,0,0,0.09) !important;
-      border-color: rgba(0,0,0,0.18) !important;
+      color: rgba(0,0,0,0.52) !important;
+      background: none !important;
     }
     [data-theme="light"] .sp-imam-name { color: #1a1a1a; }
     [data-theme="light"] .sp-meta-sub { color: rgba(0,0,0,0.45); }
@@ -4174,8 +4173,8 @@
   <div class="player-full" style="position:relative;">
     <!-- Stäng-knapp — friflytande i övre högra hörnet -->
     <button id="sp-close-btn" title="Stäng spelaren">
-      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <svg width="9" height="9" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
     <div class="sp-drag-handle"></div>
