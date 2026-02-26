@@ -1710,6 +1710,10 @@
 </footer>
 
 <script>
+  // ── iOS-detektering — Web Audio API hindrar bakgrundsuppspelning på iOS ──
+  window._isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
   // ── Hadith-texter ──────────────────────────────────────────────
   const H_STAND_UP        = 'standUp';
   const H_SEEK_ODD        = 'seekOdd';
@@ -2761,8 +2765,8 @@
         openPlayer(row.datum);
         // Unmute innan analyser kopplas — annars kan ljudet förbli tyst
         if (!window._globalMuted) a.muted = false;
-        if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
-        if (window._startWaveDraw)   window._startWaveDraw();
+        if (!window._isIOS && window._connectAnalyser) window._connectAnalyser(row.datum, a);
+        if (!window._isIOS && window._startWaveDraw)   window._startWaveDraw();
       });
       a.addEventListener('pause', () => {
         setBtns(row.datum, PLAY_SVG, false);
@@ -3175,6 +3179,27 @@
     updatePlayingRow(datum);
     updateStickyControls();
     updateStickyPlayBtn(true);
+
+    // MediaSession API — håller bakgrundsuppspelning aktiv på iOS/Android
+    if ('mediaSession' in navigator) {
+      const row = SCHEDULE.find(r => r.datum === datum);
+      if (row) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: row.imamLabel,
+          artist: (T[_currentLang].night || 'Natt') + ' ' + row.day,
+          album: 'Tarawih — Kämpingehallen Ramadan 2026',
+        });
+        navigator.mediaSession.setActionHandler('play', () => {
+          const a = audioState[datum];
+          if (a && a.paused) a.play().catch(() => {});
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+          const a = audioState[datum];
+          if (a && !a.paused) a.pause();
+        });
+      }
+    }
+
     const p = document.getElementById('sticky-player');
     // Om spelaren redan är i mini-läge (t.ex. play klickades i mini-spelaren),
     // stanna kvar i mini-läge — expandera INTE till full player
@@ -3222,12 +3247,12 @@
     try {
       // Stoppa alla andra aktiva spår
       const others = Object.keys(audioState).filter(d => d !== datum);
-      await Promise.all(others.map(async d => {
+      for (const d of others) {
         if (audioState[d] && !audioState[d].paused) {
-          await _stopAudio(d);
+          _stopAudio(d); // kör async utan att blockera
           if (_activeDatum === d) closePlayer(d);
         }
-      }));
+      }
 
       if (!audioState[datum]) {
         const a = new Audio();
@@ -3238,8 +3263,8 @@
           if (a._stopping) return; // stopp begärdes — ignorera playing-event
           setBtns(datum, PAUSE_SVG, true);
           openPlayer(datum);
-          if (window._connectAnalyser) window._connectAnalyser(datum, a);
-          if (window._startWaveDraw)   window._startWaveDraw();
+          if (!window._isIOS && window._connectAnalyser) window._connectAnalyser(datum, a);
+          if (!window._isIOS && window._startWaveDraw)   window._startWaveDraw();
         });
         a.addEventListener('pause', () => {
           // Kör bara stopWaveDraw om spelaren fortfarande är aktiv (inte stängd)
@@ -3262,10 +3287,10 @@
 
       const audio = audioState[datum];
 
-      // Läs paused-state EFTER att andra spår stoppats
       if (audio.paused) {
+        // SPELA — frigör låset DIREKT så paus-knappen inte fryser
+        _toggleBusy = false;
         setBtns(datum, SPIN_SVG, true);
-        // Återuppta AudioContext om den är suspended (kräver användargest)
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
         const p = audio.play();
         _playingPromise[datum] = p;
@@ -3280,13 +3305,18 @@
             }
           });
         }
+        return; // låset redan frigjort ovan
       } else {
-        await _stopAudio(datum);
+        // PAUSA — frigör låset DIREKT, kör cleanup async
+        _toggleBusy = false;
+        _stopAudio(datum);
         if (_activeDatum === datum) updateStickyPlayBtn(false);
+        return; // låset redan frigjort ovan
       }
     } catch(e) {
       // ignorera
     } finally {
+      // Frigör låset om vi inte redan gjort det via tidiga return-satser
       _toggleBusy = false;
     }
   }
