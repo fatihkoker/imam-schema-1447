@@ -3211,11 +3211,9 @@
   async function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return;
-    if (_playingPromise[datum]) {
-      try { await _playingPromise[datum]; } catch (e) { /* AbortError — ignorera */ }
-      _playingPromise[datum] = null;
-    }
-    if (!a.paused) a.pause();
+    // Pausa direkt — vänta INTE på play()-promise (det orsakar fördröjt ljud vid stängning)
+    _playingPromise[datum] = null;
+    try { a.pause(); } catch(e) {}
     setBtns(datum, PLAY_SVG, false);
   }
 
