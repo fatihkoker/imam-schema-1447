@@ -4671,15 +4671,15 @@
       </button>
     </div>
 
-    <!-- Extras: speed · soundwave · mute -->
+    <!-- Extras: speed · soundwave · sleep · mute -->
     <div class="sp-extras-row">
       <button class="sp-speed-chip" id="sp-speed-btn" data-i18n-title="speedTip" title="Uppspelningshastighet">1×</button>
 
-      <!-- ══ SOUND WAVE ══ -->
-      <div class="sp-soundwave" id="sp-soundwave"></div>
+      <!-- ══ SOUND WAVE — flex:1 centrerar den mellan 1× och knapparna ══ -->
+      <div class="sp-soundwave" id="sp-soundwave" style="flex:1;"></div>
 
       <div style="display:flex;align-items:center;gap:7px;position:relative;">
-        <!-- Sleep Timer -->
+        <!-- Sleep Timer (månen) — vänster om hjärtat/mute -->
         <button class="sp-sleep-btn" id="sp-sleep-btn" title="Sleep timer">
           <div class="sp-sleep-pip"></div>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -4705,7 +4705,7 @@
           </div>
           <button class="sp-sleep-cancel" id="sp-sleep-cancel">Avbryt</button>
         </div>
-        <!-- Mute -->
+        <!-- Mute (hjärtat/volym) — höger om månen -->
         <button class="sp-mute-btn" id="sticky-mute">
           <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           <svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
