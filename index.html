@@ -884,7 +884,8 @@
     }
     .sp-meta-sub {
       font-size: 0.72rem; color: rgba(255,255,255,0.62);
-      margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 2px; white-space: normal; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.5;
     }
     .sp-accent { color: rgba(201,168,76,0.90); font-weight: 600; }
     .sp-share-btn {
@@ -2550,10 +2551,16 @@
   }, { passive: true });
 
   async function navigateTo(datum) {
-    if (_activeDatum && audioState[_activeDatum]) {
-      const prev = _activeDatum;
-      await _stopAudio(prev);
-      if (_activeDatum === prev) closePlayer(prev);
+    if (_toggleBusy) return;
+    _toggleBusy = true;
+    try {
+      if (_activeDatum && audioState[_activeDatum]) {
+        const prev = _activeDatum;
+        await _stopAudio(prev);
+        if (_activeDatum === prev) closePlayer(prev);
+      }
+    } finally {
+      _toggleBusy = false;
     }
     toggleAudio(datum);
   }
@@ -2895,7 +2902,7 @@
       const nextLbl  = document.getElementById('sp-next-label');
       const nightStr = (T[_currentLang].night || 'Natt') + ' ' + row.day;
       if (spImam)  spImam.textContent  = row.imamLabel;
-      if (spSub)   spSub.innerHTML     = '<span class="sp-accent" id="sp-night-label">' + nightStr + '</span> · ' + row.surahs;
+      if (spSub)   spSub.innerHTML     = '<span class="sp-accent" id="sp-night-label">' + nightStr + '</span> · ' + row.surahs + (row.tooltip ? '<br><span style="font-size:0.62rem;color:rgba(255,255,255,0.38);letter-spacing:0.02em;">' + row.tooltip + '</span>' : '');
       if (miniImam) miniImam.textContent = row.imamLabel;
       if (miniSub)  miniSub.textContent  = nightStr;
       // Prev/next labels
@@ -2938,83 +2945,89 @@
 
   // Håller koll på pågående play()-promises per datum för att förhindra race conditions
   const _playingPromise = {};
+  let _toggleBusy = false; // blockerar överlappande toggle-anrop
 
   async function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return;
-    // Vänta på att eventuell pending play()-promise löser sig innan vi pausar
-    // Annars kastas AbortError och knappen fastnar i spinner-läge
     if (_playingPromise[datum]) {
-      try { await _playingPromise[datum]; } catch (e) { /* ignorera */ }
+      try { await _playingPromise[datum]; } catch (e) { /* AbortError — ignorera */ }
       _playingPromise[datum] = null;
     }
     if (!a.paused) a.pause();
     setBtns(datum, PLAY_SVG, false);
   }
 
-  function toggleAudio(datum) {
-    // Stoppa alla andra aktiva/laddande ljudspår
-    Object.keys(audioState).forEach(d => {
-      if (d !== datum) {
-        _stopAudio(d).then(() => {
-          if (_activeDatum === d) { closePlayer(d); }
+  async function toggleAudio(datum) {
+    // Blockera om ett toggle redan pågår — förhindrar dubbelklick-race
+    if (_toggleBusy) return;
+    _toggleBusy = true;
+
+    try {
+      // Stoppa alla andra aktiva spår
+      const others = Object.keys(audioState).filter(d => d !== datum);
+      await Promise.all(others.map(async d => {
+        if (audioState[d] && !audioState[d].paused) {
+          await _stopAudio(d);
+          if (_activeDatum === d) closePlayer(d);
+        }
+      }));
+
+      if (!audioState[datum]) {
+        const a = new Audio();
+        a.crossOrigin = 'anonymous';
+        a.muted = !!window._globalMuted;
+        a.src = audioUrls[datum];
+        a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
+        a.addEventListener('playing',  () => {
+          setBtns(datum, PAUSE_SVG, true);
+          openPlayer(datum);
+          if (window._connectAnalyser) window._connectAnalyser(datum, a);
+          if (window._startWaveDraw)   window._startWaveDraw();
         });
-      }
-    });
-
-    if (!audioState[datum]) {
-      const a = new Audio();
-      a.crossOrigin = 'anonymous'; // krävs för Web Audio API cross-origin
-      a.muted = !!window._globalMuted;
-      a.src = audioUrls[datum];
-      a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
-      a.addEventListener('playing',  () => {
-        setBtns(datum, PAUSE_SVG, true);
-        openPlayer(datum);
-        // Koppla Web Audio analyser första gången (kräver user gesture — uppfyllt här)
-        if (window._connectAnalyser) window._connectAnalyser(datum, a);
-        if (window._startWaveDraw)   window._startWaveDraw();
-      });
-      a.addEventListener('pause', () => {
-        if (window._stopWaveDraw) window._stopWaveDraw();
-      });
-      a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
-      a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
-      a.addEventListener('ended', () => {
-        closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration);
-        if (window._stopWaveDraw) window._stopWaveDraw();
-      });
-      // Fånga nätverksfel och återställ knappen
-      a.addEventListener('error', () => { 
-        _playingPromise[datum] = null;
-        setBtns(datum, PLAY_SVG, false); 
-        if (_activeDatum === datum) { closePlayer(datum); }
-        if (window._stopWaveDraw) window._stopWaveDraw();
-      });
-      audioState[datum] = a;
-    }
-
-    const audio = audioState[datum];
-    if (audio.paused) {
-      setBtns(datum, SPIN_SVG, true);
-      const p = audio.play();
-      _playingPromise[datum] = p;
-      if (p && typeof p.then === 'function') {
-        p.then(() => {
-          if (_playingPromise[datum] === p) _playingPromise[datum] = null;
-        }).catch(err => {
+        a.addEventListener('pause', () => {
+          if (window._stopWaveDraw) window._stopWaveDraw();
+        });
+        a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
+        a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
+        a.addEventListener('ended', () => {
+          closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration);
+          if (window._stopWaveDraw) window._stopWaveDraw();
+        });
+        a.addEventListener('error', () => {
           _playingPromise[datum] = null;
-          // AbortError uppstår när vi pausar mitt i en play() — ignorera det lugnt
-          if (err.name !== 'AbortError') {
-            console.warn('Play failed:', err);
-            setBtns(datum, PLAY_SVG, false);
-          }
+          setBtns(datum, PLAY_SVG, false);
+          if (_activeDatum === datum) closePlayer(datum);
+          if (window._stopWaveDraw) window._stopWaveDraw();
         });
+        audioState[datum] = a;
       }
-    } else {
-      _stopAudio(datum).then(() => {
+
+      const audio = audioState[datum];
+
+      // Läs paused-state EFTER att andra spår stoppats
+      if (audio.paused) {
+        setBtns(datum, SPIN_SVG, true);
+        const p = audio.play();
+        _playingPromise[datum] = p;
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            if (_playingPromise[datum] === p) _playingPromise[datum] = null;
+          }).catch(err => {
+            _playingPromise[datum] = null;
+            if (err.name !== 'AbortError') {
+              console.warn('Play failed:', err);
+              setBtns(datum, PLAY_SVG, false);
+            }
+          });
+        }
+      } else {
+        await _stopAudio(datum);
         if (_activeDatum === datum) updateStickyPlayBtn(false);
-      });
+      }
+    } finally {
+      // Frigör alltid låset, även vid undantag
+      _toggleBusy = false;
     }
   }
 
