@@ -856,9 +856,38 @@
                   inset 0 1px 0 rgba(255,255,255,0.6);
     }
     [data-theme="light"] .sp-drag-handle { background: rgba(0,0,0,0.12); }
-    #sp-close-btn:hover { color: rgba(255,255,255,0.75) !important; background: rgba(255,255,255,0.08) !important; }
-    [data-theme="light"] #sp-close-btn { color: rgba(0,0,0,0.28) !important; }
-    [data-theme="light"] #sp-close-btn:hover { color: rgba(0,0,0,0.65) !important; background: rgba(0,0,0,0.06) !important; }
+    #sp-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: color 0.18s, background 0.18s, border-color 0.18s;
+      z-index: 10;
+    }
+    #sp-close-btn:hover {
+      color: #fff !important;
+      background: rgba(255,255,255,0.13) !important;
+      border-color: rgba(255,255,255,0.22) !important;
+    }
+    [data-theme="light"] #sp-close-btn {
+      border-color: rgba(0,0,0,0.10) !important;
+      background: rgba(0,0,0,0.04) !important;
+      color: rgba(0,0,0,0.40) !important;
+    }
+    [data-theme="light"] #sp-close-btn:hover {
+      color: rgba(0,0,0,0.75) !important;
+      background: rgba(0,0,0,0.09) !important;
+      border-color: rgba(0,0,0,0.18) !important;
+    }
     [data-theme="light"] .sp-imam-name { color: #1a1a1a; }
     [data-theme="light"] .sp-meta-sub { color: rgba(0,0,0,0.45); }
     [data-theme="light"] .sp-accent { color: var(--primary-dark); }
@@ -2729,50 +2758,58 @@
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       // Försök autoplay via muted-trick:
-      // Starta muted (webbläsare tillåter det), sedan omedelbart unmute
+      // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
       a.crossOrigin = 'anonymous';
+      a.muted = true; // muted tillåts alltid av webbläsaren
       a.src = audioUrls[row.datum];
-      a.muted = true; // muted startar alltid utan block
 
-      const playPromise = a.play();
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.then(() => {
-          // Play lyckades — unmute direkt och ta över via audioState
+      // Registrera direkt så att toggleAudio/closePlayer fungerar korrekt
+      audioState[row.datum] = a;
+
+      a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
+      a.addEventListener('playing',  () => {
+        setBtns(row.datum, PAUSE_SVG, true);
+        openPlayer(row.datum);
+        if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
+        if (window._startWaveDraw)   window._startWaveDraw();
+      });
+      a.addEventListener('pause', () => {
+        setBtns(row.datum, PLAY_SVG, false);
+        updateStickyPlayBtn(false);
+        if (window._stopWaveDraw) window._stopWaveDraw();
+      });
+      a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(row.datum, a.currentTime, a.duration); });
+      a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
+      a.addEventListener('ended', () => {
+        closePlayer(row.datum); setBtns(row.datum, PLAY_SVG, false);
+        updatePlayerUI(row.datum, 0, a.duration);
+        if (window._stopWaveDraw) window._stopWaveDraw();
+      });
+      a.addEventListener('error', () => {
+        _playingPromise[row.datum] = null;
+        setBtns(row.datum, PLAY_SVG, false);
+        if (_activeDatum === row.datum) closePlayer(row.datum);
+        if (window._stopWaveDraw) window._stopWaveDraw();
+        // Falla tillbaka på pulsande knapp
+        waitForBtnAndPulse(target);
+      });
+
+      setBtns(row.datum, SPIN_SVG, true);
+      const p = a.play();
+      _playingPromise[row.datum] = p;
+      if (p && typeof p.then === 'function') {
+        p.then(() => {
+          if (_playingPromise[row.datum] === p) _playingPromise[row.datum] = null;
+          // Unmute nu när play lyckats
           a.muted = !!window._globalMuted;
-          audioState[row.datum] = a;
-
-          // Koppla alla nödvändiga event-lyssnare
-          a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
-          a.addEventListener('playing',  () => {
-            setBtns(row.datum, PAUSE_SVG, true);
-            openPlayer(row.datum);
-            if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
-            if (window._startWaveDraw)   window._startWaveDraw();
-          });
-          a.addEventListener('pause', () => { if (window._stopWaveDraw) window._stopWaveDraw(); });
-          a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(row.datum, a.currentTime, a.duration); });
-          a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
-          a.addEventListener('ended', () => {
-            closePlayer(row.datum); setBtns(row.datum, PLAY_SVG, false);
-            updatePlayerUI(row.datum, 0, a.duration);
-            if (window._stopWaveDraw) window._stopWaveDraw();
-          });
-          a.addEventListener('error', () => {
-            setBtns(row.datum, PLAY_SVG, false);
-            if (_activeDatum === row.datum) closePlayer(row.datum);
-            if (window._stopWaveDraw) window._stopWaveDraw();
-          });
-
-          setBtns(row.datum, PAUSE_SVG, true);
-          openPlayer(row.datum);
-
         }).catch(() => {
-          // Autoplay blockerades helt — visa pulsande play-knapp istället
+          _playingPromise[row.datum] = null;
+          delete audioState[row.datum];
+          setBtns(row.datum, PLAY_SVG, false);
+          // Autoplay blockerades — visa pulsande knapp istället
           waitForBtnAndPulse(target);
         });
-      } else {
-        waitForBtnAndPulse(target);
       }
     }
 
@@ -4115,18 +4152,13 @@
 
   <!-- ── FULL PLAYER ── -->
   <div class="player-full" style="position:relative;">
-    <div style="position:relative; display:flex; align-items:center; justify-content:center; padding-top:10px; margin-bottom:6px;">
-      <div class="sp-drag-handle" style="margin:0;"></div>
-      <button id="sp-close-btn" title="Stäng spelaren" style="
-        position:absolute; right:0; top:50%; transform:translateY(-50%);
-        width:30px; height:30px; border:none; background:none;
-        color:rgba(255,255,255,0.28); cursor:pointer;
-        display:flex; align-items:center; justify-content:center;
-        border-radius:50%; transition:color 0.15s, background 0.15s;
-      ">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
+    <!-- Stäng-knapp — friflytande i övre högra hörnet -->
+    <button id="sp-close-btn" title="Stäng spelaren">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="sp-drag-handle"></div>
 
 
     <!-- Metadata row -->
