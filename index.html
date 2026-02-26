@@ -2771,6 +2771,8 @@
       a.addEventListener('playing',  () => {
         setBtns(row.datum, PAUSE_SVG, true);
         openPlayer(row.datum);
+        // Unmute innan analyser kopplas — annars kan ljudet förbli tyst
+        if (!window._globalMuted) a.muted = false;
         if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
         if (window._startWaveDraw)   window._startWaveDraw();
       });
@@ -2801,8 +2803,9 @@
       if (p && typeof p.then === 'function') {
         p.then(() => {
           if (_playingPromise[row.datum] === p) _playingPromise[row.datum] = null;
-          // Unmute nu när play lyckats
+          // Unmute nu när play lyckats — om _connectAnalyser redan körts, resumea AudioContext
           a.muted = !!window._globalMuted;
+          if (window._resumeAudioCtx) window._resumeAudioCtx(row.datum);
         }).catch(() => {
           _playingPromise[row.datum] = null;
           delete audioState[row.datum];
@@ -2882,9 +2885,21 @@
       let _rafId = null;
       let _isDrawing = false;
 
+      // Exponera AudioContext-map och resume-funktion globalt
+      window._audioCtxMap = _audioCtx;
+      window._resumeAudioCtx = function(datum) {
+        const ctx = _audioCtx[datum];
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+      };
+
       // Koppla Web Audio API till ett Audio-element
       window._connectAnalyser = function(datum, audioEl) {
-        if (_source[datum]) return; // redan kopplad
+        if (_source[datum]) {
+          // Redan kopplad — se till att AudioContext är igång
+          const ctx = _audioCtx[datum];
+          if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+          return;
+        }
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           const src = ctx.createMediaElementSource(audioEl);
@@ -2896,6 +2911,7 @@
           _audioCtx[datum] = ctx;
           _analyser[datum] = analyser;
           _source[datum]   = src;
+          if (ctx.state === 'suspended') ctx.resume().catch(() => {});
         } catch(e) {
           console.warn('Web Audio API ej tillgänglig:', e);
         }
@@ -3254,6 +3270,10 @@
       // Läs paused-state EFTER att andra spår stoppats
       if (audio.paused) {
         setBtns(datum, SPIN_SVG, true);
+        // Återuppta AudioContext om den är suspended (kräver användargest)
+        const _ctx = Object.values(window._audioCtxMap || {}).find(Boolean);
+        // Resumea alla kopplade AudioContexts för detta datum
+        if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
         const p = audio.play();
         _playingPromise[datum] = p;
         if (p && typeof p.then === 'function') {
