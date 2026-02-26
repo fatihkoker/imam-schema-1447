@@ -2279,30 +2279,6 @@
     const cometWrap = document.getElementById('today-card-comet');
     todayCard.style.display = 'block';
     cometWrap.style.display = 'block';
-
-    let _hasScrolled = false;
-    const _scrollGuard = () => { _hasScrolled = true; };
-    window.addEventListener('scroll', _scrollGuard, { passive: true, once: true });
-    setTimeout(() => {
-      window.removeEventListener('scroll', _scrollGuard);
-      if (_hasScrolled) return;
-      const card = document.getElementById('today-card-comet');
-      const targetY = card.getBoundingClientRect().top + window.scrollY - 20;
-      const startY = window.scrollY;
-      const dist = targetY - startY;
-      if (Math.abs(dist) < 10) return;
-      const duration = 1100;
-      let start = null;
-      function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
-      function step(ts) {
-        if (!start) start = ts;
-        const elapsed = ts - start;
-        const progress = Math.min(elapsed / duration, 1);
-        window.scrollTo(0, startY + dist * easeInOutCubic(progress));
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }, 3000);
   }
 
   /* ── AUDIO ── */
@@ -2644,6 +2620,8 @@
   }
 
   // Auto-play from URL parameter ?natt=N
+  // Webbläsare blockerar autoplay utan user gesture — vi scrollar till rätt natt
+  // och highlightar play-knappen så användaren enkelt kan trycka
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const natt = parseInt(params.get('natt'));
@@ -2651,29 +2629,24 @@
     const row = SCHEDULE.find(r => r.day === natt);
     if (!row) return;
 
-    // Försök direkt — om HEAD-fetch inte hunnit bekräfta URL:en än,
-    // kör ändå toggleAudio (audio-elementet hanterar fel själv)
-    function tryAutoPlay() {
-      toggleAudio(row.datum);
-      const target = window.innerWidth <= 640
+    // Scrolla till rätt natt efter att sidan laddats klart
+    setTimeout(() => {
+      const isMobile = window.innerWidth <= 640;
+      const target = isMobile
         ? document.querySelector('#mobile-cards .day-card-mobile[data-datum="' + row.datum + '"]')
         : document.querySelector('tr[data-datum="' + row.datum + '"]');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    // Kör efter en kort fördröjning så att DOM och audioUrls hinner initieras
-    // Om audioUrls redan är redo — kör direkt, annars vänta max 3s
-    if (audioUrls[row.datum]) {
-      setTimeout(tryAutoPlay, 400);
-    } else {
-      const deadline = Date.now() + 3000;
-      const poll = setInterval(() => {
-        if (audioUrls[row.datum] || Date.now() >= deadline) {
-          clearInterval(poll);
-          tryAutoPlay();
-        }
-      }, 100);
-    }
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Pulsa play-knappen så att användaren ser var den är
+        setTimeout(() => {
+          const playBtn = target.querySelector('.play-btn');
+          if (playBtn) {
+            playBtn.classList.add('springing');
+            playBtn.addEventListener('animationend', () => playBtn.classList.remove('springing'), { once: true });
+          }
+        }, 800);
+      }
+    }, 500);
   });
 
   document.addEventListener('DOMContentLoaded', function() {
