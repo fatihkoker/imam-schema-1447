@@ -1167,6 +1167,135 @@
     }
 
 
+
+    /* ══ SLEEP TIMER ══ */
+    .sp-sleep-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.35); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.22s ease; flex-shrink: 0;
+      position: relative;
+    }
+    .sp-sleep-btn:hover {
+      background: rgba(100,130,255,0.12);
+      border-color: rgba(130,160,255,0.30);
+      color: rgba(160,185,255,0.85);
+    }
+    .sp-sleep-btn.active {
+      background: rgba(100,130,255,0.18);
+      border-color: rgba(130,160,255,0.45);
+      color: rgba(170,200,255,1);
+      box-shadow: 0 0 10px rgba(100,140,255,0.25);
+    }
+    /* Puls-ring när aktiv */
+    .sp-sleep-btn.active::after {
+      content: '';
+      position: absolute; inset: -4px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(130,160,255,0.30);
+      animation: sleepPulseRing 2.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes sleepPulseRing {
+      0%,100% { transform: scale(1); opacity: 0.7; }
+      50%      { transform: scale(1.22); opacity: 0.15; }
+    }
+    /* Pip-indikator */
+    .sp-sleep-pip {
+      position: absolute; top: 1px; right: 1px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #7b96ff;
+      box-shadow: 0 0 6px rgba(100,140,255,0.9);
+      display: none; pointer-events: none;
+    }
+    .sp-sleep-btn.active .sp-sleep-pip { display: block; }
+
+    /* Panel */
+    .sp-sleep-panel {
+      position: absolute; bottom: calc(100% + 12px);
+      right: 18px;
+      background: rgba(8,18,14,0.98);
+      border: 1px solid rgba(130,160,255,0.20);
+      border-radius: 16px; padding: 16px;
+      width: 220px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+      opacity: 0; pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 10;
+    }
+    .sp-sleep-panel.open {
+      opacity: 1; pointer-events: auto; transform: translateY(0);
+    }
+    .sp-sleep-panel-title {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(130,160,255,0.6);
+      margin-bottom: 10px;
+    }
+    .sp-sleep-opts {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0;
+    }
+    .sp-sleep-opt {
+      font-size: 0.65rem; font-weight: 600;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; padding: 5px 10px;
+      color: rgba(255,255,255,0.42); cursor: pointer; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .sp-sleep-opt:hover {
+      background: rgba(100,130,255,0.12);
+      border-color: rgba(130,160,255,0.30);
+      color: rgba(160,185,255,0.9);
+    }
+    .sp-sleep-opt.selected {
+      background: rgba(100,130,255,0.20);
+      border-color: rgba(130,160,255,0.55);
+      color: rgba(175,205,255,1);
+    }
+    /* Progress inom panel */
+    .sp-sleep-progress {
+      margin-top: 12px; display: none;
+    }
+    .sp-sleep-progress.visible { display: block; }
+    .sp-sleep-progress-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 5px;
+    }
+    .sp-sleep-progress-lbl {
+      font-size: 0.58rem; color: rgba(255,255,255,0.35);
+    }
+    .sp-sleep-progress-time {
+      font-size: 0.65rem; font-weight: 700;
+      color: rgba(160,185,255,0.9);
+      font-variant-numeric: tabular-nums;
+    }
+    .sp-sleep-track {
+      height: 3px; background: rgba(255,255,255,0.07);
+      border-radius: 999px; overflow: hidden;
+    }
+    .sp-sleep-fill {
+      height: 100%;
+      background: linear-gradient(to right, rgba(100,130,255,0.55), rgba(160,195,255,0.9));
+      border-radius: 999px; width: 100%;
+      transition: width 1s linear;
+    }
+    .sp-sleep-cancel {
+      margin-top: 10px; width: 100%;
+      font-size: 0.58rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; background: none;
+      border: 1px solid rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.28); padding: 6px;
+      border-radius: 8px; cursor: pointer; font-family: inherit;
+      transition: all 0.18s;
+    }
+    .sp-sleep-cancel:hover {
+      border-color: rgba(220,80,80,0.35);
+      color: rgba(255,120,120,0.75);
+    }
+
     /* ── Sound wave CSS-animation (iOS fallback) ── */
     @keyframes swPulse {
       0%, 100% { transform: scaleY(var(--sw-floor)); }
@@ -1772,6 +1901,10 @@
       prevNight: 'Föregående natt',
       nextNight: 'Nästa natt',
       speedTip:  'Uppspelningshastighet',
+      sleepTitle:  'Stäng av efter',
+      sleepStops:  'Stannar om',
+      sleepCancel: 'Avbryt',
+      sleepNightEnd: 'Nattslut',
       scrollBtn:       'Se i schemat',
       shareImg:        'Dela bild',
       sectionHeading:  'Imamernas Böneledning',
@@ -1824,6 +1957,10 @@
       prevNight: 'الليلة السابقة',
       nextNight: 'الليلة التالية',
       speedTip:  'سرعة التشغيل',
+      sleepTitle:  'إيقاف بعد',
+      sleepStops:  'يتوقف خلال',
+      sleepCancel: 'إلغاء',
+      sleepNightEnd: 'نهاية الليلة',
       scrollBtn:       'عرض في الجدول',
       shareImg:        'مشاركة صورة',
       sectionHeading:  'إمامة الصلاة',
@@ -1876,6 +2013,10 @@
       prevNight: 'Previous night',
       nextNight: 'Next night',
       speedTip:  'Playback speed',
+      sleepTitle:  'Stop after',
+      sleepStops:  'Stops in',
+      sleepCancel: 'Cancel',
+      sleepNightEnd: 'End of night',
       scrollBtn:       'View in schedule',
       shareImg:        'Share image',
       sectionHeading:  'Prayer Leadership',
@@ -1928,6 +2069,10 @@
       prevNight: 'Önceki gece',
       nextNight: 'Sonraki gece',
       speedTip:  'Oynatma hızı',
+      sleepTitle:  'Sonra durdur',
+      sleepStops:  'Duruyor',
+      sleepCancel: 'İptal',
+      sleepNightEnd: 'Gecenin sonu',
       scrollBtn:       'Programda göster',
       shareImg:        'Resim paylaş',
       sectionHeading:  'İmam Programı',
@@ -1980,6 +2125,10 @@
       prevNight: 'Habeenkii hore',
       nextNight: 'Habeenka xiga',
       speedTip:  'Xawaaraha ciyaarta',
+      sleepTitle:  'Ka jooji kadib',
+      sleepStops:  'Joogsanayaa',
+      sleepCancel: 'Jooji',
+      sleepNightEnd: 'Dhamaadka habeenka',
       scrollBtn:       'Arag jadwalka',
       shareImg:        'Wadaag sawir',
       sectionHeading:  'Hogaanka Salaadda',
@@ -2028,8 +2177,8 @@
     {day:9,  sidor:'82–92',  imam:'ibrahim',     imamLabel:'Ibrahim Noor',        datum:'2026-02-25', vecka:'Wednesday',   surahs:'An-Nisa',                                                                                                           tooltip:'4:24 – 4:87'},
     {day:10, sidor:'92–101', imam:'ibrahim',      imamLabel:'Ibrahim Noor',        datum:'2026-02-26', vecka:'Thursday',  surahs:'An-Nisa',                                                                                                           tooltip:'4:88 – 4:147'},
     {day:11, sidor:'102–106',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-02-27', vecka:'Friday',   surahs:'An-Nisa, Fatir',                                                                                                    tooltip:'4:148 – 35:30'},
-    {day:12, sidor:'438–449',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-28', vecka:'Saturday',   surahs:'Fatir, Ya-Sin',                                                                                                     tooltip:'35:31 – 36:82'},
-    {day:13, sidor:'449–458',imam:'abdelsalam',  imamLabel:'Abdelsalam Nour',    datum:'2026-03-01', vecka:'Sunday',   surahs:'Ya-Sin, As-Saffat, Sad',                                                                                            tooltip:'36:83 – 38:88'},
+    {day:12, sidor:'438–449',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-02-28', vecka:'Saturday',   surahs:'Fatir, Ya-Sin, As-Saffat',                                                                                          tooltip:'35:31 – 37:82'},
+    {day:13, sidor:'449–458',imam:'abdelsalam',  imamLabel:'Abdelsalam Nour',    datum:'2026-03-01', vecka:'Sunday',   surahs:'As-Saffat, Sad',                                                                                                    tooltip:'37:83 – 38:88'},
     {day:14, sidor:'458–467',imam:'saed',        imamLabel:'Saed Magan',         datum:'2026-03-02', vecka:'Monday',   surahs:'Az-Zumar',                                                                                                          tooltip:'39:1 – 39:75'},
     {day:15, sidor:'467–476',imam:'noor',        imamLabel:'Noor',               datum:'2026-03-03', vecka:'Tuesday',   surahs:'Ghafir',                                                                                                            tooltip:'40:1 – 40:85'},
     {day:16, sidor:'476–486',imam:'mohammed',    imamLabel:'Mohammed Haji',      datum:'2026-03-04', vecka:'Wednesday',   surahs:'Fussilat, Ash-Shura',                                                                                               tooltip:'41:1 – 42:26'},
@@ -2860,135 +3009,142 @@
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
+      // ── Staplar ──
       const BAR_COUNT = 17;
-      // Vilstransform per stapel — liten organisk profil
       const FLOOR = [0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.12,0.11,0.10,0.09,0.08,0.07,0.06,0.06,0.05];
-      // CSS-animation peak/tid för iOS-fallback
       const PEAK  = [0.35,0.45,0.55,0.65,0.75,0.85,0.90,0.95,0.90,0.85,0.75,0.65,0.55,0.45,0.35,0.30,0.25];
-      const DUR   = [1.1, 0.9, 0.8, 0.95,0.75,0.85,0.70,0.80,0.70,0.85,0.75,0.95,0.80,0.90,1.1, 1.0, 1.15];
-      const DELAY = [0,   0.1, 0.2, 0.05,0.3, 0.15,0.4, 0.0, 0.4, 0.15,0.3, 0.05,0.2, 0.1, 0.0, 0.25,0.35];
-
+      const DUR   = [1.1,0.9,0.8,0.95,0.75,0.85,0.70,0.80,0.70,0.85,0.75,0.95,0.80,0.90,1.1,1.0,1.15];
+      const DELAY = [0,0.1,0.2,0.05,0.3,0.15,0.4,0.0,0.4,0.15,0.3,0.05,0.2,0.1,0.0,0.25,0.35];
       const bars = [];
       for (let i = 0; i < BAR_COUNT; i++) {
-        const b = document.createElement('div');
-        b.className = 'sw-bar';
-        b.style.setProperty('--sw-floor', FLOOR[i]);
-        b.style.setProperty('--sw-peak',  PEAK[i]);
-        b.style.setProperty('--sw-dur',   DUR[i] + 's');
-        b.style.animationDelay = DELAY[i] + 's';
-        b.style.transform = 'scaleY(' + FLOOR[i] + ')';
-        waveEl.appendChild(b);
-        bars.push(b);
+        const el = document.createElement('div');
+        el.className = 'sw-bar';
+        el.style.setProperty('--sw-floor', FLOOR[i]);
+        el.style.setProperty('--sw-peak',  PEAK[i]);
+        el.style.setProperty('--sw-dur',   DUR[i] + 's');
+        el.style.animationDelay = DELAY[i] + 's';
+        el.style.transform = 'scaleY(' + FLOOR[i] + ')';
+        waveEl.appendChild(el);
+        bars.push(el);
       }
 
-      // iOS: Web Audio API blockeras av Safari — använd CSS-animation
+      // iOS Safari blockerar Web Audio — CSS-animation istället
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      let ctx = null, analyser = null, rafId = null, running = false;
-      const sources = {};
+      // ── State ──
+      let actx     = null;  // AudioContext
+      let analyser = null;  // AnalyserNode
+      let rafId    = null;
+      let running  = false;
+      const sources = {};   // datum → MediaElementSourceNode (skapas max 1 gång per element)
+      const smooth  = new Float32Array(BAR_COUNT).fill(0); // per-stapel smoothad värde
 
-      function startCSSWave() {
-        bars.forEach(b => b.classList.add('sw-bar--animate'));
-      }
-      function stopCSSWave() {
+      // ── CSS-fallback (iOS) ──
+      function startCSS() { bars.forEach(b => b.classList.add('sw-bar--animate')); }
+      function stopCSS()  {
         bars.forEach((b, i) => {
           b.classList.remove('sw-bar--animate');
           b.style.transform = 'scaleY(' + FLOOR[i] + ')';
         });
       }
 
-      // Håller nuvarande visningsvärde per stapel för mjuk decay
-      const displayed = new Float32Array(BAR_COUNT).fill(0);
-
+      // ── Draw-loop ──
+      // Använder getByteFrequencyData: varje stapel = ett eget frekvensband i filen
       function draw() {
-        if (!running) return;
+        if (!running || !analyser) return;
         rafId = requestAnimationFrame(draw);
 
-        // Frekvensdata direkt från filen — varje bin = ett frekvensband
-        const freq = new Uint8Array(analyser.frequencyBinCount); // 512 bins
+        const bins = analyser.frequencyBinCount; // = fftSize / 2
+        const freq = new Uint8Array(bins);
         analyser.getByteFrequencyData(freq);
 
-        // Quran-recitation sitter i 80–4000 Hz.
-        // sampleRate ≈ 44100 → binWidth = 44100/1024 ≈ 43 Hz/bin
-        // bin 2  ≈  86 Hz   bin 93 ≈ 4000 Hz
-        // Logaritmisk fördelning: komprimerar bas, öppnar mellanregister
-        const LO  = 2;   // ~86 Hz
-        const HI  = 93;  // ~4000 Hz
-        const logLo = Math.log2(LO);
-        const logHi = Math.log2(HI);
-        const N = freq.length;
+        // Logaritmisk mappning: bin 2 (~86 Hz) → bin 93 (~4000 Hz)
+        // Täcker grundtoner + övertoner för mänsklig röst
+        const LO = 2, HI = Math.min(93, bins - 1);
+        const logLo = Math.log2(LO), logHi = Math.log2(HI);
 
         for (let i = 0; i < BAR_COUNT; i++) {
-          const t   = i / (BAR_COUNT - 1);
-          const bin = Math.round(Math.pow(2, logLo + t * (logHi - logLo)));
-
-          // Medelvärde över 3 grannbins — minskar spikigt brus
-          let sum = 0, count = 0;
+          const t      = i / (BAR_COUNT - 1);
+          const center = Math.round(Math.pow(2, logLo + t * (logHi - logLo)));
+          // Genomsnitt av 3 grannbins för att minska brus
+          let sum = 0;
           for (let d = -1; d <= 1; d++) {
-            const b = Math.min(N - 1, Math.max(0, bin + d));
-            sum += freq[b]; count++;
+            sum += freq[Math.min(bins - 1, Math.max(0, center + d))];
           }
-          const raw = (sum / count) / 255; // 0..1
+          const raw = (sum / 3) / 255; // 0..1
 
-          // Snabb attack, långsam decay — ser naturligt ut utan fördröjning
-          const prev = displayed[i];
-          const next = raw > prev
-            ? prev + (raw - prev) * 0.9   // attack: nästan direkt
-            : prev + (raw - prev) * 0.15; // decay: ~6 frames
-          displayed[i] = next;
+          // Snabb attack, långsam decay
+          const prev = smooth[i];
+          smooth[i]  = raw > prev
+            ? prev + (raw - prev) * 0.85  // attack: ~1-2 frames
+            : prev + (raw - prev) * 0.12; // decay:  ~8 frames
 
-          const val = Math.max(next, FLOOR[i]);
-          bars[i].style.transform = 'scaleY(' + Math.min(val, 1.0) + ')';
+          bars[i].style.transform =
+            'scaleY(' + Math.min(Math.max(smooth[i], FLOOR[i]), 1.0) + ')';
         }
       }
 
-      // Skapar AudioContext direkt i user gesture
-      window._primeAudioCtx = function() {
-        if (isIOS || ctx) return;
+      // ── Hjälpfunktion: bygg upp AudioContext + AnalyserNode ──
+      function buildGraph() {
+        if (actx) return true; // redan byggd
         try {
-          ctx = new (window.AudioContext || window.webkitAudioContext)();
-          analyser = ctx.createAnalyser();
-          analyser.fftSize = 1024;
-          analyser.smoothingTimeConstant = 0.0; // ingen inbyggd smoothing — hanteras i draw()
-          analyser.connect(ctx.destination);
-        } catch(e) { ctx = null; }
+          actx     = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = actx.createAnalyser();
+          analyser.fftSize             = 1024; // → 512 bins, ~43 Hz/bin @ 44100 Hz
+          analyser.smoothingTimeConstant = 0;  // vi sköter smoothing manuellt
+          analyser.connect(actx.destination);
+          return true;
+        } catch (e) {
+          actx = analyser = null;
+          return false;
+        }
+      }
+
+      // ── Anropas i user-gesture (klick) — låser upp AudioContext på mobil ──
+      window._primeAudioCtx = function() {
+        if (isIOS) return;
+        buildGraph();
       };
 
+      // ── Anropas från 'playing'-event — kopplar källan och startar draw ──
       window._connectAnalyser = function(datum, audioEl) {
-        if (isIOS) { startCSSWave(); return; }
-        try {
-          if (!ctx) {
-            ctx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = ctx.createAnalyser();
-            analyser.fftSize = 1024;
-            analyser.smoothingTimeConstant = 0.0;
-            analyser.connect(ctx.destination);
-          }
-          if (!sources[datum]) {
-            const src = ctx.createMediaElementSource(audioEl);
+        if (isIOS) { startCSS(); return; }
+
+        if (!buildGraph()) { startCSS(); return; } // AudioContext misslyckades
+
+        // Koppla MediaElementSource (en gång per audio-element)
+        if (!sources[datum]) {
+          try {
+            const src = actx.createMediaElementSource(audioEl);
             src.connect(analyser);
             sources[datum] = src;
+          } catch (e) {
+            startCSS(); return;
           }
-          const startDraw = () => { running = true; draw(); };
-          if (ctx.state === 'suspended') {
-            ctx.resume().then(startDraw).catch(() => startCSSWave());
-          } else {
-            startDraw();
-          }
-        } catch(e) { startCSSWave(); }
+        }
+
+        // Starta draw — resumea context om den är suspended
+        const go = () => { running = true; draw(); };
+        if (actx.state === 'suspended') {
+          actx.resume().then(go).catch(() => startCSS());
+        } else {
+          go();
+        }
       };
 
+      // ── Anropas vid paus/slut ──
       window._stopWaveDraw = function() {
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
-        displayed.fill(0);
-        stopCSSWave();
+        smooth.fill(0);
+        stopCSS();
       };
 
+      // ── Anropas vid toggle-klick om context är suspended ──
       window._resumeAudioCtx = function() {
-        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+        if (actx && actx.state === 'suspended') actx.resume().catch(() => {});
       };
     })();
 
@@ -3089,6 +3245,146 @@
       Object.values(audioState).forEach(a => { a.playbackRate = spd; });
       e.stopPropagation();
     });
+
+
+    // ══ SLEEP TIMER ══
+    (function() {
+      const btn      = document.getElementById('sp-sleep-btn');
+      const panel    = document.getElementById('sp-sleep-panel');
+      const progress = document.getElementById('sp-sleep-progress');
+      const fillEl   = document.getElementById('sp-sleep-fill');
+      const timeEl   = document.getElementById('sp-sleep-time');
+      const cancelEl = document.getElementById('sp-sleep-cancel');
+      const opts     = document.querySelectorAll('.sp-sleep-opt');
+      if (!btn || !panel) return;
+
+      let _sleepTimer    = null;  // setInterval-id
+      let _sleepTotal    = 0;     // vald tid i sekunder
+      let _sleepRemain   = 0;     // återstående sekunder
+      let _sleepEndMode  = false; // "Nattslut"-läge
+
+      function fmtSleep(s) {
+        const m = Math.floor(s / 60), sec = s % 60;
+        return m + ':' + String(sec).padStart(2, '0');
+      }
+
+      function updatePanel() {
+        const t = T[_currentLang] || {};
+        const titleEl = document.getElementById('sp-sleep-panel-title');
+        const lblEl   = document.getElementById('sp-sleep-progress-lbl');
+        if (titleEl) titleEl.textContent = t.sleepTitle  || 'Stäng av efter';
+        if (lblEl)   lblEl.textContent   = t.sleepStops  || 'Stannar om';
+        if (cancelEl) cancelEl.textContent = t.sleepCancel || 'Avbryt';
+        const endOpt = document.getElementById('sp-sleep-end-opt');
+        if (endOpt) endOpt.textContent = t.sleepNightEnd || 'Nattslut';
+      }
+
+      function startTimer(minutes, endMode) {
+        clearSleep();
+        _sleepEndMode = !!endMode;
+
+        if (endMode) {
+          // Nattslut: lyssna på 'ended'-event
+          window._sleepEndMode = true;
+          btn.classList.add('active');
+          progress.classList.remove('visible');
+          panel.classList.remove('open');
+          return;
+        }
+
+        _sleepTotal  = minutes * 60;
+        _sleepRemain = _sleepTotal;
+        btn.classList.add('active');
+        progress.classList.add('visible');
+        panel.classList.remove('open');
+
+        // Uppdatera direkt
+        timeEl.textContent = fmtSleep(_sleepRemain);
+        fillEl.style.width = '100%';
+
+        _sleepTimer = setInterval(() => {
+          _sleepRemain--;
+          if (_sleepRemain <= 0) {
+            doSleep();
+            return;
+          }
+          const pct = (_sleepRemain / _sleepTotal) * 100;
+          fillEl.style.width = pct + '%';
+          timeEl.textContent = fmtSleep(_sleepRemain);
+        }, 1000);
+      }
+
+      function doSleep() {
+        // Pausa aktivt ljud
+        if (_activeDatum && audioState[_activeDatum]) {
+          audioState[_activeDatum].pause();
+        }
+        clearSleep();
+      }
+
+      function clearSleep() {
+        clearInterval(_sleepTimer);
+        _sleepTimer   = null;
+        _sleepTotal   = 0;
+        _sleepRemain  = 0;
+        _sleepEndMode = false;
+        window._sleepEndMode = false;
+        btn.classList.remove('active');
+        progress.classList.remove('visible');
+        // Avmarkera alla opts
+        opts.forEach(o => o.classList.remove('selected'));
+        timeEl.textContent = '–';
+        fillEl.style.width = '100%';
+      }
+
+      // Knapp-klick: öppna/stäng panel
+      btn.addEventListener('click', e => {
+        if (btn.classList.contains('active') && _sleepEndMode) {
+          // Avbryt nattslut-läge direkt
+          clearSleep();
+          panel.classList.remove('open');
+          e.stopPropagation(); return;
+        }
+        const isOpen = panel.classList.contains('open');
+        panel.classList.toggle('open', !isOpen);
+        if (!isOpen) updatePanel();
+        e.stopPropagation();
+      });
+
+      // Välj tid
+      opts.forEach(opt => {
+        opt.addEventListener('click', e => {
+          opts.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          const minutes = opt.dataset.minutes;
+          if (minutes === 'end') {
+            startTimer(0, true);
+          } else {
+            startTimer(parseInt(minutes), false);
+          }
+          e.stopPropagation();
+        });
+      });
+
+      // Avbryt-knapp
+      cancelEl?.addEventListener('click', e => {
+        clearSleep();
+        panel.classList.remove('open');
+        e.stopPropagation();
+      });
+
+      // Stäng panel vid klick utanför
+      document.addEventListener('click', e => {
+        if (!e.target.closest('#sp-sleep-btn') && !e.target.closest('#sp-sleep-panel')) {
+          panel.classList.remove('open');
+        }
+      });
+
+      // Exponera för applyLang och "ended"-event
+      window._sleepClear   = clearSleep;
+      window._sleepEndMode = false;
+      window._updateSleepPanel = updatePanel;
+    })();
 
     // Favorit-knapp i spelaren
     document.getElementById('sp-fav-btn')?.addEventListener('click', e => {
@@ -3311,6 +3607,8 @@
         a.addEventListener('ended', () => {
           closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration);
           if (window._stopWaveDraw) window._stopWaveDraw();
+          // Nattslut-sleep: rensa timern när spåret är slut
+          if (window._sleepEndMode && window._sleepClear) window._sleepClear();
         });
         a.addEventListener('error', () => {
           _playingPromise[datum] = null;
@@ -3387,6 +3685,7 @@
       if (t[key] !== undefined) el.textContent = t[key];
     });
     // Uppdatera fav empty-state text om den visas
+    if (window._updateSleepPanel) window._updateSleepPanel();
     const emptyTxt2 = document.getElementById('fav-empty-text');
     if (emptyTxt2) emptyTxt2.textContent = t.noFavs || '';
 
@@ -4322,10 +4621,39 @@
       <!-- ══ SOUND WAVE ══ -->
       <div class="sp-soundwave" id="sp-soundwave"></div>
 
-      <button class="sp-mute-btn" id="sticky-mute">
-        <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-<svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-      </button>
+      <div style="display:flex;align-items:center;gap:7px;position:relative;">
+        <!-- Sleep Timer -->
+        <button class="sp-sleep-btn" id="sp-sleep-btn" title="Sleep timer">
+          <div class="sp-sleep-pip"></div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <!-- Sleep Panel -->
+        <div class="sp-sleep-panel" id="sp-sleep-panel">
+          <div class="sp-sleep-panel-title" id="sp-sleep-panel-title">Stäng av efter</div>
+          <div class="sp-sleep-opts" id="sp-sleep-opts">
+            <button class="sp-sleep-opt" data-minutes="15">15 min</button>
+            <button class="sp-sleep-opt" data-minutes="30">30 min</button>
+            <button class="sp-sleep-opt" data-minutes="45">45 min</button>
+            <button class="sp-sleep-opt" data-minutes="60">60 min</button>
+            <button class="sp-sleep-opt" data-minutes="end" id="sp-sleep-end-opt">Nattslut</button>
+          </div>
+          <div class="sp-sleep-progress" id="sp-sleep-progress">
+            <div class="sp-sleep-progress-row">
+              <span class="sp-sleep-progress-lbl" id="sp-sleep-progress-lbl">Stannar om</span>
+              <span class="sp-sleep-progress-time" id="sp-sleep-time">–</span>
+            </div>
+            <div class="sp-sleep-track">
+              <div class="sp-sleep-fill" id="sp-sleep-fill"></div>
+            </div>
+          </div>
+          <button class="sp-sleep-cancel" id="sp-sleep-cancel">Avbryt</button>
+        </div>
+        <!-- Mute -->
+        <button class="sp-mute-btn" id="sticky-mute">
+          <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
