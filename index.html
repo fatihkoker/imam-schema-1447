@@ -756,7 +756,7 @@
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
 
     .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; }
-    .sticky-player.visible { pointer-events: auto; }
+    .sticky-player.visible { pointer-events: none; } /* aldrig auto på hela containern */
 
     /* ── FULL PLAYER ── */
     .player-full {
@@ -833,7 +833,6 @@
     [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
     .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; }
     .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; }
-
     /* Gold top line */
     .player-full::before {
       content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -1074,7 +1073,8 @@
       transition: transform 0.46s cubic-bezier(0.32,0.72,0,1), opacity 0.25s ease;
       will-change: transform;
     }
-    .sticky-player.mini-mode .player-mini { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .sticky-player.mini-mode .player-mini { transform: translateY(0); opacity: 1; pointer-events: none; }
+    .sticky-player.mini-mode .sp-mini-inner { pointer-events: auto; }
 
     .sp-mini-inner {
       background: rgba(12, 20, 16, 0.97);
