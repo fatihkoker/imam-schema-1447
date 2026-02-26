@@ -1038,6 +1038,28 @@
       display: none;
     }
     .sticky-player.muted-state .sp-mini-muted-dot { display: block; }
+    /* ══ SOUND WAVE — Web Audio API driven ══ */
+    .sp-soundwave {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .sw-bar {
+      width: 3px;
+      border-radius: 2px;
+      background: linear-gradient(to top, rgba(201,168,76,0.45), rgba(232,201,122,0.90));
+      transform-origin: bottom center;
+      transform: scaleY(0.08);
+      transition: transform 0.08s ease-out;
+      height: 22px;
+    }
+    /* Light mode: mörkare guld-ton för bättre kontrast */
+    [data-theme="light"] .sw-bar {
+      background: linear-gradient(to top, rgba(150,100,0,0.55), rgba(190,138,10,0.85));
+    }
     /* Dölj gamla vol-track */
     .sp-vol-track, .sp-vol-fill { display: none !important; }
 
@@ -2437,6 +2459,7 @@
     // Play/pause state
     if (isPlaying) btn.classList.add('playing');
     else           btn.classList.remove('playing');
+    // Sound wave — startas/stoppas via audio events (playing/pause), inte här
     // Mini play button icon
     const miniPlay = document.getElementById('sp-mini-play');
     if (miniPlay) {
@@ -2630,6 +2653,100 @@
     // ── New player buttons ──
     syncAllFavBtns();
     updateFavChip();
+
+    // ══ SOUND WAVE — Web Audio API ══
+    // Skapar barer, kopplar en AnalyserNode till varje Audio-element
+    // och driver bararna direkt från frekvensdata i realtid.
+    (function() {
+      const waveEl = document.getElementById('sp-soundwave');
+      if (!waveEl) return;
+
+      const BAR_COUNT = 17;
+      const bars = [];
+
+      // Bergprofil — grundhöjd per bar (används som golvnivå vid tystnad)
+      const floorProfile = [0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.12,0.11,0.10,0.09,0.08,0.07,0.06,0.06,0.05];
+
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'sw-bar';
+        bar.style.transform = 'scaleY(' + floorProfile[i] + ')';
+        waveEl.appendChild(bar);
+        bars.push(bar);
+      }
+
+      // AudioContext och analyser per datum
+      const _audioCtx = {};     // AudioContext per datum
+      const _analyser = {};     // AnalyserNode per datum
+      const _source   = {};     // MediaElementSourceNode per datum
+      let _rafId = null;
+      let _isDrawing = false;
+
+      // Koppla Web Audio API till ett Audio-element
+      window._connectAnalyser = function(datum, audioEl) {
+        if (_source[datum]) return; // redan kopplad
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const src = ctx.createMediaElementSource(audioEl);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.78;
+          src.connect(analyser);
+          analyser.connect(ctx.destination);
+          _audioCtx[datum] = ctx;
+          _analyser[datum] = analyser;
+          _source[datum]   = src;
+        } catch(e) {
+          console.warn('Web Audio API ej tillgänglig:', e);
+        }
+      };
+
+      // Mappa FFT-bins jämnt fördelade på BAR_COUNT barer
+      // Fokuserar på låg-till-mellanfrekvens (Quran-recitation sitter 80–3000 Hz)
+      function drawFrame() {
+        _rafId = requestAnimationFrame(drawFrame);
+        if (!_activeDatum || !_analyser[_activeDatum]) {
+          // Ingen analyser — sjunk ner till golv
+          bars.forEach((b, i) => { b.style.transform = 'scaleY(' + floorProfile[i] + ')'; });
+          return;
+        }
+        const analyser = _analyser[_activeDatum];
+        const bufLen = analyser.frequencyBinCount; // = fftSize/2 = 128
+        const data   = new Uint8Array(bufLen);
+        analyser.getByteFrequencyData(data);
+
+        // Använd bin 2–80 (ca 40–3100 Hz vid 44.1kHz) för talröst
+        const binStart = 2;
+        const binEnd   = Math.min(80, bufLen - 1);
+        const usable   = binEnd - binStart;
+
+        for (let i = 0; i < BAR_COUNT; i++) {
+          // Varje bar mappar till ett frekvensband
+          const binIdx = binStart + Math.round((i / (BAR_COUNT - 1)) * usable);
+          const raw    = data[binIdx] / 255; // 0–1
+
+          // Bergform-multiplikator: mitt = 1.0, kanter = 0.55
+          const centerDist = Math.abs(i - (BAR_COUNT - 1) / 2) / ((BAR_COUNT - 1) / 2);
+          const shapeMul   = 1.0 - centerDist * 0.45;
+
+          // Skala till en synlig höjd: golv + signal
+          const scale = floorProfile[i] + raw * 0.92 * shapeMul;
+          bars[i].style.transform = 'scaleY(' + Math.min(scale, 1.0) + ')';
+        }
+      }
+
+      window._startWaveDraw = function() {
+        if (_isDrawing) return;
+        _isDrawing = true;
+        drawFrame();
+      };
+
+      window._stopWaveDraw = function() {
+        _isDrawing = false;
+        cancelAnimationFrame(_rafId);
+        bars.forEach((b, i) => { b.style.transform = 'scaleY(' + floorProfile[i] + ')'; });
+      };
+    })();
 
     const muteBtn = document.getElementById('sticky-mute');
     if (muteBtn) muteBtn.addEventListener('click', e => {
@@ -2847,18 +2964,32 @@
 
     if (!audioState[datum]) {
       const a = new Audio();
+      a.crossOrigin = 'anonymous'; // krävs för Web Audio API cross-origin
       a.muted = !!window._globalMuted;
       a.src = audioUrls[datum];
       a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
-      a.addEventListener('playing',  () => { setBtns(datum, PAUSE_SVG, true); openPlayer(datum); });
+      a.addEventListener('playing',  () => {
+        setBtns(datum, PAUSE_SVG, true);
+        openPlayer(datum);
+        // Koppla Web Audio analyser första gången (kräver user gesture — uppfyllt här)
+        if (window._connectAnalyser) window._connectAnalyser(datum, a);
+        if (window._startWaveDraw)   window._startWaveDraw();
+      });
+      a.addEventListener('pause', () => {
+        if (window._stopWaveDraw) window._stopWaveDraw();
+      });
       a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
-      a.addEventListener('ended', () => { closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration); });
+      a.addEventListener('ended', () => {
+        closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration);
+        if (window._stopWaveDraw) window._stopWaveDraw();
+      });
       // Fånga nätverksfel och återställ knappen
       a.addEventListener('error', () => { 
         _playingPromise[datum] = null;
         setBtns(datum, PLAY_SVG, false); 
         if (_activeDatum === datum) { closePlayer(datum); }
+        if (window._stopWaveDraw) window._stopWaveDraw();
       });
       audioState[datum] = a;
     }
@@ -3837,9 +3968,13 @@
       </button>
     </div>
 
-    <!-- Extras: speed · volume · mute -->
+    <!-- Extras: speed · soundwave · mute -->
     <div class="sp-extras-row">
       <button class="sp-speed-chip" id="sp-speed-btn" data-i18n-title="speedTip" title="Uppspelningshastighet">1×</button>
+
+      <!-- ══ SOUND WAVE ══ -->
+      <div class="sp-soundwave" id="sp-soundwave"></div>
+
       <button class="sp-mute-btn" id="sticky-mute">
         <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         <div class="sp-vol-track" id="sp-vol-track"><div class="sp-vol-fill" id="sp-vol-fill"></div></div>
