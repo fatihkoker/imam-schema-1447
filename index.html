@@ -1178,9 +1178,24 @@
       transform: scaleY(0.04);
       will-change: transform;
     }
+    /* Peak-markör: liten linje som håller kvar och faller */
+    .sw-peak {
+      position: absolute;
+      width: 3px;
+      height: 2px;
+      border-radius: 1px;
+      background: #ffe87a;
+      box-shadow: 0 0 5px rgba(255,230,100,0.85), 0 0 10px rgba(255,200,50,0.4);
+      pointer-events: none;
+      will-change: top;
+    }
     [data-theme="light"] .sw-bar {
       background: linear-gradient(to top, #8a5c00 0%, #c4830a 40%, #e8a820 100%);
       box-shadow: 0 0 4px rgba(180,120,0,0.35);
+    }
+    [data-theme="light"] .sw-peak {
+      background: #c4830a;
+      box-shadow: 0 0 4px rgba(180,120,0,0.6);
     }
 
 
@@ -2925,6 +2940,7 @@
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
+      a.crossOrigin = 'anonymous'; // krävs för Web Audio API på cross-origin mp3 (iOS Safari)
       a.muted = true; // muted tillåts alltid av webbläsaren
       a.src = audioUrls[row.datum];
 
@@ -3026,26 +3042,42 @@
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
-      const BAR_COUNT = 32;
-      const MIN_SCALE = 0.04; // minsta stapelhöjd i vila
+      const BAR_COUNT  = 32;
+      const MIN_SCALE  = 0.04;  // minsta stapelhöjd i vila
+      const COL_H      = 38;    // px — matchar .sw-bar height i CSS
+      const HOLD_FRAMES = 30;   // ~0.5s @ 60fps peak stannar kvar
+      const PEAK_DECAY  = 0.012; // hastighet peak faller per frame (0..1)
 
-      // Bygg 32 kolumner — bara .sw-col > .sw-bar, ingen peak-markör
-      const bars   = [];
-      const smooth = new Float32Array(BAR_COUNT).fill(0);
+      const bars     = [];
+      const peakEls  = [];
+      const smooth   = new Float32Array(BAR_COUNT).fill(0);
+      const peakVal  = new Float32Array(BAR_COUNT).fill(0);
+      const peakHold = new Int32Array(BAR_COUNT).fill(0);
 
+      // Bygg DOM: .sw-col > .sw-bar + .sw-peak
       for (let i = 0; i < BAR_COUNT; i++) {
         const col = document.createElement('div');
         col.className = 'sw-col';
+        col.style.cssText = 'position:relative;display:flex;align-items:center;justify-content:center;height:' + COL_H + 'px;width:3px;flex-shrink:0;';
+
         const bar = document.createElement('div');
         bar.className = 'sw-bar';
+
+        const pk = document.createElement('div');
+        pk.className = 'sw-peak';
+        // Startposition: mitten av kolumnen
+        pk.style.top = Math.round(COL_H / 2) + 'px';
+
         col.appendChild(bar);
+        col.appendChild(pk);
         waveEl.appendChild(col);
         bars.push(bar);
+        peakEls.push(pk);
       }
 
-      // iOS Safari blockerar Web Audio — CSS-animation fallback
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      // Safari stödjer Web Audio när crossOrigin="anonymous" är satt på audio-elementet
+      // och GitHub Pages skickar rätt CORS-headers
+      const isIOS = false;
 
       let actx     = null;
       let analyser = null;
@@ -3053,7 +3085,7 @@
       let running  = false;
       const sources = {};
 
-      // CSS-animation fallback (iOS)
+      // ── CSS-animation fallback (iOS) ──
       const PEAK_CSS = [0.25,0.30,0.38,0.46,0.54,0.62,0.70,0.76,0.82,0.86,0.89,0.91,0.92,0.91,0.90,0.91,0.91,0.90,0.91,0.92,0.91,0.89,0.86,0.82,0.76,0.70,0.62,0.54,0.46,0.38,0.30,0.25];
       const DUR_CSS  = [1.0,0.9,0.85,0.80,0.75,0.82,0.70,0.78,0.72,0.68,0.74,0.70,0.76,0.72,0.68,0.74,0.74,0.68,0.72,0.76,0.70,0.74,0.68,0.72,0.78,0.70,0.82,0.75,0.80,0.85,0.90,1.0];
       const DLY_CSS  = [0,0.05,0.10,0.15,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.28,0.16,0.03,0.22,0.14,0.06,0.25,0.18,0.04,0.12,0.20,0.08,0.15,0.10,0.05,0];
@@ -3071,40 +3103,56 @@
           b.classList.remove('sw-bar--animate');
           b.style.transform = 'scaleY(' + MIN_SCALE + ')';
         });
+        peakEls.forEach(p => { p.style.top = Math.round(COL_H / 2) + 'px'; });
       }
 
       // ── Draw-loop ──
-      // getByteTimeDomainData: 1024 råa PCM-samplar (0–255, 128 = tyst)
-      // Varje stapel visar amplituden för ett sampel → identisk med waveformen
+      // getByteTimeDomainData: råa PCM-samplar (0–255, 128=tyst)
+      // Varje stapel visar max-amplitud i sitt segment → exakt synk med filen
       function draw() {
         if (!running || !analyser) return;
         rafId = requestAnimationFrame(draw);
 
-        const N  = analyser.fftSize; // = 1024 samplar
+        const N  = analyser.fftSize;
         const td = new Uint8Array(N);
         analyser.getByteTimeDomainData(td);
 
-        // Fördela 1024 samplar jämnt över 32 staplar
-        // Varje stapel representerar ett segment av waveformen
         const segSize = Math.floor(N / BAR_COUNT);
 
         for (let i = 0; i < BAR_COUNT; i++) {
-          // Hitta max-amplitud inom detta segment
+          // Max-amplitud inom segmentet
           let maxAmp = 0;
-          const segStart = i * segSize;
+          const off = i * segSize;
           for (let j = 0; j < segSize; j++) {
-            const s = Math.abs(td[segStart + j] - 128) / 128; // 0..1
+            const s = Math.abs(td[off + j] - 128) / 128;
             if (s > maxAmp) maxAmp = s;
           }
 
-          // Snabb attack, långsam decay
+          // Smoothing: snabb attack, långsam decay
           const prev = smooth[i];
           smooth[i]  = maxAmp > prev
-            ? prev + (maxAmp - prev) * 0.90  // attack: nästan direkt
-            : prev + (maxAmp - prev) * 0.08; // decay: ~12 frames
-
+            ? prev + (maxAmp - prev) * 0.90
+            : prev + (maxAmp - prev) * 0.08;
           const val = Math.max(smooth[i], MIN_SCALE);
+
+          // Stapel: scaleY från mitten
           bars[i].style.transform = 'scaleY(' + Math.min(val, 1.0) + ')';
+
+          // Peak hold + fall
+          if (val >= peakVal[i]) {
+            peakVal[i]  = val;
+            peakHold[i] = HOLD_FRAMES;
+          } else if (peakHold[i] > 0) {
+            peakHold[i]--;
+          } else {
+            peakVal[i] = Math.max(MIN_SCALE, peakVal[i] - PEAK_DECAY);
+          }
+
+          // Beräkna top-position för peak-markören
+          // val=1.0 → stapeln fyller hela COL_H → peak vid toppen (top ≈ 0)
+          // val=MIN_SCALE → stapeln är minimal → peak vid mitten
+          const peakTop = Math.round((1.0 - peakVal[i]) * COL_H / 2);
+          peakEls[i].style.top = peakTop + 'px';
         }
       }
 
@@ -3113,10 +3161,8 @@
         try {
           actx     = new (window.AudioContext || window.webkitAudioContext)();
           analyser = actx.createAnalyser();
-          // fftSize styr antal PCM-samplar i getByteTimeDomainData
-          // 1024 = bra upplösning, ~23ms per frame @ 44100Hz
           analyser.fftSize             = 1024;
-          analyser.smoothingTimeConstant = 0; // ingen inbyggd smoothing
+          analyser.smoothingTimeConstant = 0;
           analyser.connect(actx.destination);
           return true;
         } catch(e) { actx = analyser = null; return false; }
@@ -3148,6 +3194,8 @@
         cancelAnimationFrame(rafId);
         rafId = null;
         smooth.fill(0);
+        peakVal.fill(0);
+        peakHold.fill(0);
         stopCSS();
       };
 
@@ -3596,6 +3644,7 @@
 
       if (!audioState[datum]) {
         const a = new Audio();
+        a.crossOrigin = 'anonymous'; // krävs för Web Audio API på cross-origin mp3 (iOS Safari)
         a.muted = !!window._globalMuted;
         a.src = audioUrls[datum];
         a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
