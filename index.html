@@ -2077,6 +2077,7 @@
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
     const tr = document.createElement('tr');
+    tr.setAttribute('data-datum', row.datum);
     if (isToday) { tr.classList.add('today'); tr.id = 'today-row-desktop'; }
     const veckaClass = row.vecka === 'Friday' ? 'fredag' : row.vecka === 'Saturday' ? 'lordag' : row.vecka === 'Sunday' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge" data-i18n="todayBadge">' + (T[_currentLang].todayBadge || 'Idag') + '</span>' : '';
@@ -2139,6 +2140,7 @@
     const card = document.createElement('div');
     const isLastTenM = row.day >= 21;
     card.className = 'day-card-mobile' + (isToday ? ' today' : '') + (isLastTenM ? ' last-ten' : '');
+    card.setAttribute('data-datum', row.datum);
     if (isToday) card.id = 'today-row-mobile';
     const veckaClass = row.vecka === 'Friday' ? 'fredag' : row.vecka === 'Saturday' ? 'lordag' : row.vecka === 'Sunday' ? 'sondag' : '';
     const badge = isToday ? '<span class="today-badge" data-i18n="todayBadge">' + (T[_currentLang].todayBadge || 'Idag') + '</span>' : '';
@@ -2625,7 +2627,7 @@
     trackEl.addEventListener('pointerenter', () => { expand(); });
   }
 
-  // Auto-play from URL parameter ?natt=N
+  // Dela-länk: ?natt=N — scrolla till raden och pulsa play-knappen
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const natt = parseInt(params.get('natt'));
@@ -2633,27 +2635,40 @@
     const row = SCHEDULE.find(r => r.day === natt);
     if (!row) return;
 
-    // Vänta tills play-knappen finns i DOM (injiceras async efter HEAD-fetch)
     const deadline = Date.now() + 8000;
 
     function tryInit() {
       const isMobile = window.innerWidth <= 640;
-      const target = isMobile
-        ? document.querySelector('[data-datum="' + row.datum + '"]')
-        : document.querySelector('tr[data-datum="' + row.datum + '"]');
-      const playBtn = target ? target.querySelector('.play-btn') : null;
 
-      if (!target || !playBtn) {
+      // tr och day-card-mobile har nu data-datum
+      const target = isMobile
+        ? document.querySelector('.day-card-mobile[data-datum="' + row.datum + '"]')
+        : document.querySelector('tr[data-datum="' + row.datum + '"]');
+
+      if (!target) {
         if (Date.now() < deadline) setTimeout(tryInit, 150);
         return;
       }
 
-      // Scrolla till raden
+      // Scrolla till raden — använd scrollIntoView med fallback
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      // Pulsa play-knappen i 5 sekunder (repeating pulse animation)
+      // Vänta på att play-knappen injiceras (sker efter HEAD-fetch)
+      const btnDeadline = Date.now() + 5000;
+      function waitForBtn() {
+        const playBtn = target.querySelector('.play-btn');
+        if (playBtn) {
+          startPulse(playBtn);
+        } else if (Date.now() < btnDeadline) {
+          setTimeout(waitForBtn, 150);
+        }
+      }
+      setTimeout(waitForBtn, 200);
+    }
+
+    function startPulse(playBtn) {
       let pulseCount = 0;
-      const maxPulses = 8; // ~5 sek med 600ms intervall
+      const maxPulses = 8;
       function doPulse() {
         if (pulseCount >= maxPulses) return;
         pulseCount++;
@@ -2665,10 +2680,11 @@
           setTimeout(doPulse, 180);
         }, { once: true });
       }
-      setTimeout(doPulse, 400);
+      doPulse();
     }
 
-    setTimeout(tryInit, 300);
+    // Vänta tills DOM är byggd (SCHEDULE renderas synkront i script-blocket)
+    setTimeout(tryInit, 400);
   });
 
   document.addEventListener('DOMContentLoaded', function() {
