@@ -398,6 +398,80 @@
       background-position: 150% 0;
       animation: diamondSweep 8s linear infinite;
     }
+    /* Aktiv spelandes rad — komet-animation (samma som today-card) */
+    .playing-row-comet {
+      position: relative;
+      border-radius: 8px;
+    }
+    .playing-row-comet::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 8px;
+      background: conic-gradient(
+        from var(--comet-angle),
+        transparent 0deg,
+        transparent 240deg,
+        rgba(201,168,76,0.04) 260deg,
+        rgba(201,168,76,0.15) 290deg,
+        rgba(201,168,76,0.45) 320deg,
+        rgba(232,201,122,0.85) 348deg,
+        rgba(255,248,210,1.00) 357deg,
+        rgba(255,255,255,0.95) 360deg,
+        transparent 360deg
+      );
+      animation: rotateComet 7s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* Desktop tr — klipp kometen och håll innehåll ovanpå */
+    tbody tr.playing-row-comet {
+      overflow: hidden;
+      isolation: isolate;
+    }
+    tbody tr.playing-row-comet td { position: relative; z-index: 1; }
+    /* Mobile card wrapper */
+    .playing-comet-wrap {
+      position: relative;
+      border-radius: 16px;
+      padding: 2px;
+      margin-bottom: 10px;
+    }
+    .playing-comet-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      background: conic-gradient(
+        from var(--comet-angle),
+        transparent 0deg,
+        transparent 240deg,
+        rgba(201,168,76,0.04) 260deg,
+        rgba(201,168,76,0.15) 290deg,
+        rgba(201,168,76,0.45) 320deg,
+        rgba(232,201,122,0.85) 348deg,
+        rgba(255,248,210,1.00) 357deg,
+        rgba(255,255,255,0.95) 360deg,
+        transparent 360deg
+      );
+      animation: rotateComet 7s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .playing-comet-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 14px;
+      background: var(--surface);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .playing-comet-wrap .day-card-mobile {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 0;
+    }
     @keyframes diamondSweep {
       0%   { background-position: 150% 0; }
       28%  { background-position: -50% 0; }
@@ -782,6 +856,9 @@
                   inset 0 1px 0 rgba(255,255,255,0.6);
     }
     [data-theme="light"] .sp-drag-handle { background: rgba(0,0,0,0.12); }
+    #sp-close-btn:hover { color: rgba(255,255,255,0.75) !important; background: rgba(255,255,255,0.08) !important; }
+    [data-theme="light"] #sp-close-btn { color: rgba(0,0,0,0.28) !important; }
+    [data-theme="light"] #sp-close-btn:hover { color: rgba(0,0,0,0.65) !important; background: rgba(0,0,0,0.06) !important; }
     [data-theme="light"] .sp-imam-name { color: #1a1a1a; }
     [data-theme="light"] .sp-meta-sub { color: rgba(0,0,0,0.45); }
     [data-theme="light"] .sp-accent { color: var(--primary-dark); }
@@ -2627,7 +2704,7 @@
     trackEl.addEventListener('pointerenter', () => { expand(); });
   }
 
-  // Dela-länk: ?natt=N — scrolla till raden och pulsa play-knappen
+  // Dela-länk: ?natt=N — scrolla till raden, pulsa play-knappen och starta uppspelning
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const natt = parseInt(params.get('natt'));
@@ -2639,8 +2716,6 @@
 
     function tryInit() {
       const isMobile = window.innerWidth <= 640;
-
-      // tr och day-card-mobile har nu data-datum
       const target = isMobile
         ? document.querySelector('.day-card-mobile[data-datum="' + row.datum + '"]')
         : document.querySelector('tr[data-datum="' + row.datum + '"]');
@@ -2650,10 +2725,58 @@
         return;
       }
 
-      // Scrolla till raden — använd scrollIntoView med fallback
+      // Scrolla till raden
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      // Vänta på att play-knappen injiceras (sker efter HEAD-fetch)
+      // Försök autoplay via muted-trick:
+      // Starta muted (webbläsare tillåter det), sedan omedelbart unmute
+      const a = new Audio();
+      a.crossOrigin = 'anonymous';
+      a.src = audioUrls[row.datum];
+      a.muted = true; // muted startar alltid utan block
+
+      const playPromise = a.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+          // Play lyckades — unmute direkt och ta över via audioState
+          a.muted = !!window._globalMuted;
+          audioState[row.datum] = a;
+
+          // Koppla alla nödvändiga event-lyssnare
+          a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
+          a.addEventListener('playing',  () => {
+            setBtns(row.datum, PAUSE_SVG, true);
+            openPlayer(row.datum);
+            if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
+            if (window._startWaveDraw)   window._startWaveDraw();
+          });
+          a.addEventListener('pause', () => { if (window._stopWaveDraw) window._stopWaveDraw(); });
+          a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(row.datum, a.currentTime, a.duration); });
+          a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
+          a.addEventListener('ended', () => {
+            closePlayer(row.datum); setBtns(row.datum, PLAY_SVG, false);
+            updatePlayerUI(row.datum, 0, a.duration);
+            if (window._stopWaveDraw) window._stopWaveDraw();
+          });
+          a.addEventListener('error', () => {
+            setBtns(row.datum, PLAY_SVG, false);
+            if (_activeDatum === row.datum) closePlayer(row.datum);
+            if (window._stopWaveDraw) window._stopWaveDraw();
+          });
+
+          setBtns(row.datum, PAUSE_SVG, true);
+          openPlayer(row.datum);
+
+        }).catch(() => {
+          // Autoplay blockerades helt — visa pulsande play-knapp istället
+          waitForBtnAndPulse(target);
+        });
+      } else {
+        waitForBtnAndPulse(target);
+      }
+    }
+
+    function waitForBtnAndPulse(target) {
       const btnDeadline = Date.now() + 5000;
       function waitForBtn() {
         const playBtn = target.querySelector('.play-btn');
@@ -2683,7 +2806,6 @@
       doPulse();
     }
 
-    // Vänta tills DOM är byggd (SCHEDULE renderas synkront i script-blocket)
     setTimeout(tryInit, 400);
   });
 
@@ -2894,6 +3016,17 @@
       e.stopPropagation();
     });
 
+    // Stäng-knapp — stoppa ljud och dölj spelaren
+    document.getElementById('sp-close-btn')?.addEventListener('click', e => {
+      if (_activeDatum) {
+        const d = _activeDatum;
+        _stopAudio(d).then(() => closePlayer(d));
+      } else {
+        hideSticky();
+      }
+      e.stopPropagation();
+    });
+
     // Share button — copy ?natt=N URL
     document.getElementById('sp-share-btn')?.addEventListener('click', e => {
       if (!_activeDatum) return;
@@ -2962,8 +3095,42 @@
     }
   }
 
+  function updatePlayingRow(datum) {
+    // Rensa tidigare komet — desktop
+    document.querySelectorAll('tbody tr.playing-row-comet').forEach(tr => {
+      tr.classList.remove('playing-row-comet');
+    });
+    // Rensa tidigare komet — mobil (unwrappa kortet)
+    document.querySelectorAll('.playing-comet-wrap').forEach(wrap => {
+      const card = wrap.querySelector('.day-card-mobile');
+      if (card) {
+        wrap.parentNode.insertBefore(card, wrap);
+        // Återställ margin
+        card.style.marginBottom = '';
+      }
+      wrap.remove();
+    });
+
+    if (!datum) return;
+
+    // Desktop — lägg till komet-klass på <tr>
+    const tr = document.querySelector('tr[data-datum="' + datum + '"]');
+    if (tr) tr.classList.add('playing-row-comet');
+
+    // Mobil — wrappa .day-card-mobile i .playing-comet-wrap
+    const card = document.querySelector('.day-card-mobile[data-datum="' + datum + '"]');
+    if (card) {
+      const wrap = document.createElement('div');
+      wrap.className = 'playing-comet-wrap';
+      card.parentNode.insertBefore(wrap, card);
+      wrap.appendChild(card);
+      card.style.marginBottom = '0';
+    }
+  }
+
   function openPlayer(datum) {
     _activeDatum = datum;
+    updatePlayingRow(datum);
     updateStickyControls();
     updateStickyPlayBtn(true);
     const p = document.getElementById('sticky-player');
@@ -2983,7 +3150,7 @@
     clearTimeout(_autoMiniTimer);
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
   }
-  function closePlayer(datum) { _activeDatum = null; hideSticky(); updateStickyPlayBtn(false); }
+  function closePlayer(datum) { _activeDatum = null; updatePlayingRow(null); hideSticky(); updateStickyPlayBtn(false); }
 
   // Håller koll på pågående play()-promises per datum för att förhindra race conditions
   const _playingPromise = {};
@@ -3948,7 +4115,18 @@
 
   <!-- ── FULL PLAYER ── -->
   <div class="player-full" style="position:relative;">
-    <div class="sp-drag-handle"></div>
+    <div style="position:relative; display:flex; align-items:center; justify-content:center; padding-top:10px; margin-bottom:6px;">
+      <div class="sp-drag-handle" style="margin:0;"></div>
+      <button id="sp-close-btn" title="Stäng spelaren" style="
+        position:absolute; right:0; top:50%; transform:translateY(-50%);
+        width:30px; height:30px; border:none; background:none;
+        color:rgba(255,255,255,0.28); cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+        border-radius:50%; transition:color 0.15s, background 0.15s;
+      ">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
 
 
     <!-- Metadata row -->
