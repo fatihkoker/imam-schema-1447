@@ -2912,35 +2912,34 @@
       // Mappa FFT-bins jämnt fördelade på BAR_COUNT barer
       // Fokuserar på låg-till-mellanfrekvens (Quran-recitation sitter 80–3000 Hz)
       function drawFrame() {
-        _rafId = requestAnimationFrame(drawFrame);
+        // Kolla _isDrawing FÖRST — om stoppat, avbryt loopen helt
+        if (!_isDrawing) return;
+
         if (!_activeDatum || !_analyser[_activeDatum]) {
-          // Ingen analyser — sjunk ner till golv
+          // Ingen analyser — sjunk ner till golv, fortsätt loopen
           bars.forEach((b, i) => { b.style.transform = 'scaleY(' + floorProfile[i] + ')'; });
-          return;
+        } else {
+          const analyser = _analyser[_activeDatum];
+          const bufLen = analyser.frequencyBinCount; // = fftSize/2 = 128
+          const data   = new Uint8Array(bufLen);
+          analyser.getByteFrequencyData(data);
+
+          const binStart = 2;
+          const binEnd   = Math.min(80, bufLen - 1);
+          const usable   = binEnd - binStart;
+
+          for (let i = 0; i < BAR_COUNT; i++) {
+            const binIdx = binStart + Math.round((i / (BAR_COUNT - 1)) * usable);
+            const raw    = data[binIdx] / 255;
+            const centerDist = Math.abs(i - (BAR_COUNT - 1) / 2) / ((BAR_COUNT - 1) / 2);
+            const shapeMul   = 1.0 - centerDist * 0.45;
+            const scale = floorProfile[i] + raw * 0.92 * shapeMul;
+            bars[i].style.transform = 'scaleY(' + Math.min(scale, 1.0) + ')';
+          }
         }
-        const analyser = _analyser[_activeDatum];
-        const bufLen = analyser.frequencyBinCount; // = fftSize/2 = 128
-        const data   = new Uint8Array(bufLen);
-        analyser.getByteFrequencyData(data);
 
-        // Använd bin 2–80 (ca 40–3100 Hz vid 44.1kHz) för talröst
-        const binStart = 2;
-        const binEnd   = Math.min(80, bufLen - 1);
-        const usable   = binEnd - binStart;
-
-        for (let i = 0; i < BAR_COUNT; i++) {
-          // Varje bar mappar till ett frekvensband
-          const binIdx = binStart + Math.round((i / (BAR_COUNT - 1)) * usable);
-          const raw    = data[binIdx] / 255; // 0–1
-
-          // Bergform-multiplikator: mitt = 1.0, kanter = 0.55
-          const centerDist = Math.abs(i - (BAR_COUNT - 1) / 2) / ((BAR_COUNT - 1) / 2);
-          const shapeMul   = 1.0 - centerDist * 0.45;
-
-          // Skala till en synlig höjd: golv + signal
-          const scale = floorProfile[i] + raw * 0.92 * shapeMul;
-          bars[i].style.transform = 'scaleY(' + Math.min(scale, 1.0) + ')';
-        }
+        // Schemalägg nästa frame SIST — efter _isDrawing-checken
+        _rafId = requestAnimationFrame(drawFrame);
       }
 
       window._startWaveDraw = function() {
@@ -2952,6 +2951,7 @@
       window._stopWaveDraw = function() {
         _isDrawing = false;
         cancelAnimationFrame(_rafId);
+        _rafId = null;
         bars.forEach((b, i) => { b.style.transform = 'scaleY(' + floorProfile[i] + ')'; });
       };
     })();
