@@ -1166,6 +1166,14 @@
       background: linear-gradient(to top, rgba(150,100,0,0.55), rgba(190,138,10,0.85));
     }
 
+
+    /* ── Sound wave CSS-animation (iOS fallback) ── */
+    @keyframes swPulse {
+      0%, 100% { transform: scaleY(var(--sw-floor)); }
+      50%       { transform: scaleY(var(--sw-peak));  }
+    }
+    .sw-bar--animate { animation: swPulse var(--sw-dur, 0.9s) ease-in-out infinite; }
+
     /* ── MINI PLAYER ── */
     .player-mini {
       position: absolute; bottom: 0; left: 0; right: 0;
@@ -2764,7 +2772,7 @@
         openPlayer(row.datum);
         // Unmute innan analyser kopplas — annars kan ljudet förbli tyst
         if (!window._globalMuted) a.muted = false;
-        if (!window._isIOS && window._connectAnalyser) window._connectAnalyser(row.datum, a);
+        if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
       });
       a.addEventListener('pause', () => {
         setBtns(row.datum, PLAY_SVG, false);
@@ -2855,18 +2863,42 @@
       const BAR_COUNT = 17;
       const FLOOR = [0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.12,0.11,0.10,0.09,0.08,0.07,0.06,0.06,0.05];
       const bars = [];
+      // Naturlig variation i peak-höjd och animationstid per stapel
+      const PEAK  = [0.35,0.45,0.55,0.65,0.75,0.85,0.90,0.95,0.90,0.85,0.75,0.65,0.55,0.45,0.35,0.30,0.25];
+      const DUR   = [1.1, 0.9, 0.8, 0.95,0.75,0.85,0.70,0.80,0.70,0.85,0.75,0.95,0.80,0.90,1.1, 1.0, 1.15];
+      const DELAY = [0,   0.1, 0.2, 0.05,0.3, 0.15,0.4, 0.0, 0.4, 0.15,0.3, 0.05,0.2, 0.1, 0.0, 0.25,0.35];
       for (let i = 0; i < BAR_COUNT; i++) {
         const b = document.createElement('div');
         b.className = 'sw-bar';
+        b.style.setProperty('--sw-floor', FLOOR[i]);
+        b.style.setProperty('--sw-peak',  PEAK[i]);
+        b.style.setProperty('--sw-dur',   DUR[i] + 's');
+        b.style.animationDelay = DELAY[i] + 's';
         b.style.transform = 'scaleY(' + FLOOR[i] + ')';
         waveEl.appendChild(b);
         bars.push(b);
       }
 
+      // iOS detekteras separat — Web Audio API fungerar på Android
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
       let ctx = null, analyser = null, rafId = null, running = false;
-      // datum → MediaElementSourceNode, so we never call createMediaElementSource twice on same element
       const sources = {};
 
+      // ── CSS-animation fallback för iOS ──
+      // Används när Web Audio API inte är tillgängligt
+      function startCSSWave() {
+        bars.forEach(b => b.classList.add('sw-bar--animate'));
+      }
+      function stopCSSWave() {
+        bars.forEach((b, i) => {
+          b.classList.remove('sw-bar--animate');
+          b.style.transform = 'scaleY(' + FLOOR[i] + ')';
+        });
+      }
+
+      // ── Web Audio draw-loop ──
       function draw() {
         if (!running) return;
         rafId = requestAnimationFrame(draw);
@@ -2885,36 +2917,48 @@
         }
       }
 
-      window._connectAnalyser = function(datum, audioEl) {
-        console.log('[WAVE] _connectAnalyser called, _isIOS=', window._isIOS, 'datum=', datum);
-        if (window._isIOS) { console.log('[WAVE] skipped — iOS'); return; }
+      // ── _primeAudioCtx: anropas DIREKT i user gesture (click) ──
+      // Skapar AudioContext medan webbläsaren fortfarande är i gesture-scope
+      window._primeAudioCtx = function() {
+        if (isIOS || ctx) return;
         try {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.78;
+          analyser.connect(ctx.destination);
+        } catch(e) {
+          ctx = null;
+        }
+      };
+
+      // ── _connectAnalyser: anropas från playing-event ──
+      // ctx är nu redan skapad och upplåst
+      window._connectAnalyser = function(datum, audioEl) {
+        if (isIOS) { startCSSWave(); return; }
+        try {
+          // ctx borde redan finnas från _primeAudioCtx — skapa som fallback
           if (!ctx) {
             ctx = new (window.AudioContext || window.webkitAudioContext)();
             analyser = ctx.createAnalyser();
             analyser.fftSize = 256;
             analyser.smoothingTimeConstant = 0.78;
             analyser.connect(ctx.destination);
-            console.log('[WAVE] AudioContext created, state=', ctx.state);
           }
           if (!sources[datum]) {
             const src = ctx.createMediaElementSource(audioEl);
             src.connect(analyser);
             sources[datum] = src;
-            console.log('[WAVE] source connected for', datum);
           }
-          console.log('[WAVE] ctx.state=', ctx.state, 'starting draw');
+          const startDraw = () => { running = true; draw(); };
           if (ctx.state === 'suspended') {
-            ctx.resume().then(() => {
-              console.log('[WAVE] resumed, starting draw');
-              running = true; draw();
-            }).catch(e => { console.warn('[WAVE] resume failed', e); });
+            ctx.resume().then(startDraw).catch(() => { startCSSWave(); });
           } else {
-            running = true;
-            draw();
+            startDraw();
           }
         } catch(e) {
-          console.warn('[WAVE] error:', e);
+          // Web Audio misslyckades — falla tillbaka på CSS-animation
+          startCSSWave();
         }
       };
 
@@ -2922,7 +2966,7 @@
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
-        bars.forEach((b, i) => { b.style.transform = 'scaleY(' + FLOOR[i] + ')'; });
+        stopCSSWave();
       };
 
       window._resumeAudioCtx = function() {
@@ -3238,7 +3282,7 @@
           console.log('[WAVE] playing event fired, _isIOS=', window._isIOS, '_connectAnalyser=', typeof window._connectAnalyser);
           setBtns(datum, PAUSE_SVG, true);
           openPlayer(datum);
-          if (!window._isIOS && window._connectAnalyser) window._connectAnalyser(datum, a);
+          if (window._connectAnalyser) window._connectAnalyser(datum, a);
         });
         a.addEventListener('pause', () => {
           // Kör bara stopWaveDraw om spelaren fortfarande är aktiv (inte stängd)
@@ -3265,6 +3309,8 @@
         // SPELA — frigör låset DIREKT så paus-knappen inte fryser
         _toggleBusy = false;
         setBtns(datum, SPIN_SVG, true);
+        // Skapa/resumea AudioContext direkt i user gesture (krävs på mobil)
+        if (window._primeAudioCtx) window._primeAudioCtx();
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
         const p = audio.play();
         _playingPromise[datum] = p;
