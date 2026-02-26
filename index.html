@@ -1871,6 +1871,7 @@
   /* ── AUDIO ── */
   const audioState = {};
   let _stickyScrollTimer = null;
+  let _seekActive = false;   // true under pågående seek — blockerar scroll→mini
   let _activeDatum = null;
 
   const PLAY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block;margin-left:1px"><polygon points="7,3 21,12 7,21"/></svg>`;
@@ -1964,6 +1965,7 @@
 
   window.addEventListener('scroll', () => {
     if (!_activeDatum) return;
+    if (_seekActive) return;   // pågående seek — rör inte playern
     miniSticky();
     clearTimeout(_stickyScrollTimer);
     _stickyScrollTimer = setTimeout(showSticky, 600);
@@ -2011,7 +2013,8 @@
       if (!_activeDatum || !audioState[_activeDatum]) return;
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
-      _dragging = true; audio._seekLock = true;
+      _dragging = true; audio._seekLock = true; _seekActive = true;
+      document.body.style.overflowY = 'hidden';   // förhindra scroll under drag
       trackEl.setPointerCapture(e.pointerId);
       trackEl.classList.add('seeking');
       if (thumbEl) thumbEl.classList.add('dragging');
@@ -2032,14 +2035,16 @@
     });
     trackEl.addEventListener('pointerup', e => {
       if (!_dragging) return;
-      _dragging = false; trackEl.classList.remove('seeking');
+      _dragging = false; _seekActive = false; document.body.style.overflowY = '';
+      trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging');
       trackEl.releasePointerCapture(e.pointerId);
       commitSeek(getPct(e.clientX)); scheduleCollapse();
       e.stopPropagation();
     });
     trackEl.addEventListener('pointercancel', () => {
-      _dragging = false; trackEl.classList.remove('seeking');
+      _dragging = false; _seekActive = false; document.body.style.overflowY = '';
+      trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging'); scheduleCollapse();
     });
     trackEl.addEventListener('pointerleave', () => { if (!_dragging) scheduleCollapse(); });
