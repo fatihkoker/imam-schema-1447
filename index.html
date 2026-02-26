@@ -2861,12 +2861,14 @@
       if (!waveEl) return;
 
       const BAR_COUNT = 17;
+      // Vilstransform per stapel — liten organisk profil
       const FLOOR = [0.06,0.07,0.08,0.09,0.10,0.11,0.12,0.13,0.12,0.11,0.10,0.09,0.08,0.07,0.06,0.06,0.05];
-      const bars = [];
-      // Naturlig variation i peak-höjd och animationstid per stapel
+      // CSS-animation peak/tid för iOS-fallback
       const PEAK  = [0.35,0.45,0.55,0.65,0.75,0.85,0.90,0.95,0.90,0.85,0.75,0.65,0.55,0.45,0.35,0.30,0.25];
       const DUR   = [1.1, 0.9, 0.8, 0.95,0.75,0.85,0.70,0.80,0.70,0.85,0.75,0.95,0.80,0.90,1.1, 1.0, 1.15];
       const DELAY = [0,   0.1, 0.2, 0.05,0.3, 0.15,0.4, 0.0, 0.4, 0.15,0.3, 0.05,0.2, 0.1, 0.0, 0.25,0.35];
+
+      const bars = [];
       for (let i = 0; i < BAR_COUNT; i++) {
         const b = document.createElement('div');
         b.className = 'sw-bar';
@@ -2879,15 +2881,17 @@
         bars.push(b);
       }
 
-      // iOS detekteras separat — Web Audio API fungerar på Android
+      // iOS: Web Audio API blockeras av Safari — använd CSS-animation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
       let ctx = null, analyser = null, rafId = null, running = false;
       const sources = {};
 
-      // ── CSS-animation fallback för iOS ──
-      // Används när Web Audio API inte är tillgängligt
+      // Mjuk per-stapel smoothing — varje stapel håller sin egen
+      // display-värde för att undvika hackigt beteende
+      const displayed = new Float32Array(BAR_COUNT).fill(0);
+
       function startCSSWave() {
         bars.forEach(b => b.classList.add('sw-bar--animate'));
       }
@@ -2898,51 +2902,82 @@
         });
       }
 
-      // ── Web Audio draw-loop ──
       function draw() {
         if (!running) return;
         rafId = requestAnimationFrame(draw);
-        if (!analyser) {
-          bars.forEach((b, i) => { b.style.transform = 'scaleY(' + FLOOR[i] + ')'; });
-          return;
-        }
+
         const data = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(data);
-        const binEnd = Math.min(80, data.length - 1);
+
+        // Quran-recitation: grundtoner 80-400 Hz, övertoner upp till ~4000 Hz
+        // Med fftSize=2048, sampleRate≈44100 Hz: binBredd ≈ 21.5 Hz/bin
+        // bin 4  ≈  86 Hz  (undre grundton)
+        // bin 18 ≈ 387 Hz  (övre grundton)
+        // bin 93 ≈ 2000 Hz (övertoner)
+        // bin 186 ≈ 4000 Hz (sibilanter)
+        // Logaritmisk skala ger bättre visuell fördelning
+        const N = analyser.frequencyBinCount; // 1024 bins
+        const LO_BIN = 3;   // ~65 Hz
+        const HI_BIN = 200; // ~4300 Hz
+
+        // Logaritmisk mapping: komprimerar låga frekvenser, spreader mellanregistret
+        const logLo = Math.log2(LO_BIN);
+        const logHi = Math.log2(HI_BIN);
+
         for (let i = 0; i < BAR_COUNT; i++) {
-          const bin = 2 + Math.round((i / (BAR_COUNT - 1)) * (binEnd - 2));
-          const raw = data[bin] / 255;
-          const shape = 1.0 - Math.abs(i - (BAR_COUNT - 1) / 2) / ((BAR_COUNT - 1) / 2) * 0.45;
-          bars[i].style.transform = 'scaleY(' + Math.min(FLOOR[i] + raw * 0.92 * shape, 1.0) + ')';
+          const t   = i / (BAR_COUNT - 1);
+          const bin = Math.round(Math.pow(2, logLo + t * (logHi - logLo)));
+          const safeBin = Math.min(bin, N - 1);
+
+          // Genomsnitt av bin ± 1 för att minska brus
+          const lo  = Math.max(0, safeBin - 1);
+          const hi  = Math.min(N - 1, safeBin + 1);
+          let sum = 0;
+          for (let b = lo; b <= hi; b++) sum += data[b];
+          const raw = (sum / ((hi - lo + 1) * 255));
+
+          // Bell-kurva: mitten staplar ska vara högre vid lika ljud
+          const center = (BAR_COUNT - 1) / 2;
+          const bell   = 1.0 - Math.abs(i - center) / center * 0.3;
+
+          const target = FLOOR[i] + raw * bell;
+
+          // Asymmetrisk smoothing: snabb uppgång (4 frames), långsam nedgång (12 frames)
+          const prev = displayed[i];
+          const attackAlpha  = 0.75; // hur snabbt stapeln stiger
+          const decayAlpha   = 0.18; // hur snabbt stapeln sjunker
+          const alpha = target > prev ? attackAlpha : decayAlpha;
+          displayed[i] = prev + alpha * (target - prev);
+
+          bars[i].style.transform = 'scaleY(' + Math.min(Math.max(displayed[i], FLOOR[i]), 1.0) + ')';
         }
       }
 
-      // ── _primeAudioCtx: anropas DIREKT i user gesture (click) ──
-      // Skapar AudioContext medan webbläsaren fortfarande är i gesture-scope
+      // Skapar AudioContext direkt i user gesture
       window._primeAudioCtx = function() {
         if (isIOS || ctx) return;
         try {
           ctx = new (window.AudioContext || window.webkitAudioContext)();
+          // Hög FFT för bättre frekvensupplösning
           analyser = ctx.createAnalyser();
-          analyser.fftSize = 256;
-          analyser.smoothingTimeConstant = 0.78;
+          analyser.fftSize = 2048;
+          analyser.smoothingTimeConstant = 0.0; // ingen inbyggd smoothing — sköts manuellt ovan
+          analyser.minDecibels = -90;
+          analyser.maxDecibels = -10;
           analyser.connect(ctx.destination);
-        } catch(e) {
-          ctx = null;
-        }
+        } catch(e) { ctx = null; }
       };
 
-      // ── _connectAnalyser: anropas från playing-event ──
-      // ctx är nu redan skapad och upplåst
       window._connectAnalyser = function(datum, audioEl) {
         if (isIOS) { startCSSWave(); return; }
         try {
-          // ctx borde redan finnas från _primeAudioCtx — skapa som fallback
           if (!ctx) {
             ctx = new (window.AudioContext || window.webkitAudioContext)();
             analyser = ctx.createAnalyser();
-            analyser.fftSize = 256;
-            analyser.smoothingTimeConstant = 0.78;
+            analyser.fftSize = 2048;
+            analyser.smoothingTimeConstant = 0.0;
+            analyser.minDecibels = -90;
+            analyser.maxDecibels = -10;
             analyser.connect(ctx.destination);
           }
           if (!sources[datum]) {
@@ -2952,20 +2987,18 @@
           }
           const startDraw = () => { running = true; draw(); };
           if (ctx.state === 'suspended') {
-            ctx.resume().then(startDraw).catch(() => { startCSSWave(); });
+            ctx.resume().then(startDraw).catch(() => startCSSWave());
           } else {
             startDraw();
           }
-        } catch(e) {
-          // Web Audio misslyckades — falla tillbaka på CSS-animation
-          startCSSWave();
-        }
+        } catch(e) { startCSSWave(); }
       };
 
       window._stopWaveDraw = function() {
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
+        displayed.fill(0);
         stopCSSWave();
       };
 
