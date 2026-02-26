@@ -53,14 +53,6 @@
       --countdown-bg:    rgba(36,100,93,0.04);
       --countdown-bdr:   rgba(36,100,93,0.09);
       --notif-border:    rgba(36,100,93,0.20);
-      --seek-bg:         rgba(0,0,0,0.10);
-      --seek-fill:       #1a4a44;
-      --scrubber-notch:  #1a4a44;
-      --thumb-border:    #ffffff;
-      --player-bg:       #ffffff;
-      --player-border:   rgba(36,100,93,0.10);
-      --player-shadow:   0 -6px 32px rgba(0,0,0,0.11);
-      --mini-bg:         rgba(255,255,255,0.96);
       --dcm-pages-bg:    rgba(36,100,93,0.08);
       --dcm-surahs-bg:   rgba(36,100,93,0.06);
       --fredag-clr:      #b45309;
@@ -99,14 +91,6 @@
       --countdown-bg:    rgba(255,255,255,0.04);
       --countdown-bdr:   rgba(255,255,255,0.08);
       --notif-border:    rgba(255,255,255,0.12);
-      --seek-bg:         rgba(255,255,255,0.10);
-      --seek-fill:       rgba(255,255,255,0.88);
-      --scrubber-notch:  rgba(255,255,255,0.90);
-      --thumb-border:    #1a2420;
-      --player-bg:       #1a2420;
-      --player-border:   rgba(255,255,255,0.07);
-      --player-shadow:   0 -6px 32px rgba(0,0,0,0.45);
-      --mini-bg:         rgba(18,28,24,0.97);
       --dcm-pages-bg:    rgba(255,255,255,0.07);
       --dcm-surahs-bg:   rgba(255,255,255,0.05);
       --fredag-clr:      #e09840;
@@ -122,6 +106,7 @@
       --ios-thumb:       #ffffff;
     }
 
+    html { scrollbar-gutter: stable; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; }
 
@@ -693,7 +678,7 @@
     .day-card-mobile.today { background: var(--today-bg); border-left-color: var(--today-green); }
     .dcm-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
     .dcm-audio-right .play-btn { width: 34px; height: 34px; }
-    .dcm-audio-right { display: flex; align-items: center; margin-left: auto; flex-shrink: 0; }
+    .dcm-audio-right { display: flex; align-items: center; height: 34px; margin-left: auto; flex-shrink: 0; }
     .dcm-dag { font-weight: 700; font-size: 1.3rem; color: var(--primary-dark); min-width: 32px; text-align: center; flex-shrink: 0; transition: color 0.35s; }
     .dcm-dag.today-day { color: #1d7a4e; }
     .dcm-body { flex: 1; min-width: 0; }
@@ -770,75 +755,350 @@
     /* Today-card moon wrap: bubble opens upward, centered on moon */
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
 
-    /* ══════════════════════════════════════════
-       STICKY BOTTOM PLAYER
-    ══════════════════════════════════════════ */
-    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; }
-    .player-full { background: var(--player-bg); border-radius: 22px 22px 0 0; border-top: 1px solid var(--player-border); box-shadow: var(--player-shadow); padding: 10px 18px 10px; transform-origin: bottom center; transform: translateY(0) scaleY(1); opacity: 1; transition: transform 0.52s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease, box-shadow 0.52s ease, background 0.35s, border-color 0.35s; will-change: transform, opacity; pointer-events: none; }
-    .sticky-player.visible .player-full { pointer-events: auto; }
-    .sticky-player:not(.visible):not(.mini-mode) .player-full { transform: translateY(100%); opacity: 0; }
-    .sticky-player.mini-mode .player-full { transform: translateY(55%) scaleY(0.08); opacity: 0; box-shadow: none; pointer-events: none; }
-    .sticky-top-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; min-width: 0; transform-origin: top center; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease; }
-    .sticky-player.mini-mode .sticky-top-row { transform: translateY(-8px) scaleY(0.3); opacity: 0; }
-    .sticky-day-badge { font-size: .68rem; color: var(--primary-dark); font-weight: 700; white-space: nowrap; flex-shrink: 0; transition: color 0.35s; }
-    .sticky-day-sub { font-size: .6rem; color: var(--muted-2); font-weight: 400; white-space: nowrap; flex-shrink: 0; transition: color 0.35s; }
-    .sticky-marquee-wrap { flex: 1; min-width: 0; overflow: hidden; position: relative; }
-    .sticky-marquee-wrap.fading { mask-image: linear-gradient(to right, transparent 0%, black 8%, black 85%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 85%, transparent 100%); }
-    .sticky-marquee-inner { display: inline-flex; white-space: nowrap; }
-    .sticky-marquee-inner.scrolling { animation: marqueeScroll var(--marquee-dur, 18s) linear infinite; }
-    .sticky-marquee-text { font-size: .68rem; color: var(--muted); padding-right: 48px; transition: color 0.35s; }
-    @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-    .sticky-times { font-size: .68rem; color: var(--muted-2); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; transition: color 0.35s; }
-    .sticky-seek-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .sticky-seek { flex: 1; height: 28px; display: flex; align-items: center; position: relative; cursor: grab; touch-action: none; }
+    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; }
+    .sticky-player.visible { pointer-events: auto; }
+
+    /* ── FULL PLAYER ── */
+    .player-full {
+      background: linear-gradient(160deg, #141e1a 0%, #0d1712 100%);
+      border-radius: 24px 24px 0 0;
+      border: 1px solid rgba(201,168,76,0.13);
+      border-bottom: none;
+      box-shadow: 0 -2px 0 rgba(201,168,76,0.15), 0 -24px 64px rgba(0,0,0,0.75),
+                  inset 0 1px 0 rgba(255,255,255,0.04);
+      padding: 4px 18px 20px;
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 0.48s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
+      will-change: transform;
+      pointer-events: none;
+    }
+    .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; }
+
+    /* Gold top line */
+    .player-full::before {
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 55%; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent);
+      pointer-events: none;
+    }
+
+    /* Drag handle */
+    .sp-drag-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 2px;
+      margin: 10px auto 16px;
+    }
+
+    /* Metadata row */
+    .sp-meta-row {
+      display: flex; align-items: center;
+      gap: 13px; margin-bottom: 16px;
+    }
+    .sp-artwork {
+      width: 50px; height: 50px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+      position: relative; overflow: hidden;
+      transition: background 0.4s ease;
+    }
+    .sp-artwork::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.13), transparent);
+      pointer-events: none;
+    }
+    .sp-initials {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600;
+      color: rgba(255,255,255,0.93);
+      position: relative; z-index: 2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .sp-meta-text { flex: 1; min-width: 0; }
+    .sp-imam-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.22rem; font-weight: 600; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .sp-meta-sub {
+      font-size: 0.68rem; color: rgba(255,255,255,0.38);
+      margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sp-accent { color: rgba(201,168,76,0.75); }
+    .sp-share-btn {
+      width: 34px; height: 34px; border: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.4);
+      cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s; flex-shrink: 0;
+    }
+    .sp-share-btn:hover { color: #fff; background: rgba(255,255,255,0.10); }
+
+    /* Progress */
+    .sp-progress-section { margin-bottom: 16px; }
+    .sp-progress-times {
+      display: flex; justify-content: space-between;
+      font-size: 0.62rem; color: rgba(255,255,255,0.30);
+      font-variant-numeric: tabular-nums; margin-bottom: 9px;
+    }
+
+    /* Seek track — reuse existing JS, new visuals */
+    .sticky-seek {
+      flex: 1; height: 28px;
+      display: flex; align-items: center; position: relative;
+      cursor: grab; touch-action: none;
+    }
     .sticky-seek.seeking { cursor: grabbing; }
-    .sticky-seek::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 999px; background: var(--seek-bg); transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
-    .sticky-seek:hover::before, .sticky-seek.seeking::before, .sticky-seek.bar-expanded::before { height: 5px; }
-    .sticky-seek-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; border-radius: 999px; background: var(--seek-fill); width: 0%; pointer-events: none; z-index: 1; transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; }
-    .sticky-seek:hover .sticky-seek-fill, .sticky-seek.seeking .sticky-seek-fill, .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
-    .sticky-seek-thumb { position: absolute; top: 50%; left: 0%; width: 0px; height: 0px; border-radius: 50%; background: var(--scrubber-notch); box-shadow: 0 1px 4px rgba(0,0,0,0.25); transform: translate(-50%, -50%); pointer-events: none; touch-action: none; z-index: 3; transition: width 0.18s cubic-bezier(0.34,1.56,0.64,1), height 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.35s; }
-    .sticky-seek:hover .sticky-seek-thumb, .sticky-seek.seeking .sticky-seek-thumb, .sticky-seek.bar-expanded .sticky-seek-thumb { width: 13px; height: 13px; }
-    .sticky-seek-thumb.dragging { width: 13px !important; height: 13px !important; }
-    .sticky-player.mini-mode .sticky-seek-thumb { width: 0 !important; height: 0 !important; }
-    .sticky-controls { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; position: relative; transform-origin: bottom center; transition: transform 0.30s cubic-bezier(0.4,0,0.2,1), opacity 0.20s ease; }
-    .sticky-ctrl-left  { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-right: 20px; }
-    .sticky-ctrl-right { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding-left: 20px; }
-    .sticky-player.mini-mode .sticky-controls { transform: translateY(16px) scaleY(0.15); opacity: 0; }
-    .sticky-ctrl-btn { background: none; border: none; cursor: pointer; color: var(--primary-dark); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: .75; transition: opacity 0.15s ease, transform 0.15s ease, color 0.35s, background 0.15s; }
-    .sticky-ctrl-btn:hover { opacity: 1; transform: scale(1.12); background: var(--row-hover); }
-    .sticky-ctrl-btn:disabled { opacity: .25; cursor: default; transform: none; background: none; }
-    .sticky-ctrl-btn svg { width: 22px; height: 22px; display: block; }
-    .sticky-play-main { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-dark); border: none; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(36,100,93,.35); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.42s ease; }
-    .sticky-play-main:hover { box-shadow: 0 4px 20px rgba(36,100,93,.45); }
-    .sticky-play-main.red { background: #c0392b; box-shadow: 0 2px 10px rgba(192,57,43,0.40); }
-    .sticky-play-main.red:hover { box-shadow: 0 4px 20px rgba(192,57,43,.50); }
-    @keyframes spmSpring { 0% { transform: scale(1); } 28% { transform: scale(0.80); } 62% { transform: scale(1.13); } 84% { transform: scale(0.95); } 100% { transform: scale(1); } }
-    .sticky-play-main.springing { animation: spmSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
-    .spm-ripple { position: absolute; border-radius: 50%; width: 48px; height: 48px; left: 0; top: 0; background: rgba(255,255,255,0.22); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
-    @keyframes spmRipple { to { transform: scale(2.6); opacity: 0; } }
+    .sticky-seek::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 50%;
+      height: 3px; transform: translateY(-50%);
+      border-radius: 999px; background: rgba(255,255,255,0.08);
+      transition: height 0.18s cubic-bezier(0.4,0,0.2,1);
+      pointer-events: none;
+    }
+    .sticky-seek:hover::before, .sticky-seek.seeking::before,
+    .sticky-seek.bar-expanded::before { height: 5px; }
+    .sticky-seek-fill {
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      height: 3px; border-radius: 999px; width: 0%;
+      pointer-events: none; z-index: 1;
+      transition: height 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sticky-seek:hover .sticky-seek-fill,
+    .sticky-seek.seeking .sticky-seek-fill,
+    .sticky-seek.bar-expanded .sticky-seek-fill { height: 5px; }
+    .sticky-seek-thumb {
+      position: absolute; top: 50%; width: 13px; height: 13px;
+      background: #fff; border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none; z-index: 3;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .sticky-seek-thumb.dragging { transform: translate(-50%,-50%) scale(1.2); }
+
+    /* Controls row */
+    .sp-controls-row {
+      display: flex; align-items: center;
+      justify-content: center; gap: 0; margin-bottom: 14px;
+    }
+    .sp-ctrl-btn {
+      width: 46px; height: 46px; border: none; background: none;
+      color: rgba(255,255,255,0.55); cursor: pointer; border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px; transition: all 0.15s; flex-shrink: 0;
+    }
+    .sp-ctrl-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .sp-ctrl-btn:disabled { opacity: 0.22; cursor: default; }
+    .sp-ctrl-btn:disabled:hover { background: none; color: rgba(255,255,255,0.22); }
+    .sp-ctrl-lbl {
+      font-size: 0.48rem; color: rgba(255,255,255,0.25);
+      letter-spacing: 0.02em; line-height: 1;
+    }
+
+    /* Hero play button with progress ring */
+    .sp-play-hero {
+      width: 62px; height: 62px; border: none; background: none;
+      cursor: pointer; position: relative;
+      margin: 0 16px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sp-ring-svg {
+      position: absolute; inset: 0;
+      transform: rotate(-90deg);
+      pointer-events: none;
+    }
+    .sp-ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 2.5; }
+    .sp-ring-fill {
+      fill: none; stroke-width: 2.5; stroke-linecap: round;
+      stroke-dasharray: 175.9; stroke-dashoffset: 175.9;
+      transition: stroke-dashoffset 0.4s ease, stroke 0.4s ease;
+    }
+    .sp-ring-inner {
+      position: absolute; inset: 5px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+      transition: background 0.4s ease;
+    }
+    @keyframes spmSpring { 0%{transform:scale(1)} 28%{transform:scale(0.80)} 62%{transform:scale(1.13)} 84%{transform:scale(0.95)} 100%{transform:scale(1)} }
+    .sp-play-hero.springing .sp-ring-inner { animation: spmSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
     .spm-icon-wrap { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-    .spm-icon-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.26s cubic-bezier(0.4,0,0.2,1), transform 0.26s cubic-bezier(0.4,0,0.2,1); }
+    .spm-icon-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.24s ease, transform 0.24s ease; }
     .spm-play  { opacity: 1; transform: translate(calc(-50% + 1px), -50%) scale(1) !important; }
     .spm-pause { opacity: 0; transform: translate(-50%, -50%) scale(0.45) !important; }
-    .sticky-play-main.red .spm-play  { opacity: 0; transform: translate(calc(-50% + 1px), -50%) scale(0.45) !important; }
-    .sticky-play-main.red .spm-pause { opacity: 1; transform: translate(-50%, -50%) scale(1) !important; }
-    .player-mini { position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; background: var(--mini-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 18px 18px 0 0; border-top: 1px solid var(--player-border); box-shadow: 0 -4px 24px rgba(0,0,0,.10); overflow: hidden; transform: translateY(100%) scaleY(0.4); transform-origin: bottom center; opacity: 0; pointer-events: none; transition: transform 0.52s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease 0.06s, background 0.35s, border-color 0.35s; will-change: transform, opacity; }
-    .sticky-player.mini-mode .player-mini { transform: translateY(0) scaleY(1); opacity: 1; pointer-events: auto; }
-    .mini-bar-track { width: 100%; height: 22px; background: transparent; flex-shrink: 0; position: relative; display: flex; align-items: center; cursor: grab; touch-action: none; overflow: visible; }
-    .mini-bar-track.seeking { cursor: grabbing; }
-    .mini-bar-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 3px; border-radius: 999px; background: var(--seek-bg); transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; pointer-events: none; }
-    .mini-bar-track:hover::before, .mini-bar-track.seeking::before, .mini-bar-track.bar-expanded::before { height: 5px; }
-    .mini-bar-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; width: 0%; border-radius: 999px; background: var(--seek-fill); pointer-events: none; z-index: 1; transition: height 0.18s cubic-bezier(0.4,0,0.2,1), background 0.35s; overflow: hidden; }
-    .mini-bar-track:hover .mini-bar-fill, .mini-bar-track.seeking .mini-bar-fill, .mini-bar-track.bar-expanded .mini-bar-fill { height: 5px; }
-    .mini-bar-fill::after { content: ''; position: absolute; top: 0; left: -60%; bottom: 0; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent); animation: barShimmer 2.8s ease-in-out infinite; }
-    @keyframes barShimmer { 0%{left:-60%} 65%{left:120%} 100%{left:120%} }
-    #mini-thumb { position: absolute; top: 50%; left: 0%; width: 0px; height: 0px; border-radius: 50%; background: var(--scrubber-notch); box-shadow: 0 1px 4px rgba(0,0,0,0.25); transform: translate(-50%, -50%); pointer-events: none; z-index: 3; transition: width 0.18s cubic-bezier(0.34,1.56,0.64,1), height 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.35s; }
-    .mini-bar-track:hover #mini-thumb, .mini-bar-track.seeking #mini-thumb, .mini-bar-track.bar-expanded #mini-thumb { width: 11px; height: 11px; }
-    #mini-thumb.dragging { width: 11px !important; height: 11px !important; }
-    .mini-text-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 9px; }
-    .mini-name { font-size: .65rem; color: var(--primary-dark); font-weight: 600; transition: color 0.35s; }
-    .mini-time { font-size: .65rem; color: var(--muted-2); font-variant-numeric: tabular-nums; transition: color 0.35s; }
-    .sticky-mute-btn.muted { opacity: 1 !important; color: #e05555 !important; }
+    .sp-play-hero.playing .spm-play  { opacity: 0 !important; transform: translate(calc(-50% + 1px), -50%) scale(0.45) !important; }
+    .sp-play-hero.playing .spm-pause { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
+    .spm-ripple { position: absolute; border-radius: 50%; width: 52px; height: 52px; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
+    @keyframes spmRipple { to { transform: translate(-50%,-50%) scale(2.2); opacity: 0; } }
+
+    /* Extras row */
+    .sp-extras-row {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 0 4px;
+    }
+    .sp-speed-chip {
+      font-size: 0.62rem; font-weight: 700;
+      color: rgba(255,255,255,0.38);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 4px 11px;
+      cursor: pointer; letter-spacing: 0.04em;
+      transition: all 0.15s;
+    }
+    .sp-speed-chip:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.65); }
+    .sp-vol-row { display: flex; align-items: center; gap: 7px; }
+    .sp-vol-icon { color: rgba(255,255,255,0.25); }
+    .sp-vol-track {
+      width: 72px; height: 3px;
+      background: rgba(255,255,255,0.08); border-radius: 2px; position: relative;
+      cursor: pointer;
+    }
+    .sp-vol-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 75%; background: rgba(255,255,255,0.38); border-radius: 2px;
+    }
+    .sp-mute-btn {
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      color: rgba(255,255,255,0.25);
+      transition: color 0.15s;
+    }
+    .sp-mute-btn:hover { color: rgba(255,255,255,0.6); }
+    .sp-mute-btn.muted { color: #e05555 !important; }
+
+    /* ── MINI PLAYER ── */
+    .player-mini {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 0 10px 10px;
+      pointer-events: none;
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 0.46s cubic-bezier(0.32,0.72,0,1), opacity 0.25s ease;
+      will-change: transform;
+    }
+    .sticky-player.mini-mode .player-mini { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    .sp-mini-inner {
+      background: rgba(12, 20, 16, 0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 18px;
+      padding: 9px 11px 11px 10px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 36px rgba(0,0,0,0.55),
+                  inset 0 1px 0 rgba(255,255,255,0.04);
+      position: relative; overflow: hidden;
+    }
+
+    /* Mini progress bar at bottom */
+    .sp-mini-progress {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2.5px;
+      background: rgba(255,255,255,0.05);
+    }
+    .sp-mini-progress-fill {
+      height: 100%; width: 0%;
+      border-radius: 0 1.5px 1.5px 0;
+      transition: width 0.4s linear;
+    }
+
+    .sp-mini-artwork {
+      width: 38px; height: 38px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+      position: relative; overflow: hidden;
+      transition: background 0.4s ease;
+    }
+    .sp-mini-artwork::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+      pointer-events: none;
+    }
+    .sp-mini-initials {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 600;
+      color: rgba(255,255,255,0.93); position: relative; z-index: 2;
+    }
+    .sp-mini-meta { flex: 1; min-width: 0; }
+    .sp-mini-imam {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 600; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .sp-mini-sub {
+      font-size: 0.62rem; color: rgba(255,255,255,0.33); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sp-mini-controls { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .sp-mini-ctrl {
+      width: 30px; height: 30px; border: none; background: none;
+      color: rgba(255,255,255,0.5); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; transition: all 0.15s;
+    }
+    .sp-mini-ctrl:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .sp-mini-play {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: none; color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      transition: transform 0.18s, box-shadow 0.18s;
+      flex-shrink: 0;
+    }
+    .sp-mini-play:hover { transform: scale(1.09); }
+
+    .mini-bar-track, #mini-thumb, .mini-text-row { display: none; }
+    /* ── FAVORITER / HJÄRTA ── */
+    .fav-btn {
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 50%;
+      color: rgba(255,255,255,0.25);
+      transition: color 0.2s, transform 0.2s, background 0.15s;
+      flex-shrink: 0; padding: 0;
+    }
+    .fav-btn:hover { transform: scale(1.18); background: rgba(255,255,255,0.06); }
+    .fav-btn.active { color: #a84040; }
+    .fav-btn.active svg { fill: #a84040; }
+    @keyframes heartPop { 0%{transform:scale(1)} 35%{transform:scale(1.45)} 65%{transform:scale(0.88)} 100%{transform:scale(1)} }
+    .fav-btn.pop { animation: heartPop 0.38s cubic-bezier(0.34,1.56,0.64,1); }
+
+    /* Hjärta i table-rader */
+    .td-fav { width: 36px; text-align: center; padding: 0 2px; }
+    .td-fav .fav-btn { color: rgba(0,0,0,0.15); }
+    [data-theme="dark"] .td-fav .fav-btn { color: rgba(255,255,255,0.15); }
+    .td-fav .fav-btn.active { color: #a84040; }
+
+    /* Hjärta i mobil-kort */
+    .dcm-fav-wrap { display: flex; align-items: center; height: 34px; }
+    .dcm-fav-wrap .fav-btn { color: rgba(0,0,0,0.15); width: 34px; height: 34px; }
+    [data-theme="dark"] .dcm-fav-wrap .fav-btn { color: rgba(255,255,255,0.15); }
+    .dcm-fav-wrap .fav-btn.active { color: #a84040; }
+
+    /* Hjärta i spelaren */
+    #sp-fav-btn { color: rgba(255,255,255,0.28); }
+    #sp-fav-btn.active { color: #a84040; }
+    #sp-fav-btn.active svg { fill: #a84040; }
+
+    /* Favorit filter-chip */
+    .filter-chip.fav-chip { }
+    .filter-chip.fav-chip .fav-chip-heart { transition: color 0.2s; }
+    .filter-chip.fav-chip.active .fav-chip-heart { color: #a84040; }
+    .fav-count-badge {
+      background: #a84040; color: #fff;
+      font-size: 0.58rem; font-weight: 700;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 4px; margin-left: 2px; line-height: 1;
+    }
+
 
     /* ── PLAY BUTTONS ── */
     .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(36,100,93,.3); position: relative; overflow: hidden; transition: background 0.42s cubic-bezier(0.4,0,0.2,1), box-shadow 0.15s ease; }
@@ -1187,6 +1447,13 @@
   <!-- FILTER -->
   <div class="filter-wrap" id="filter-wrap">
     <div class="filter-chips" id="filter-chips">
+      <button class="filter-chip fav-chip" id="fav-filter-chip" data-imam="favs" onclick="toggleFilter('favs')">
+        <span class="fav-chip-heart" data-i18n-title="favTip" style="display:flex;align-items:center;color:rgba(0,0,0,0.4);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+        <span data-i18n="favChip">Favoriter</span>
+        <span class="fav-count-badge" style="display:none">0</span>
+      </button>
       <button class="filter-chip" data-imam="abdurrahman" onclick="toggleFilter('abdurrahman')"><span class="filter-dot" style="background:var(--abdurrahman)"></span>Abdurrahman Sudani</button>
       <button class="filter-chip" data-imam="saed" onclick="toggleFilter('saed')"><span class="filter-dot" style="background:var(--saed);border:1px solid #bbb"></span>Saed Magan</button>
       <button class="filter-chip" data-imam="noor" onclick="toggleFilter('noor')"><span class="filter-dot" style="background:#ffffff;border:1px solid #bbb"></span>Noor</button>
@@ -1209,6 +1476,10 @@
       </thead>
       <tbody id="table-body"></tbody>
     </table>
+  </div>
+  <div id="fav-empty" style="display:none; padding:48px 0; text-align:center;">
+    <div style="font-size:2rem; margin-bottom:12px; opacity:0.25;">♡</div>
+    <p id="fav-empty-text" style="font-size:0.85rem; color:var(--muted); max-width:300px; margin:0 auto; line-height:1.6;"></p>
   </div>
 
   <!-- MOBILE CARDS -->
@@ -1268,6 +1539,15 @@
       notifyMe:        'Notifiera mig',
       showMore:         'Visa alla ▾',
       showLess:        'Visa mindre ▴',
+      favChip:          'Favoriter',
+      noFavs:  'Du har inga favoriter än — klicka på ♡ bredvid en natt för att spara den.',
+      favTip:  'Spara favorit',
+      shareTip:  'Dela session',
+      skipBack:  '−30 sekunder',
+      skipFwd:   '+30 sekunder',
+      prevNight: 'Föregående natt',
+      nextNight: 'Nästa natt',
+      speedTip:  'Uppspelningshastighet',
       scrollBtn:       'Se i schemat',
       shareImg:        'Dela bild',
       sectionHeading:  'Imamernas Böneledning',
@@ -1311,6 +1591,15 @@
       notifyMe:        'أشعرني',
       showMore:         'عرض الكل ▾',
       showLess:        'عرض أقل ▴',
+      favChip:          'المفضلة',
+      noFavs:  'لا توجد مفضلات بعد — انقر على ♡ بجانب ليلة لحفظها.',
+      favTip:  'حفظ المفضلة',
+      shareTip:  'مشاركة الجلسة',
+      skipBack:  '−٣٠ ثانية',
+      skipFwd:   '+٣٠ ثانية',
+      prevNight: 'الليلة السابقة',
+      nextNight: 'الليلة التالية',
+      speedTip:  'سرعة التشغيل',
       scrollBtn:       'عرض في الجدول',
       shareImg:        'مشاركة صورة',
       sectionHeading:  'إمامة الصلاة',
@@ -1354,6 +1643,15 @@
       notifyMe:        'Notify me',
       showMore:         'Show all ▾',
       showLess:        'Show less ▴',
+      favChip:          'Favourites',
+      noFavs:  'No favourites yet — tap ♡ next to a night to save it.',
+      favTip:  'Save to favourites',
+      shareTip:  'Share session',
+      skipBack:  '−30 seconds',
+      skipFwd:   '+30 seconds',
+      prevNight: 'Previous night',
+      nextNight: 'Next night',
+      speedTip:  'Playback speed',
       scrollBtn:       'View in schedule',
       shareImg:        'Share image',
       sectionHeading:  'Prayer Leadership',
@@ -1397,6 +1695,15 @@
       notifyMe:        'Beni bildir',
       showMore:         'Tümünü göster ▾',
       showLess:        'Daha az ▴',
+      favChip:          'Favoriler',
+      noFavs:  'Henüz favori yok — kaydetmek için bir gecenin yanındaki ♡ simgesine dokun.',
+      favTip:  'Favorilere ekle',
+      shareTip:  'Oturumu paylaş',
+      skipBack:  '−30 saniye',
+      skipFwd:   '+30 saniye',
+      prevNight: 'Önceki gece',
+      nextNight: 'Sonraki gece',
+      speedTip:  'Oynatma hızı',
       scrollBtn:       'Programda göster',
       shareImg:        'Resim paylaş',
       sectionHeading:  'İmam Programı',
@@ -1440,6 +1747,15 @@
       notifyMe:        'I ogeysiiso',
       showMore:         'Muuji dhammaan ▾',
       showLess:        'Muuji yar ▴',
+      favChip:          'Jaceylayaasha',
+      noFavs:  'Weli jaceelayaal ma jiraan — riix ♡ agta habeenka si aad u keydsato.',
+      favTip:  'Ku dar jaceylayaasha',
+      shareTip:  'La wadaag xaaladda',
+      skipBack:  '−30 ilbiriqsi',
+      skipFwd:   '+30 ilbiriqsi',
+      prevNight: 'Habeenkii hore',
+      nextNight: 'Habeenka xiga',
+      speedTip:  'Xawaaraha ciyaarta',
       scrollBtn:       'Arag jadwalka',
       shareImg:        'Wadaag sawir',
       sectionHeading:  'Hogaanka Salaadda',
@@ -1531,7 +1847,6 @@
   let _activeMoonWrap = null;
 
   // ── Animationstider — matchar CSS-transitions ───────────────
-  const BUBBLE_TRANSITION_MS = 2050; // matchar transition: 2s i CSS
   const BUBBLE_CLOSE_MS      = 2050;
 
   function isMobile() { return window.innerWidth <= 640; }
@@ -1668,6 +1983,7 @@
       <td class="td-audio" id="audio-desktop-${row.datum}"></td>
       <td class="td-moon">${moonCell}</td>
       <td class="td-veckodag ${veckaClass}" data-vecka="${row.vecka}">${getDay(row.vecka)}</td>
+      <td class="td-fav"><button class="fav-btn" data-day="${row.day}" title="Spara favorit" onclick="toggleFav(${row.day}, this);event.stopPropagation()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button></td>
     `;
     // Injicera EN sweep-div som täcker hela today desktop-raden
     if (isToday) {
@@ -1724,7 +2040,10 @@
             <span class="dcm-pages">s. ${row.sidor}</span>
           </div>
         </div>
-        <div class="dcm-audio-right" id="audio-mobile-${row.datum}"></div>
+        <div class="dcm-right-wrap" style="display:flex;align-items:center;gap:2px;flex-shrink:0;margin-left:auto;">
+          <div class="dcm-audio-right" id="audio-mobile-${row.datum}" style="margin-left:0;"></div>
+          <div class="dcm-fav-wrap"><button class="fav-btn" data-day="${row.day}" title="Spara favorit" onclick="toggleFav(${row.day}, this);event.stopPropagation()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button></div>
+        </div>
       </div>
       <div class="dcm-surahs">
         <span class="dcm-surahs-label">${T[_currentLang].surahsDetail || 'Suror — tryck för detaljer'}</span>
@@ -1872,7 +2191,119 @@
   const audioState = {};
   let _stickyScrollTimer = null;
   let _seekActive = false;   // true under pågående seek — blockerar scroll→mini
+
+  // ════════════════════════════════════════
+  // FAVORITER — localStorage
+  // ════════════════════════════════════════
+  const FAV_KEY = 'tarawih_favs_2026';
+
+  function getFavs() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
+  }
+  function saveFavs(arr) {
+    localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+  }
+  function isFav(day) { return getFavs().includes(day); }
+
+  function toggleFav(day, triggerEl) {
+    const favs = getFavs();
+    const idx  = favs.indexOf(day);
+    if (idx === -1) favs.push(day); else favs.splice(idx, 1);
+    saveFavs(favs);
+    updateAllFavBtns(day, idx === -1);
+    updateFavChip();
+    if (activeFilter === 'favs') applyFilter(); // re-filter om favorit-filter är aktivt
+    // Pop-animation på det klickade elementet
+    if (triggerEl) {
+      triggerEl.classList.remove('pop');
+      void triggerEl.offsetWidth;
+      triggerEl.classList.add('pop');
+      triggerEl.addEventListener('animationend', () => triggerEl.classList.remove('pop'), { once: true });
+    }
+  }
+
+  function updateAllFavBtns(day, isFaved) {
+    document.querySelectorAll('.fav-btn[data-day="' + day + '"]').forEach(btn => {
+      btn.classList.toggle('active', isFaved);
+    });
+  }
+
+  function updateFavChip() {
+    const count = getFavs().length;
+    const chip  = document.getElementById('fav-filter-chip');
+    if (!chip) return;
+    const badge = chip.querySelector('.fav-count-badge');
+    if (badge) badge.textContent = count > 0 ? count : '';
+    badge.style.display = count > 0 ? '' : 'none';
+  }
+
+  function syncAllFavBtns() {
+    const favs = getFavs();
+    document.querySelectorAll('.fav-btn[data-day]').forEach(btn => {
+      const day = parseInt(btn.dataset.day);
+      btn.classList.toggle('active', favs.includes(day));
+    });
+    updateFavChip();
+  }
+
+
   let _activeDatum = null;
+
+  // Imam-färger — matchar CSS-variablerna och filter-chips
+  const IMAM_COLORS = {
+    abdurrahman: '#e8630a',
+    saed:        '#d4a800',
+    noor:        '#4a7fa8',
+    abdul:       '#4a4a4a',
+    mohammed:    '#219150',
+    yacquub:     '#7d3aac',
+    abdelsalam:  '#7b3f00',
+    hatem:       '#2d6a4f',
+    ibrahim:     '#1a3a6b',
+  };
+
+  function imamInitials(label) {
+    const parts = label.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  }
+
+  function lightenHex(hex, amt) {
+    const num = parseInt(hex.replace('#',''), 16);
+    const r = Math.min(255, (num>>16) + amt);
+    const g = Math.min(255, ((num>>8)&0xff) + amt);
+    const b = Math.min(255, (num&0xff) + amt);
+    return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+  }
+
+  function applyImamColor(imamKey, imamLabel, nightNum) {
+    const base    = IMAM_COLORS[imamKey] || '#1a4a44';
+    const light   = lightenHex(base, 48);
+    const grad    = 'linear-gradient(135deg, ' + base + ' 0%, ' + light + ' 100%)';
+
+    // Full player artwork
+    const art = document.getElementById('sp-artwork');
+    if (art) { art.style.background = grad; }
+    const ini = document.getElementById('sp-initials');
+    if (ini) ini.textContent = imamInitials(imamLabel);
+    // Progress fill + ring
+    const pf = document.getElementById('sticky-fill');
+    if (pf) pf.style.background = 'linear-gradient(to right, ' + base + ', ' + light + ')';
+    const rf = document.getElementById('sp-ring-fill');
+    if (rf) rf.style.stroke = light;
+    const ri = document.getElementById('sp-ring-inner');
+    if (ri) ri.style.background = 'linear-gradient(135deg, ' + lightenHex(base,-20) + ', ' + lightenHex(base,-40) + ')';
+
+    // Mini artwork + progress
+    const ma = document.getElementById('sp-mini-artwork');
+    if (ma) ma.style.background = grad;
+    const mi = document.getElementById('sp-mini-initials');
+    if (mi) mi.textContent = imamInitials(imamLabel);
+    const mf = document.getElementById('mini-fill');
+    if (mf) mf.style.background = 'linear-gradient(to right, ' + base + ', ' + light + ')';
+    const mp = document.getElementById('sp-mini-play');
+    if (mp) mp.style.background = grad;
+  }
 
   const PLAY_SVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block;margin-left:1px"><polygon points="7,3 21,12 7,21"/></svg>`;
   const PAUSE_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:block"><rect x="6" y="3" width="4" height="18"/><rect x="14" y="3" width="4" height="18"/></svg>`;
@@ -1892,16 +2323,27 @@
   function updateStickyPlayBtn(isPlaying) {
     const btn = document.getElementById('sticky-play-btn');
     if (!btn) return;
+    // Spring animation on ring-inner
     btn.classList.remove('springing');
     void btn.offsetWidth;
     btn.classList.add('springing');
     btn.addEventListener('animationend', () => btn.classList.remove('springing'), { once: true });
+    // Ripple
     const rip = document.createElement('span');
     rip.className = 'spm-ripple';
+    rip.style.background = 'rgba(255,255,255,0.18)';
     btn.appendChild(rip);
     rip.addEventListener('animationend', () => rip.remove(), { once: true });
-    if (isPlaying) { btn.classList.add('red'); }
-    else           { btn.classList.remove('red'); }
+    // Play/pause state
+    if (isPlaying) btn.classList.add('playing');
+    else           btn.classList.remove('playing');
+    // Mini play button icon
+    const miniPlay = document.getElementById('sp-mini-play');
+    if (miniPlay) {
+      miniPlay.innerHTML = isPlaying
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>';
+    }
   }
 
   function setBtns(datum, icon, isPlaying) {
@@ -1943,32 +2385,47 @@
     if (dur)   dur.textContent   = fmtTime(duration);
     if (fill)  fill.style.width  = pct + '%';
     if (thumb) thumb.style.left  = pct + '%';
-    const sCur   = document.getElementById('sticky-cur');
-    const sDur   = document.getElementById('sticky-dur');
     const sFill  = document.getElementById('sticky-fill');
-    const sThumb = document.getElementById('sticky-thumb');
-    const mFill  = document.getElementById('mini-fill');
-    const mThumb = document.getElementById('mini-thumb');
-    if (sCur)   sCur.textContent   = fmtTime(currentTime);
-    if (sDur)   sDur.textContent   = fmtTime(duration);
     if (sFill)  sFill.style.width  = pct + '%';
-    if (sThumb) sThumb.style.left  = pct + '%';
-    if (mFill)  mFill.style.width  = pct + '%';
-    if (mThumb) mThumb.style.left  = pct + '%';
-    const mTime = document.getElementById('mini-time-display');
-    if (mTime) mTime.textContent = fmtTime(currentTime) + ' / ' + fmtTime(duration);
+    const spMiniPfill = document.getElementById('sp-mini-pfill');
+    if (spMiniPfill) spMiniPfill.style.width = pct + '%';
+
+    // Update progress ring on play button (circumference = 2π×28 ≈ 175.9)
+    const ringFill = document.getElementById('sp-ring-fill');
+    if (ringFill) {
+      const circ = 175.9;
+      ringFill.style.strokeDashoffset = circ - (pct / 100) * circ;
+    }
+    // Mini time
+    const miniSubEl = document.getElementById('sp-mini-sub');
+    if (miniSubEl && _activeDatum) {
+      const row = SCHEDULE.find(r => r.datum === _activeDatum);
+      if (row) {
+        const nightStr = (T[_currentLang].night || 'Natt') + ' ' + row.day;
+        miniSubEl.textContent = nightStr + ' · ' + fmtTime(currentTime) + ' / ' + fmtTime(duration);
+      }
+    }
+    // Full player times
+    const spCur = document.getElementById('sp-cur');
+    const spDur = document.getElementById('sp-dur');
+    if (spCur) spCur.textContent = fmtTime(currentTime);
+    if (spDur) spDur.textContent = fmtTime(duration);
   }
 
   function showSticky() { if (!_activeDatum) return; const p = document.getElementById('sticky-player'); p.classList.add('visible'); p.classList.remove('mini-mode'); }
   function hideSticky() { const p = document.getElementById('sticky-player'); p.classList.remove('visible'); p.classList.remove('mini-mode'); }
   function miniSticky() { if (!_activeDatum) return; const p = document.getElementById('sticky-player'); p.classList.add('visible'); p.classList.add('mini-mode'); }
 
+  let _miniTimer = null;
   window.addEventListener('scroll', () => {
     if (!_activeDatum) return;
     if (_seekActive) return;   // pågående seek — rör inte playern
-    miniSticky();
+    clearTimeout(_miniTimer);
     clearTimeout(_stickyScrollTimer);
-    _stickyScrollTimer = setTimeout(showSticky, 600);
+    _miniTimer = setTimeout(() => {
+      if (!_seekActive) miniSticky();
+    }, 80);   // vänta 80ms — filtrerar bort scroll-blippar från seek-klick
+    _stickyScrollTimer = setTimeout(showSticky, 680);
   }, { passive: true });
 
   function navigateTo(datum) {
@@ -1990,8 +2447,6 @@
     }
     function applyPct(pct) {
       if (thumbEl) thumbEl.style.left = (pct * 100) + '%';
-      const mt = trackEl.querySelector('#mini-thumb');
-      if (mt) mt.style.left = (pct * 100) + '%';
       if (fillEl) fillEl.style.width = (pct * 100) + '%';
     }
     function expand() { clearTimeout(_collapseTimer); trackEl.classList.add('bar-expanded'); }
@@ -2014,7 +2469,6 @@
       const audio = audioState[_activeDatum];
       if (!audio.duration) return;
       _dragging = true; audio._seekLock = true; _seekActive = true;
-      document.body.style.overflowY = 'hidden';   // förhindra scroll under drag
       trackEl.setPointerCapture(e.pointerId);
       trackEl.classList.add('seeking');
       if (thumbEl) thumbEl.classList.add('dragging');
@@ -2026,16 +2480,14 @@
       const pct = getPct(e.clientX); applyPct(pct);
       if (_activeDatum && audioState[_activeDatum]?.duration) {
         const scrubTime = pct * audioState[_activeDatum].duration;
-        const cur = document.getElementById('sticky-cur');
-        const mTime = document.getElementById('mini-time-display');
-        if (cur) cur.textContent = fmtTime(scrubTime);
-        if (mTime) mTime.textContent = fmtTime(scrubTime) + ' / ' + fmtTime(audioState[_activeDatum].duration);
+        const spCur = document.getElementById('sp-cur');
+        if (spCur) spCur.textContent = fmtTime(scrubTime);
       }
       e.stopPropagation();
     });
     trackEl.addEventListener('pointerup', e => {
       if (!_dragging) return;
-      _dragging = false; _seekActive = false; document.body.style.overflowY = '';
+      _dragging = false; _seekActive = false;
       trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging');
       trackEl.releasePointerCapture(e.pointerId);
@@ -2043,7 +2495,7 @@
       e.stopPropagation();
     });
     trackEl.addEventListener('pointercancel', () => {
-      _dragging = false; _seekActive = false; document.body.style.overflowY = '';
+      _dragging = false; _seekActive = false;
       trackEl.classList.remove('seeking');
       if (thumbEl) thumbEl.classList.remove('dragging'); scheduleCollapse();
     });
@@ -2051,93 +2503,161 @@
     trackEl.addEventListener('pointerenter', () => { expand(); });
   }
 
+  // Auto-play from URL parameter ?natt=N
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const natt = parseInt(params.get('natt'));
+    if (natt) {
+      const row = SCHEDULE.find(r => r.day === natt);
+      if (row && audioUrls[row.datum]) {
+        setTimeout(() => {
+          toggleAudio(row.datum);
+          const target = window.innerWidth <= 640
+            ? document.querySelector('#mobile-cards .day-card-mobile[data-datum="' + row.datum + '"]')
+            : document.querySelector('tr[data-datum="' + row.datum + '"]');
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 800);
+      }
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function() {
-    const seekEl  = document.getElementById('sticky-seek');
-    const thumbEl = document.getElementById('sticky-thumb');
-    makeDraggableSeek(seekEl, thumbEl);
-    const miniTrack = document.querySelector('.mini-bar-track');
-    const miniThumb = document.getElementById('mini-thumb');
-    if (miniTrack) makeDraggableSeek(miniTrack, miniThumb);
+    const seekEl = document.getElementById('sticky-seek');
+    makeDraggableSeek(seekEl, null);
+    // ── New player buttons ──
+    syncAllFavBtns();
+    updateFavChip();
 
     const muteBtn = document.getElementById('sticky-mute');
     if (muteBtn) muteBtn.addEventListener('click', e => {
       const isMuted = muteBtn.classList.toggle('muted');
       Object.values(audioState).forEach(a => { a.muted = isMuted; });
       window._globalMuted = isMuted;
-      document.getElementById('mute-icon-on').style.display  = isMuted ? 'none' : '';
-      document.getElementById('mute-icon-off').style.display = isMuted ? ''     : 'none';
-      muteBtn.style.opacity = isMuted ? '1' : '';
       e.stopPropagation();
     });
 
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
-    const prevBtn = document.getElementById('sticky-prev');
-    if (prevBtn) prevBtn.addEventListener('click', e => {
+
+    // Skip ±30s
+    document.getElementById('sp-skip-back-btn')?.addEventListener('click', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      audioState[_activeDatum].currentTime = Math.max(0, audioState[_activeDatum].currentTime - 30);
+      e.stopPropagation();
+    });
+    document.getElementById('sp-skip-fwd-btn')?.addEventListener('click', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      const a = audioState[_activeDatum];
+      audioState[_activeDatum].currentTime = Math.min(a.duration || 0, a.currentTime + 30);
+      e.stopPropagation();
+    });
+    document.getElementById('sp-mini-skip-back')?.addEventListener('click', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      audioState[_activeDatum].currentTime = Math.max(0, audioState[_activeDatum].currentTime - 30);
+      e.stopPropagation();
+    });
+    document.getElementById('sp-mini-skip-fwd')?.addEventListener('click', e => {
+      if (!_activeDatum || !audioState[_activeDatum]) return;
+      const a = audioState[_activeDatum];
+      audioState[_activeDatum].currentTime = Math.min(a.duration || 0, a.currentTime + 30);
+      e.stopPropagation();
+    });
+
+    // Mini play button
+    document.getElementById('sp-mini-play')?.addEventListener('click', e => {
+      if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation();
+    });
+
+    // Prev/next
+    document.getElementById('sp-prev-btn')?.addEventListener('click', e => {
       if (!_activeDatum) return;
       const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
       if (idx > 0 && audioUrls[SCHEDULE[idx-1].datum]) navigateTo(SCHEDULE[idx-1].datum);
       e.stopPropagation();
     });
-    const nextBtn = document.getElementById('sticky-next');
-    if (nextBtn) nextBtn.addEventListener('click', e => {
+    document.getElementById('sp-next-btn')?.addEventListener('click', e => {
       if (!_activeDatum) return;
       const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
       if (idx < SCHEDULE.length-1 && audioUrls[SCHEDULE[idx+1].datum]) navigateTo(SCHEDULE[idx+1].datum);
       e.stopPropagation();
     });
+
+    // Speed cycle: 1× → 1.25× → 1.5× → 1.75× → 2× → 1×
+    const speeds = [1, 1.25, 1.5, 1.75, 2];
+    let _speedIdx = 0;
+    document.getElementById('sp-speed-btn')?.addEventListener('click', e => {
+      _speedIdx = (_speedIdx + 1) % speeds.length;
+      const spd = speeds[_speedIdx];
+      document.getElementById('sp-speed-btn').textContent = spd + '×';
+      Object.values(audioState).forEach(a => { a.playbackRate = spd; });
+      e.stopPropagation();
+    });
+
+    // Favorit-knapp i spelaren
+    document.getElementById('sp-fav-btn')?.addEventListener('click', e => {
+      const day = parseInt(e.currentTarget.dataset.day);
+      if (day) toggleFav(day, e.currentTarget);
+      e.stopPropagation();
+    });
+
+    // Share button — copy ?natt=N URL
+    document.getElementById('sp-share-btn')?.addEventListener('click', e => {
+      if (!_activeDatum) return;
+      const row = SCHEDULE.find(r => r.datum === _activeDatum);
+      if (!row) return;
+      const url = window.location.origin + window.location.pathname + '?natt=' + row.day;
+      if (navigator.share) {
+        navigator.share({ title: row.imamLabel + ' · Natt ' + row.day, url }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(url).then(() => {
+          const btn = document.getElementById('sp-share-btn');
+          if (btn) {
+            btn.style.color = '#2d9c6e';
+            setTimeout(() => { btn.style.color = ''; }, 1400);
+          }
+        });
+      }
+      e.stopPropagation();
+    });
+
   });
 
-  function updateStickyMarquee(row) {
-    const wrap  = document.getElementById('sticky-marquee-wrap');
-    const inner = document.getElementById('sticky-marquee-inner');
-    const text1 = document.getElementById('sticky-marquee-text');
-    const text2 = document.getElementById('sticky-marquee-text2');
-    if (!wrap || !inner || !text1 || !text2) return;
-    const txt = row.surahs + '  ·  ' + row.tooltip;
-    text1.textContent = txt; text2.textContent = txt;
-    text2.style.display = 'none';
-    inner.classList.remove('scrolling'); inner.style.removeProperty('--marquee-dur'); wrap.classList.remove('fading');
-    const ruler = document.createElement('span');
-    ruler.style.cssText = 'position:fixed;top:-9999px;left:-9999px;white-space:nowrap;font-size:.68rem;visibility:hidden;pointer-events:none;';
-    ruler.textContent = txt; document.body.appendChild(ruler);
-    const playerEl = document.getElementById('sticky-player');
-    const playerW = playerEl ? playerEl.getBoundingClientRect().width : window.innerWidth;
-    const imamEl  = document.getElementById('sticky-imam-label');
-    const dayEl   = document.getElementById('sticky-day-label');
-    const timesEl = document.querySelector('.sticky-times');
-    const imamW   = imamEl  ? imamEl.getBoundingClientRect().width  : 80;
-    const dayW    = dayEl   ? dayEl.getBoundingClientRect().width   : 80;
-    const timesW  = timesEl ? timesEl.getBoundingClientRect().width : 80;
-    const gaps    = 8 * 3 + 32;
-    const availW  = Math.max(60, playerW - imamW - dayW - timesW - gaps);
-    const textW = ruler.getBoundingClientRect().width;
-    document.body.removeChild(ruler);
-    if (textW > availW) {
-      text2.style.display = '';
-      wrap.classList.add('fading');
-      const totalW = textW + 48;
-      const dur = Math.max(8, Math.round(totalW / 65));
-      inner.style.setProperty('--marquee-dur', dur + 's');
-      inner.classList.add('scrolling');
-    }
-  }
 
   function updateStickyControls() {
     if (!_activeDatum) return;
     const idx = SCHEDULE.findIndex(r => r.datum === _activeDatum);
-    const prevBtn = document.getElementById('sticky-prev');
-    const nextBtn = document.getElementById('sticky-next');
     const row = SCHEDULE[idx];
-    if (prevBtn) prevBtn.disabled = idx <= 0 || !audioUrls[SCHEDULE[idx-1]?.datum];
-    if (nextBtn) nextBtn.disabled = idx >= SCHEDULE.length-1 || !audioUrls[SCHEDULE[idx+1]?.datum];
-    const imamEl  = document.getElementById('sticky-imam-label');
-    const dayEl   = document.getElementById('sticky-day-label');
-    const miniName = document.getElementById('mini-name-display');
-    if (imamEl  && row) imamEl.textContent  = row.imamLabel;
-    if (dayEl   && row) dayEl.textContent   = (T[_currentLang].night || 'Natt') + ' ' + row.day + ' · ' + getDay(row.vecka);
-    if (miniName && row) miniName.textContent = row.imamLabel + ' · ' + (T[_currentLang].night || 'Natt') + ' ' + row.day;
-    if (row) updateStickyMarquee(row);
+    const spPrevBtn = document.getElementById('sp-prev-btn');
+    const spNextBtn = document.getElementById('sp-next-btn');
+    if (spPrevBtn) spPrevBtn.disabled = idx <= 0 || !audioUrls[SCHEDULE[idx-1]?.datum];
+    if (spNextBtn) spNextBtn.disabled = idx >= SCHEDULE.length-1 || !audioUrls[SCHEDULE[idx+1]?.datum];
+
+    // Ny design — uppdatera metadata-rad och imam-färger
+    if (row) {
+      const spImam  = document.getElementById('sp-imam-name');
+      const spSub   = document.getElementById('sp-meta-sub');
+      const miniImam = document.getElementById('sp-mini-imam');
+      const miniSub  = document.getElementById('sp-mini-sub');
+      const prevLbl  = document.getElementById('sp-prev-label');
+      const nextLbl  = document.getElementById('sp-next-label');
+      const nightStr = (T[_currentLang].night || 'Natt') + ' ' + row.day;
+      if (spImam)  spImam.textContent  = row.imamLabel;
+      if (spSub)   spSub.innerHTML     = '<span class="sp-accent" id="sp-night-label">' + nightStr + '</span> · ' + row.surahs;
+      if (miniImam) miniImam.textContent = row.imamLabel;
+      if (miniSub)  miniSub.textContent  = nightStr;
+      // Prev/next labels
+      const prevRow = SCHEDULE[idx-1];
+      const nextRow = SCHEDULE[idx+1];
+      if (prevLbl) prevLbl.textContent = prevRow ? (T[_currentLang].night||'Natt')+' '+prevRow.day : '';
+      if (nextLbl) nextLbl.textContent = nextRow ? (T[_currentLang].night||'Natt')+' '+nextRow.day : '';
+      applyImamColor(row.imam, row.imamLabel, row.day);
+      // Uppdatera hjärta i spelaren
+      const spFav = document.getElementById('sp-fav-btn');
+      if (spFav) {
+        spFav.dataset.day = row.day;
+        spFav.classList.toggle('active', isFav(row.day));
+      }
+    }
   }
 
   function openPlayer(datum) { _activeDatum = datum; updateStickyControls(); updateStickyPlayBtn(true); setTimeout(showSticky, 200); }
@@ -2195,6 +2715,19 @@
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.dataset.i18n;
       if (t[key] !== undefined) el.textContent = t[key];
+    });
+    // Uppdatera fav empty-state text om den visas
+    const emptyTxt2 = document.getElementById('fav-empty-text');
+    if (emptyTxt2) emptyTxt2.textContent = t.noFavs || '';
+
+    // data-i18n-title — tooltip/title attributes
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.dataset.i18nTitle;
+      if (t[key] !== undefined) el.title = t[key];
+    });
+    // Table fav buttons (dynamically rendered) — update title
+    document.querySelectorAll('.fav-btn[data-day]').forEach(el => {
+      el.title = t.favTip || 'Spara favorit';
     });
 
     // Mobile cards surah label (dynamically rendered)
@@ -2969,8 +3502,6 @@
   }
 
   function applyFilter() {
-    document.body.style.width = document.body.offsetWidth + 'px';
-    document.body.style.overflowY = 'hidden';
     const imamColors = { abdurrahman:'rgba(232,99,10,0.5)', saed:'rgba(212,168,0,0.5)', noor:'rgba(41,128,185,0.5)', abdul:'rgba(44,44,44,0.5)', mohammed:'rgba(33,145,80,0.5)', yacquub:'rgba(125,58,172,0.5)', ibrahim:'rgba(26,58,107,0.5)', abdelsalam:'rgba(123,63,0,0.5)', hatem:'rgba(45,106,79,0.5)' };
     document.querySelectorAll('.filter-chip').forEach(btn => {
       const isActive = btn.dataset.imam === activeFilter;
@@ -2980,16 +3511,38 @@
     });
     document.querySelectorAll('#table-body tr').forEach(tr => {
       const chip = tr.querySelector('.imam-chip');
-      const show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      let show;
+      if (activeFilter === 'favs') {
+        const dayNum = parseInt(tr.querySelector('.td-dag')?.textContent);
+        show = !isNaN(dayNum) && isFav(dayNum);
+      } else {
+        show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      }
       tr.classList.toggle('filtered-out', !show);
     });
     document.querySelectorAll('#mobile-cards .day-card-mobile').forEach(card => {
       const chip = card.querySelector('.imam-chip');
-      const show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      let show;
+      if (activeFilter === 'favs') {
+        const dayEl  = card.querySelector('.dcm-dag');
+        const dayNum = dayEl ? parseInt(dayEl.textContent) : NaN;
+        show = !isNaN(dayNum) && isFav(dayNum);
+      } else {
+        show = !activeFilter || (chip && chip.classList.contains('imam-' + activeFilter));
+      }
       card.classList.toggle('filtered-out', !show);
     });
     const visibleRows  = [...document.querySelectorAll('#table-body tr:not(.filtered-out)')];
     const visibleCards = [...document.querySelectorAll('#mobile-cards .day-card-mobile:not(.filtered-out)')];
+
+    // Tom-state för favoriter
+    const isFavFilter = activeFilter === 'favs';
+    const noFavsMsg   = T[_currentLang]?.noFavs || 'Du har inga favoriter än.';
+    const emptyEl = document.getElementById('fav-empty');
+    const emptyTxt = document.getElementById('fav-empty-text');
+    const showEmpty = isFavFilter && getFavs().length === 0;
+    if (emptyEl) emptyEl.style.display = showEmpty ? '' : 'none';
+    if (emptyTxt) emptyTxt.textContent = noFavsMsg;
     const lastDelay = Math.max(
       visibleRows.length  ? (visibleRows.length  - 1) * 45 + 320 : 0,
       visibleCards.length ? (visibleCards.length - 1) * 55 + 320 : 0
@@ -3002,77 +3555,142 @@
       card.style.opacity='0'; card.style.transform='translateY(10px)'; card.style.transition='opacity 0.3s ease,transform 0.3s ease';
       setTimeout(() => { card.style.opacity='1'; card.style.transform='translateY(0)'; setTimeout(() => { card.style.transition=''; card.style.opacity=''; card.style.transform=''; }, 320); }, i*55);
     });
-    setTimeout(() => { document.body.style.width=''; document.body.style.overflowY=''; }, lastDelay + 50);
   }
 
 </script>
 
-<!-- STICKY BOTTOM PLAYER -->
+<!-- STICKY BOTTOM PLAYER — New Design -->
 <div class="sticky-player" id="sticky-player">
-  <div class="player-full">
-    <div class="sticky-top-row">
-      <span class="sticky-day-badge" id="sticky-imam-label">–</span>
-      <span class="sticky-day-sub" id="sticky-day-label"></span>
-      <div class="sticky-marquee-wrap" id="sticky-marquee-wrap">
-        <div class="sticky-marquee-inner" id="sticky-marquee-inner">
-          <span class="sticky-marquee-text" id="sticky-marquee-text"></span>
-          <span class="sticky-marquee-text" id="sticky-marquee-text2" aria-hidden="true"></span>
+
+  <!-- ── FULL PLAYER ── -->
+  <div class="player-full" style="position:relative;">
+    <div class="sp-drag-handle"></div>
+
+
+    <!-- Metadata row -->
+    <div class="sp-meta-row">
+      <div class="sp-artwork" id="sp-artwork">
+        <span class="sp-initials" id="sp-initials">–</span>
+      </div>
+      <div class="sp-meta-text">
+        <div class="sp-imam-name" id="sp-imam-name">–</div>
+        <div class="sp-meta-sub" id="sp-meta-sub"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+        <button class="fav-btn" id="sp-fav-btn" data-day="" data-i18n-title="favTip" title="Spara favorit" style="width:34px;height:34px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.06);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <button class="sp-share-btn" id="sp-share-btn" data-i18n-title="shareTip" title="Dela session">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress / Seek -->
+    <div class="sp-progress-section">
+      <div class="sp-progress-times">
+        <span id="sp-cur">0:00</span>
+        <span id="sp-dur">0:00</span>
+      </div>
+      <div style="display:flex; align-items:center;">
+        <div class="sticky-seek" id="sticky-seek">
+          <div class="sticky-seek-fill" id="sticky-fill"></div>
+          <div class="sticky-seek-thumb" id="sticky-thumb"></div>
         </div>
       </div>
-      <span class="sticky-times"><span id="sticky-cur">0:00</span> / <span id="sticky-dur">0:00</span></span>
     </div>
-    <div class="sticky-seek-row">
-      <div class="sticky-seek" id="sticky-seek">
-        <div class="sticky-seek-fill" id="sticky-fill"></div>
-        <div class="sticky-seek-thumb" id="sticky-thumb"></div>
-      </div>
-    </div>
-    <div class="sticky-controls">
-      <div class="sticky-ctrl-left">
-        <button class="sticky-ctrl-btn" id="sticky-prev" title="Föregående dag">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
-        </button>
-      </div>
-      <button class="sticky-play-main" id="sticky-play-btn" aria-label="Spela/Pausa">
-        <span class="spm-icon-wrap" aria-hidden="true">
-          <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="7,3 21,12 7,21"/>
-          </svg>
-          <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="3" width="4" height="18" rx="1.5"/>
-            <rect x="14" y="3" width="4" height="18" rx="1.5"/>
-          </svg>
-        </span>
+
+    <!-- Controls -->
+    <div class="sp-controls-row">
+      <button class="sp-ctrl-btn" id="sp-prev-btn" data-i18n-title="prevNight" title="Föregående natt" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        <span class="sp-ctrl-lbl" id="sp-prev-label"></span>
       </button>
-      <div class="sticky-ctrl-right">
-        <button class="sticky-ctrl-btn" id="sticky-next" title="Nästa dag">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zm-3.5 6L6 6v12z"/></svg>
-        </button>
-        <button class="sticky-ctrl-btn sticky-mute-btn" id="sticky-mute" title="Ljud av/på">
-          <svg id="mute-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-          </svg>
-          <svg id="mute-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <line x1="23" y1="9" x2="17" y2="15"/>
-            <line x1="17" y1="9" x2="23" y2="15"/>
-          </svg>
-        </button>
-      </div>
+      <button class="sp-ctrl-btn" id="sp-skip-back-btn" data-i18n-title="skipBack" title="−30 sekunder">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>
+        <span class="sp-ctrl-lbl">−30s</span>
+      </button>
+
+      <!-- Hero play button -->
+      <button class="sp-play-hero" id="sticky-play-btn" aria-label="Spela/Pausa">
+        <svg class="sp-ring-svg" viewBox="0 0 62 62">
+          <circle class="sp-ring-bg" cx="31" cy="31" r="28"/>
+          <circle class="sp-ring-fill" id="sp-ring-fill" cx="31" cy="31" r="28"/>
+        </svg>
+        <div class="sp-ring-inner" id="sp-ring-inner">
+          <span class="spm-icon-wrap">
+            <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>
+            <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>
+          </span>
+        </div>
+      </button>
+
+      <button class="sp-ctrl-btn" id="sp-skip-fwd-btn" data-i18n-title="skipFwd" title="+30 sekunder">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.85"/></svg>
+        <span class="sp-ctrl-lbl">+30s</span>
+      </button>
+      <button class="sp-ctrl-btn" id="sp-next-btn" data-i18n-title="nextNight" title="Nästa natt" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zm-3.5 6L6 6v12z"/></svg>
+        <span class="sp-ctrl-lbl" id="sp-next-label"></span>
+      </button>
+    </div>
+
+    <!-- Extras: speed · volume · mute -->
+    <div class="sp-extras-row">
+      <button class="sp-speed-chip" id="sp-speed-btn" data-i18n-title="speedTip" title="Uppspelningshastighet">1×</button>
+      <button class="sp-mute-btn" id="sticky-mute">
+        <svg class="sp-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <div class="sp-vol-track" id="sp-vol-track"><div class="sp-vol-fill" id="sp-vol-fill"></div></div>
+        <svg id="mute-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      </button>
     </div>
   </div>
+
+  <!-- ── MINI PLAYER ── -->
   <div class="player-mini">
-    <div class="mini-bar-track">
+    <!-- Legacy seek bar (hidden, still used by JS) -->
+    <div class="mini-bar-track" style="display:none">
       <div class="mini-bar-fill" id="mini-fill"></div>
       <div id="mini-thumb"></div>
     </div>
-    <div class="mini-text-row">
-      <span class="mini-name" id="mini-name-display">–</span>
-      <span class="mini-time" id="mini-time-display">0:00 / 0:00</span>
+    <div style="display:none">
+      <span id="mini-name-display">–</span>
+      <span id="mini-time-display">0:00 / 0:00</span>
+    </div>
+
+    <div class="sp-mini-inner">
+      <!-- Mini artwork -->
+      <div class="sp-mini-artwork" id="sp-mini-artwork">
+        <span class="sp-mini-initials" id="sp-mini-initials">–</span>
+      </div>
+      <!-- Mini meta -->
+      <div class="sp-mini-meta">
+        <div class="sp-mini-imam" id="sp-mini-imam">–</div>
+        <div class="sp-mini-sub" id="sp-mini-sub"></div>
+      </div>
+      <!-- Mini controls -->
+      <div class="sp-mini-controls">
+        <button class="sp-mini-ctrl" id="sp-mini-skip-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>
+        </button>
+        <button class="sp-mini-play" id="sp-mini-play">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>
+        </button>
+        <button class="sp-mini-ctrl" id="sp-mini-skip-fwd">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.85"/></svg>
+        </button>
+      </div>
+      <!-- Mini progress -->
+      <div class="sp-mini-progress">
+        <div class="sp-mini-progress-fill" id="sp-mini-pfill"></div>
+      </div>
     </div>
   </div>
+
 </div>
 
 </body>
