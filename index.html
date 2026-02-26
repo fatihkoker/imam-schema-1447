@@ -1711,8 +1711,7 @@
 
 <script>
   // ── iOS-detektering — Web Audio API hindrar bakgrundsuppspelning på iOS ──
-  window._isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  window._isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !!navigator.maxTouchPoints;
 
   // ── Hadith-texter ──────────────────────────────────────────────
   const H_STAND_UP        = 'standUp';
