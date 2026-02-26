@@ -2526,8 +2526,12 @@
     _miniTimer = setTimeout(() => { if (!_seekActive) miniSticky(); }, 150);
   }, { passive: true });
 
-  function navigateTo(datum) {
-    if (_activeDatum && audioState[_activeDatum]) { audioState[_activeDatum].pause(); setBtns(_activeDatum, PLAY_SVG, false); closePlayer(_activeDatum); }
+  async function navigateTo(datum) {
+    if (_activeDatum && audioState[_activeDatum]) {
+      const prev = _activeDatum;
+      await _stopAudio(prev);
+      if (_activeDatum === prev) closePlayer(prev);
+    }
     toggleAudio(datum);
   }
 
@@ -2796,7 +2800,13 @@
     _activeDatum = datum;
     updateStickyControls();
     updateStickyPlayBtn(true);
-    setTimeout(showSticky, 200);
+    const p = document.getElementById('sticky-player');
+    // Om spelaren redan är i mini-läge (t.ex. play klickades i mini-spelaren),
+    // stanna kvar i mini-läge — expandera INTE till full player
+    const alreadyMini = p && p.classList.contains('mini-mode') && p.classList.contains('visible');
+    if (!alreadyMini) {
+      setTimeout(showSticky, 200);
+    }
     clearTimeout(_autoMiniTimer);
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
   }
@@ -2809,10 +2819,32 @@
   }
   function closePlayer(datum) { _activeDatum = null; hideSticky(); updateStickyPlayBtn(false); }
 
+  // Håller koll på pågående play()-promises per datum för att förhindra race conditions
+  const _playingPromise = {};
+
+  async function _stopAudio(datum) {
+    const a = audioState[datum];
+    if (!a) return;
+    // Vänta på att eventuell pending play()-promise löser sig innan vi pausar
+    // Annars kastas AbortError och knappen fastnar i spinner-läge
+    if (_playingPromise[datum]) {
+      try { await _playingPromise[datum]; } catch (e) { /* ignorera */ }
+      _playingPromise[datum] = null;
+    }
+    if (!a.paused) a.pause();
+    setBtns(datum, PLAY_SVG, false);
+  }
+
   function toggleAudio(datum) {
+    // Stoppa alla andra aktiva/laddande ljudspår
     Object.keys(audioState).forEach(d => {
-      if (d !== datum && audioState[d] && !audioState[d].paused) { audioState[d].pause(); closePlayer(d); setBtns(d, PLAY_SVG, false); }
+      if (d !== datum) {
+        _stopAudio(d).then(() => {
+          if (_activeDatum === d) { closePlayer(d); }
+        });
+      }
     });
+
     if (!audioState[datum]) {
       const a = new Audio();
       a.muted = !!window._globalMuted;
@@ -2822,16 +2854,36 @@
       a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
       a.addEventListener('ended', () => { closePlayer(datum); setBtns(datum, PLAY_SVG, false); updatePlayerUI(datum, 0, a.duration); });
+      // Fånga nätverksfel och återställ knappen
+      a.addEventListener('error', () => { 
+        _playingPromise[datum] = null;
+        setBtns(datum, PLAY_SVG, false); 
+        if (_activeDatum === datum) { closePlayer(datum); }
+      });
       audioState[datum] = a;
     }
+
     const audio = audioState[datum];
     if (audio.paused) {
       setBtns(datum, SPIN_SVG, true);
-      audio.play().then(() => {}).catch(err => { console.warn('Play failed:', err); setBtns(datum, PLAY_SVG, false); });
+      const p = audio.play();
+      _playingPromise[datum] = p;
+      if (p && typeof p.then === 'function') {
+        p.then(() => {
+          if (_playingPromise[datum] === p) _playingPromise[datum] = null;
+        }).catch(err => {
+          _playingPromise[datum] = null;
+          // AbortError uppstår när vi pausar mitt i en play() — ignorera det lugnt
+          if (err.name !== 'AbortError') {
+            console.warn('Play failed:', err);
+            setBtns(datum, PLAY_SVG, false);
+          }
+        });
+      }
     } else {
-      audio.pause();
-      setBtns(datum, PLAY_SVG, false);
-      updateStickyPlayBtn(false);
+      _stopAudio(datum).then(() => {
+        if (_activeDatum === datum) updateStickyPlayBtn(false);
+      });
     }
   }
 
