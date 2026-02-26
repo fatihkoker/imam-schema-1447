@@ -2545,9 +2545,11 @@
   let _miniTimer = null;
   window.addEventListener('scroll', () => {
     if (!_activeDatum || _seekActive) return;
+    const p = document.getElementById('sticky-player');
+    if (!p || !p.classList.contains('visible') || p.classList.contains('mini-mode')) return;
     clearTimeout(_miniTimer);
     clearTimeout(_autoMiniTimer);
-    _miniTimer = setTimeout(() => { if (!_seekActive) miniSticky(); }, 150);
+    miniSticky();
   }, { passive: true });
 
   async function navigateTo(datum) {
