@@ -2951,10 +2951,9 @@
 
       a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
       a.addEventListener('playing',  () => {
-        if (a._stopping) return; // stopp begärdes — ignorera playing-event
+        if (a._stopping) return;
         setBtns(row.datum, PAUSE_SVG, true);
-        openPlayer(row.datum);
-        // Unmute innan analyser kopplas — annars kan ljudet förbli tyst
+        if (_activeDatum !== row.datum) openPlayer(row.datum);
         if (!window._globalMuted) a.muted = false;
         if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
       });
@@ -3619,15 +3618,31 @@
         };
         const color = IMAM_COLORS[row.imam] || '#24645d';
         const initials = row.imamLabel.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#0f1614"/><rect width="512" height="512" fill="${color}" opacity="0.3"/><circle cx="256" cy="210" r="130" fill="${color}"/><text x="256" y="258" font-family="system-ui" font-size="110" font-weight="700" fill="white" text-anchor="middle">${initials}</text><text x="256" y="375" font-family="system-ui" font-size="38" fill="rgba(255,255,255,0.7)" text-anchor="middle">Natt ${row.day}</text><text x="256" y="422" font-family="system-ui" font-size="28" fill="rgba(255,255,255,0.4)" text-anchor="middle">Tarawih · Kämpingehallen</text></svg>`;
-        const artUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: row.imamLabel,
-          artist: 'Natt ' + row.day + ' · ' + row.surahs,
-          album: 'Tarawih — Kämpingehallen Ramadan 2026',
-          artwork: [{ src: artUrl, sizes: '512x512', type: 'image/svg+xml' }]
-        });
-        // Sätt playbackState direkt — iOS behöver detta för att tillåta bakgrundsuppspelning
+        // Använd endast ASCII i SVG — btoa() kraschar på icke-ASCII (svenska tecken etc)
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">'
+          + '<rect width="512" height="512" fill="#0f1614"/>'
+          + '<rect width="512" height="512" fill="' + color + '" opacity="0.3"/>'
+          + '<circle cx="256" cy="210" r="130" fill="' + color + '"/>'
+          + '<text x="256" y="258" font-family="system-ui" font-size="110" font-weight="700" fill="white" text-anchor="middle">' + initials + '</text>'
+          + '<text x="256" y="380" font-family="system-ui" font-size="40" fill="rgba(255,255,255,0.7)" text-anchor="middle">Natt ' + row.day + '</text>'
+          + '</svg>';
+        // btoa() är säker nu — inga icke-ASCII tecken i strängen
+        const artUrl = 'data:image/svg+xml;base64,' + btoa(svg);
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: row.imamLabel,
+            artist: 'Natt ' + row.day,
+            album: 'Tarawih Kampingehallen 2026',
+            artwork: [{ src: artUrl, sizes: '512x512', type: 'image/svg+xml' }]
+          });
+        } catch(e) {
+          // MediaMetadata misslyckades — sätt utan artwork
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: row.imamLabel,
+            artist: 'Natt ' + row.day,
+            album: 'Tarawih Kampingehallen 2026'
+          });
+        }
         navigator.mediaSession.playbackState = 'playing';
         navigator.mediaSession.setActionHandler('play', () => {
           const a = audioState[datum];
@@ -3718,7 +3733,8 @@
         a.addEventListener('playing',  () => {
           if (a._stopping) return;
           setBtns(datum, PAUSE_SVG, true);
-          openPlayer(datum);
+          // openPlayer bara om detta datum inte redan är aktivt — annars kraschar vid resume
+          if (_activeDatum !== datum) openPlayer(datum);
           if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
           if (window._connectAnalyser) window._connectAnalyser(datum, a);
         });
