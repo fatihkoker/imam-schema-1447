@@ -2940,12 +2940,11 @@
 
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
-      const domEl = document.getElementById('bg-audio-el');
-      const a = domEl || new Audio();
-      a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
+      const a = new Audio();
+      a.crossOrigin = 'anonymous';
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
-      a.muted = true; // muted tillåts alltid av webbläsaren
+      a.muted = true;
       a.src = audioUrls[row.datum];
 
       // Registrera direkt så att toggleAudio/closePlayer fungerar korrekt
@@ -3259,26 +3258,11 @@
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
 
-    // Återuppta AudioContext + audio när appen kommer tillbaka i förgrunden
-    // (iOS Safari pausar AudioContext när skärmen låses eller appen minimeras)
+    // Återuppta AudioContext när appen kommer tillbaka i förgrunden
+    // (iOS Safari suspenderar AudioContext vid skärmlås — men audio fortsätter spela)
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         if (window._resumeAudioCtx) window._resumeAudioCtx();
-        if (_activeDatum && audioState[_activeDatum]) {
-          const a = audioState[_activeDatum];
-          // iOS kan ha pausat audio tyst i bakgrunden — starta om om det borde spelas
-          if (a.paused && !a._stopping && !a._userPaused) {
-            a.play().catch(() => {});
-          } else if (!a.paused) {
-            if (window._resumeAudioCtx) window._resumeAudioCtx();
-            if (window._connectAnalyser) window._connectAnalyser(_activeDatum, a);
-          }
-        }
-      } else {
-        // Gå till bakgrunden — markera att audio fortfarande ska spela
-        if (_activeDatum && audioState[_activeDatum]) {
-          audioState[_activeDatum]._userPaused = audioState[_activeDatum].paused;
-        }
       }
     });
 
@@ -3636,11 +3620,17 @@
         });
         navigator.mediaSession.setActionHandler('play', () => {
           const a = audioState[datum];
-          if (a && a.paused) a.play().catch(() => {});
+          if (a && a.paused) {
+            a.play().catch(() => {});
+            navigator.mediaSession.playbackState = 'playing';
+          }
         });
         navigator.mediaSession.setActionHandler('pause', () => {
           const a = audioState[datum];
-          if (a && !a.paused) a.pause();
+          if (a && !a.paused) {
+            a.pause();
+            navigator.mediaSession.playbackState = 'paused';
+          }
         });
         // nexttrack/previoustrack krävs av iOS för att hålla MediaSession levande i bakgrunden
         navigator.mediaSession.setActionHandler('nexttrack', () => {
@@ -3682,7 +3672,6 @@
   function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return Promise.resolve();
-    a._userPaused = true; // användaren pausade medvetet — återuppta inte automatiskt
     const pending = _playingPromise[datum];
     _playingPromise[datum] = null;
     if (pending) {
@@ -3716,11 +3705,8 @@
       }
 
       if (!audioState[datum]) {
-        // Använd DOM <audio>-element — iOS Safari kräver detta för bakgrundsuppspelning
-        // new Audio() är ett "detached" element och stoppas av iOS när appen minimeras
-        const domEl = document.getElementById('bg-audio-el');
-        const a = domEl || new Audio();
-        a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
+        const a = new Audio();
+        a.crossOrigin = 'anonymous';
         a.preload = 'auto';
         a.setAttribute('playsinline', '');
         a.muted = !!window._globalMuted;
@@ -3728,13 +3714,13 @@
         a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
         a.addEventListener('playing',  () => {
           if (a._stopping) return;
-          console.log('[WAVE] playing event fired, _isIOS=', window._isIOS, '_connectAnalyser=', typeof window._connectAnalyser);
           setBtns(datum, PAUSE_SVG, true);
           openPlayer(datum);
+          if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
           if (window._connectAnalyser) window._connectAnalyser(datum, a);
         });
         a.addEventListener('pause', () => {
-          // Kör bara stopWaveDraw om spelaren fortfarande är aktiv (inte stängd)
+          if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
           if (_activeDatum === datum && window._stopWaveDraw) window._stopWaveDraw();
         });
         a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
@@ -3759,7 +3745,6 @@
       if (audio.paused) {
         // SPELA — frigör låset DIREKT så paus-knappen inte fryser
         _toggleBusy = false;
-        audio._userPaused = false; // användaren spelar medvetet — tillåt auto-resumé
         setBtns(datum, SPIN_SVG, true);
         // Skapa/resumea AudioContext direkt i user gesture (krävs på mobil)
         if (window._primeAudioCtx) window._primeAudioCtx();
@@ -4838,9 +4823,6 @@
   </div>
 
 </div>
-
-<!-- iOS Safari kräver ett <audio>-element i DOM för bakgrundsuppspelning -->
-<audio id="bg-audio-el" preload="none" playsinline style="display:none"></audio>
 
 </body>
 </html>
