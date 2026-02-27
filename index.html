@@ -937,7 +937,7 @@
     [data-theme="light"] .sp-mini-ctrl:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
     .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; transition: transform 0.46s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease; }
+    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; }
     /* Gold top line */
     .player-full::before {
       content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -2810,9 +2810,33 @@
     if (spDur) spDur.textContent = fmtTime(duration);
   }
 
-  function showSticky() { if (!_activeDatum) return; const p = document.getElementById('sticky-player'); p.classList.add('visible'); p.classList.remove('mini-mode'); }
-  function hideSticky() { const p = document.getElementById('sticky-player'); p.classList.remove('visible'); p.classList.remove('mini-mode'); }
-  function miniSticky() { if (!_activeDatum) return; const p = document.getElementById('sticky-player'); p.classList.add('visible'); p.classList.add('mini-mode'); }
+  function showSticky() {
+    if (!_activeDatum) return;
+    const p = document.getElementById('sticky-player');
+    p.classList.remove('is-collapsing');
+    p.classList.add('visible');
+    p.classList.remove('mini-mode');
+  }
+  function hideSticky() {
+    const p = document.getElementById('sticky-player');
+    p.classList.remove('visible');
+    p.classList.remove('mini-mode');
+    p.classList.remove('is-collapsing');
+  }
+  function miniSticky() {
+    if (!_activeDatum) return;
+    const p = document.getElementById('sticky-player');
+    if (p.classList.contains('mini-mode')) return;
+    p.classList.add('visible');
+    p.classList.remove('mini-mode');
+    // Force browser to register start state, then animate to mini
+    void p.offsetHeight;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        p.classList.add('mini-mode');
+      });
+    });
+  }
 
   let _miniTimer = null;
   window.addEventListener('scroll', () => {
