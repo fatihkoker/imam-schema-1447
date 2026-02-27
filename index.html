@@ -2941,7 +2941,6 @@
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
-      a.crossOrigin = 'anonymous';
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
       a.muted = true;
@@ -3613,31 +3612,22 @@
     if ('mediaSession' in navigator) {
       const row = SCHEDULE.find(r => r.datum === datum);
       if (row) {
-        // Generera SVG-artwork per imam — iOS kräver artwork för att visa låsskärms-widget
-        // Utan widget pausar iOS Safari ljud direkt vid skärmlås
         const IMAM_COLORS = {
-          abdurrahman: '#e8630a', saed: '#d4a800', noor: '#2980b9',
-          abdul: '#555555', mohammed: '#219150', yacquub: '#7d3aac',
-          abdelsalam: '#7b3f00', hatem: '#2d6a4f', ibrahim: '#1a3a6b'
+          abdurrahman:'#e8630a', saed:'#d4a800', noor:'#2980b9',
+          abdul:'#555555', mohammed:'#219150', yacquub:'#7d3aac',
+          abdelsalam:'#7b3f00', hatem:'#2d6a4f', ibrahim:'#1a3a6b'
         };
         const color = IMAM_COLORS[row.imam] || '#24645d';
-        const initials = row.imamLabel.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
-          <rect width="512" height="512" fill="#0f1614"/>
-          <rect width="512" height="512" fill="${color}" opacity="0.25"/>
-          <circle cx="256" cy="210" r="130" fill="${color}" opacity="0.9"/>
-          <text x="256" y="258" font-family="system-ui,sans-serif" font-size="110" font-weight="700" fill="white" text-anchor="middle">${initials}</text>
-          <text x="256" y="370" font-family="system-ui,sans-serif" font-size="36" fill="rgba(255,255,255,0.7)" text-anchor="middle">Natt ${row.day}</text>
-          <text x="256" y="420" font-family="system-ui,sans-serif" font-size="28" fill="rgba(255,255,255,0.4)" text-anchor="middle">Tarawih · Kämpingehallen</text>
-        </svg>`;
-        const artworkUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-
+        const initials = row.imamLabel.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#0f1614"/><rect width="512" height="512" fill="${color}" opacity="0.3"/><circle cx="256" cy="210" r="130" fill="${color}"/><text x="256" y="258" font-family="system-ui" font-size="110" font-weight="700" fill="white" text-anchor="middle">${initials}</text><text x="256" y="375" font-family="system-ui" font-size="38" fill="rgba(255,255,255,0.7)" text-anchor="middle">Natt ${row.day}</text><text x="256" y="422" font-family="system-ui" font-size="28" fill="rgba(255,255,255,0.4)" text-anchor="middle">Tarawih · Kämpingehallen</text></svg>`;
+        const artUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
         navigator.mediaSession.metadata = new MediaMetadata({
           title: row.imamLabel,
-          artist: (T[_currentLang].night || 'Natt') + ' ' + row.day + ' · ' + row.surahs,
+          artist: 'Natt ' + row.day + ' · ' + row.surahs,
           album: 'Tarawih — Kämpingehallen Ramadan 2026',
-          artwork: [{ src: artworkUrl, sizes: '512x512', type: 'image/svg+xml' }]
+          artwork: [{ src: artUrl, sizes: '512x512', type: 'image/svg+xml' }]
         });
+        // Sätt playbackState direkt — iOS behöver detta för att tillåta bakgrundsuppspelning
         navigator.mediaSession.playbackState = 'playing';
         navigator.mediaSession.setActionHandler('play', () => {
           const a = audioState[datum];
@@ -3693,20 +3683,13 @@
   function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return Promise.resolve();
-    const pending = _playingPromise[datum];
+    // Sätt _stopping FÖRE pause() — hindrar playing-event från att öppna spelaren igen
+    a._stopping = true;
     _playingPromise[datum] = null;
-    if (pending) {
-      a._stopping = true;
-      return pending
-        .catch(() => {})
-        .then(() => {
-          if (!a.paused) try { a.pause(); } catch(e) {}
-          a._stopping = false;
-          setBtns(datum, PLAY_SVG, false);
-        });
-    }
-    if (!a.paused) try { a.pause(); } catch(e) {}
+    try { a.pause(); } catch(e) {}
     setBtns(datum, PLAY_SVG, false);
+    // Återställ flaggan i nästa microtask när alla events kört klart
+    Promise.resolve().then(() => { a._stopping = false; });
     return Promise.resolve();
   }
 
@@ -3727,7 +3710,6 @@
 
       if (!audioState[datum]) {
         const a = new Audio();
-        a.crossOrigin = 'anonymous';
         a.preload = 'auto';
         a.setAttribute('playsinline', '');
         a.muted = !!window._globalMuted;
