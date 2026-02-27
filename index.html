@@ -2940,9 +2940,11 @@
 
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
-      const a = new Audio();
+      const domEl = document.getElementById('bg-audio-el');
+      const a = domEl || new Audio();
       a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
       a.preload = 'auto';
+      a.setAttribute('playsinline', '');
       a.muted = true; // muted tillåts alltid av webbläsaren
       a.src = audioUrls[row.datum];
 
@@ -3044,7 +3046,7 @@
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
-      const BAR_COUNT  = 32;
+      const BAR_COUNT  = 52;
       const MIN_SCALE  = 0.04;  // minsta stapelhöjd i vila
       const COL_H      = 38;    // px — matchar .sw-bar height i CSS
       const HOLD_FRAMES = 30;   // ~0.5s @ 60fps peak stannar kvar
@@ -3088,9 +3090,9 @@
       const sources = {};
 
       // ── CSS-animation fallback (iOS) ──
-      const PEAK_CSS = [0.25,0.30,0.38,0.46,0.54,0.62,0.70,0.76,0.82,0.86,0.89,0.91,0.92,0.91,0.90,0.91,0.91,0.90,0.91,0.92,0.91,0.89,0.86,0.82,0.76,0.70,0.62,0.54,0.46,0.38,0.30,0.25];
-      const DUR_CSS  = [1.0,0.9,0.85,0.80,0.75,0.82,0.70,0.78,0.72,0.68,0.74,0.70,0.76,0.72,0.68,0.74,0.74,0.68,0.72,0.76,0.70,0.74,0.68,0.72,0.78,0.70,0.82,0.75,0.80,0.85,0.90,1.0];
-      const DLY_CSS  = [0,0.05,0.10,0.15,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.28,0.16,0.03,0.22,0.14,0.06,0.25,0.18,0.04,0.12,0.20,0.08,0.15,0.10,0.05,0];
+      const PEAK_CSS = [0.20,0.25,0.30,0.35,0.40,0.46,0.52,0.58,0.64,0.70,0.75,0.80,0.84,0.87,0.90,0.91,0.92,0.91,0.90,0.91,0.90,0.91,0.92,0.91,0.90,0.88,0.86,0.82,0.78,0.74,0.70,0.66,0.62,0.58,0.54,0.50,0.46,0.42,0.38,0.36,0.34,0.36,0.38,0.34,0.30,0.36,0.32,0.28,0.30,0.26,0.24,0.20];
+      const DUR_CSS  = [1.0,0.95,0.90,0.85,0.82,0.80,0.78,0.75,0.72,0.70,0.68,0.72,0.70,0.75,0.72,0.68,0.70,0.74,0.70,0.76,0.68,0.74,0.70,0.76,0.72,0.68,0.70,0.74,0.72,0.76,0.70,0.74,0.72,0.76,0.80,0.78,0.82,0.80,0.85,0.82,0.88,0.85,0.90,0.88,0.92,0.90,0.94,0.92,0.96,0.94,0.97,1.0];
+      const DLY_CSS  = [0,0.05,0.10,0.08,0.15,0.12,0.20,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.10,0.22,0.08,0.16,0.04,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0.16,0.08,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0];
       function startCSS() {
         bars.forEach((b, i) => {
           b.style.setProperty('--sw-floor', MIN_SCALE);
@@ -3199,10 +3201,36 @@
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
-        smooth.fill(0);
-        peakVal.fill(0);
-        peakHold.fill(0);
-        stopCSS();
+        // Mjuk fall-animation — staplarna glider ner istället för att snäppa till botten
+        let fallRafId = null;
+        const FALL_SPEED = 0.045;
+        const PEAK_FALL  = 0.022;
+        function fallDown() {
+          let anyVisible = false;
+          for (let i = 0; i < BAR_COUNT; i++) {
+            if (smooth[i] > MIN_SCALE) {
+              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.6 + smooth[i] * 0.8));
+              bars[i].style.transform = 'scaleY(' + smooth[i] + ')';
+              anyVisible = true;
+            }
+            if (peakVal[i] > MIN_SCALE) {
+              peakVal[i] = Math.max(MIN_SCALE, peakVal[i] - PEAK_FALL);
+              peakHold[i] = 0;
+              peakEls[i].style.bottom = Math.round(peakVal[i] * COL_H) + 'px';
+              peakEls[i].style.top = 'auto';
+              anyVisible = true;
+            }
+          }
+          if (anyVisible) {
+            fallRafId = requestAnimationFrame(fallDown);
+          } else {
+            smooth.fill(0);
+            peakVal.fill(0);
+            peakHold.fill(0);
+            stopCSS();
+          }
+        }
+        fallRafId = requestAnimationFrame(fallDown);
       };
 
       window._resumeAudioCtx = function() {
@@ -3238,10 +3266,18 @@
         if (window._resumeAudioCtx) window._resumeAudioCtx();
         if (_activeDatum && audioState[_activeDatum]) {
           const a = audioState[_activeDatum];
-          // Om audio oväntat pausades av systemet — starta om
-          if (!a.paused) {
+          // iOS kan ha pausat audio tyst i bakgrunden — starta om om det borde spelas
+          if (a.paused && !a._stopping && !a._userPaused) {
+            a.play().catch(() => {});
+          } else if (!a.paused) {
             if (window._resumeAudioCtx) window._resumeAudioCtx();
+            if (window._connectAnalyser) window._connectAnalyser(_activeDatum, a);
           }
+        }
+      } else {
+        // Gå till bakgrunden — markera att audio fortfarande ska spela
+        if (_activeDatum && audioState[_activeDatum]) {
+          audioState[_activeDatum]._userPaused = audioState[_activeDatum].paused;
         }
       }
     });
@@ -3646,11 +3682,10 @@
   function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return Promise.resolve();
+    a._userPaused = true; // användaren pausade medvetet — återuppta inte automatiskt
     const pending = _playingPromise[datum];
     _playingPromise[datum] = null;
     if (pending) {
-      // Vänta på att play()-promise resolvar SEDAN pausa — förhindrar AbortError-glitch.
-      // Sätt en flagga så att play-resolve inte startar om uppspelning.
       a._stopping = true;
       return pending
         .catch(() => {})
@@ -3681,9 +3716,13 @@
       }
 
       if (!audioState[datum]) {
-        const a = new Audio();
+        // Använd DOM <audio>-element — iOS Safari kräver detta för bakgrundsuppspelning
+        // new Audio() är ett "detached" element och stoppas av iOS när appen minimeras
+        const domEl = document.getElementById('bg-audio-el');
+        const a = domEl || new Audio();
         a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
         a.preload = 'auto';
+        a.setAttribute('playsinline', '');
         a.muted = !!window._globalMuted;
         a.src = audioUrls[datum];
         a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
@@ -3720,6 +3759,7 @@
       if (audio.paused) {
         // SPELA — frigör låset DIREKT så paus-knappen inte fryser
         _toggleBusy = false;
+        audio._userPaused = false; // användaren spelar medvetet — tillåt auto-resumé
         setBtns(datum, SPIN_SVG, true);
         // Skapa/resumea AudioContext direkt i user gesture (krävs på mobil)
         if (window._primeAudioCtx) window._primeAudioCtx();
@@ -4798,6 +4838,9 @@
   </div>
 
 </div>
+
+<!-- iOS Safari kräver ett <audio>-element i DOM för bakgrundsuppspelning -->
+<audio id="bg-audio-el" preload="none" playsinline style="display:none"></audio>
 
 </body>
 </html>
