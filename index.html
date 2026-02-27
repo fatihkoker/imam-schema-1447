@@ -1103,7 +1103,7 @@
 
     /* Extras row */
     .sp-extras-row {
-      display: flex; align-items: flex-end;
+      display: flex; align-items: center;
       justify-content: space-between; padding: 0 4px;
     }
     .sp-speed-chip {
@@ -1203,7 +1203,7 @@
 
     /* ══ SLEEP TIMER ══ */
     .sp-sleep-btn {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.05);
       color: rgba(255,255,255,0.35); cursor: pointer;
@@ -2941,7 +2941,8 @@
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
-      a.crossOrigin = 'anonymous'; // krävs för Web Audio API på cross-origin mp3 (iOS Safari)
+      a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
+      a.preload = 'auto';
       a.muted = true; // muted tillåts alltid av webbläsaren
       a.src = audioUrls[row.datum];
 
@@ -3043,7 +3044,7 @@
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
-      const BAR_COUNT  = 52;
+      const BAR_COUNT  = 32;
       const MIN_SCALE  = 0.04;  // minsta stapelhöjd i vila
       const COL_H      = 38;    // px — matchar .sw-bar height i CSS
       const HOLD_FRAMES = 30;   // ~0.5s @ 60fps peak stannar kvar
@@ -3087,9 +3088,9 @@
       const sources = {};
 
       // ── CSS-animation fallback (iOS) ──
-      const PEAK_CSS = [0.20,0.25,0.30,0.35,0.40,0.46,0.52,0.58,0.64,0.70,0.75,0.80,0.84,0.87,0.90,0.91,0.92,0.91,0.90,0.91,0.90,0.91,0.92,0.91,0.90,0.88,0.86,0.82,0.78,0.74,0.70,0.66,0.62,0.58,0.54,0.50,0.46,0.42,0.38,0.36,0.34,0.36,0.38,0.34,0.30,0.36,0.32,0.28,0.30,0.26,0.24,0.20];
-      const DUR_CSS  = [1.0,0.95,0.90,0.85,0.82,0.80,0.78,0.75,0.72,0.70,0.68,0.72,0.70,0.75,0.72,0.68,0.70,0.74,0.70,0.76,0.68,0.74,0.70,0.76,0.72,0.68,0.70,0.74,0.72,0.76,0.70,0.74,0.72,0.76,0.80,0.78,0.82,0.80,0.85,0.82,0.88,0.85,0.90,0.88,0.92,0.90,0.94,0.92,0.96,0.94,0.97,1.0];
-      const DLY_CSS  = [0,0.05,0.10,0.08,0.15,0.12,0.20,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.10,0.22,0.08,0.16,0.04,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0.16,0.08,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0];
+      const PEAK_CSS = [0.25,0.30,0.38,0.46,0.54,0.62,0.70,0.76,0.82,0.86,0.89,0.91,0.92,0.91,0.90,0.91,0.91,0.90,0.91,0.92,0.91,0.89,0.86,0.82,0.76,0.70,0.62,0.54,0.46,0.38,0.30,0.25];
+      const DUR_CSS  = [1.0,0.9,0.85,0.80,0.75,0.82,0.70,0.78,0.72,0.68,0.74,0.70,0.76,0.72,0.68,0.74,0.74,0.68,0.72,0.76,0.70,0.74,0.68,0.72,0.78,0.70,0.82,0.75,0.80,0.85,0.90,1.0];
+      const DLY_CSS  = [0,0.05,0.10,0.15,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.28,0.16,0.03,0.22,0.14,0.06,0.25,0.18,0.04,0.12,0.20,0.08,0.15,0.10,0.05,0];
       function startCSS() {
         bars.forEach((b, i) => {
           b.style.setProperty('--sw-floor', MIN_SCALE);
@@ -3183,7 +3184,10 @@
             const src = actx.createMediaElementSource(audioEl);
             src.connect(analyser);
             sources[datum] = src;
-          } catch(e) { startCSS(); return; }
+          } catch(e) {
+            // crossOrigin ej satt eller CORS-fel — kör CSS-animation istället
+            startCSS(); return;
+          }
         }
         const go = () => { running = true; draw(); };
         if (actx.state === 'suspended') {
@@ -3195,37 +3199,10 @@
         running = false;
         cancelAnimationFrame(rafId);
         rafId = null;
-        // Smooth fall-down animation instead of instant snap
-        let fallRafId = null;
-        const FALL_SPEED = 0.045; // how fast bars fall per frame
-        const PEAK_FALL_SPEED = 0.022;
-        function fallDown() {
-          let anyVisible = false;
-          for (let i = 0; i < BAR_COUNT; i++) {
-            if (smooth[i] > MIN_SCALE) {
-              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.6 + smooth[i] * 0.8));
-              bars[i].style.transform = 'scaleY(' + smooth[i] + ')';
-              anyVisible = true;
-            }
-            if (peakVal[i] > MIN_SCALE) {
-              peakVal[i] = Math.max(MIN_SCALE, peakVal[i] - PEAK_FALL_SPEED);
-              peakHold[i] = 0;
-              const peakBottom = Math.round(peakVal[i] * COL_H);
-              peakEls[i].style.bottom = peakBottom + 'px';
-              peakEls[i].style.top = 'auto';
-              anyVisible = true;
-            }
-          }
-          if (anyVisible) {
-            fallRafId = requestAnimationFrame(fallDown);
-          } else {
-            smooth.fill(0);
-            peakVal.fill(0);
-            peakHold.fill(0);
-            stopCSS();
-          }
-        }
-        fallRafId = requestAnimationFrame(fallDown);
+        smooth.fill(0);
+        peakVal.fill(0);
+        peakHold.fill(0);
+        stopCSS();
       };
 
       window._resumeAudioCtx = function() {
@@ -3253,6 +3230,21 @@
 
     const playBtn = document.getElementById('sticky-play-btn');
     if (playBtn) playBtn.addEventListener('click', e => { if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation(); });
+
+    // Återuppta AudioContext + audio när appen kommer tillbaka i förgrunden
+    // (iOS Safari pausar AudioContext när skärmen låses eller appen minimeras)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        if (window._resumeAudioCtx) window._resumeAudioCtx();
+        if (_activeDatum && audioState[_activeDatum]) {
+          const a = audioState[_activeDatum];
+          // Om audio oväntat pausades av systemet — starta om
+          if (!a.paused) {
+            if (window._resumeAudioCtx) window._resumeAudioCtx();
+          }
+        }
+      }
+    });
 
     // Klick på mini-inner → expandera till full (men inte play/skip-knappar)
     document.querySelector('.sp-mini-inner')?.addEventListener('click', e => {
@@ -3614,6 +3606,23 @@
           const a = audioState[datum];
           if (a && !a.paused) a.pause();
         });
+        // nexttrack/previoustrack krävs av iOS för att hålla MediaSession levande i bakgrunden
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          const a = audioState[datum];
+          if (a) a.currentTime = Math.min((a.duration || 0), a.currentTime + 30);
+        });
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          const a = audioState[datum];
+          if (a) a.currentTime = Math.max(0, a.currentTime - 30);
+        });
+        navigator.mediaSession.setActionHandler('seekforward', (d) => {
+          const a = audioState[datum];
+          if (a) a.currentTime = Math.min((a.duration || 0), a.currentTime + (d.seekOffset || 30));
+        });
+        navigator.mediaSession.setActionHandler('seekbackward', (d) => {
+          const a = audioState[datum];
+          if (a) a.currentTime = Math.max(0, a.currentTime - (d.seekOffset || 30));
+        });
       }
     }
 
@@ -3673,7 +3682,8 @@
 
       if (!audioState[datum]) {
         const a = new Audio();
-        a.crossOrigin = 'anonymous'; // krävs för Web Audio API på cross-origin mp3 (iOS Safari)
+        a.crossOrigin = 'anonymous'; // krävs för Web Audio API — GitHub Pages skickar CORS *
+        a.preload = 'auto';
         a.muted = !!window._globalMuted;
         a.src = audioUrls[datum];
         a.addEventListener('waiting',  () => setBtns(datum, SPIN_SVG, true));
@@ -4700,9 +4710,9 @@
         <span class="sp-ctrl-lbl" id="sp-prev-label"></span>
       </button>
       <button class="sp-ctrl-btn" id="sp-skip-back-btn" data-i18n-title="skipBack" title="−30 sekunder">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <polyline points="7.5,1.5 4,4 7.5,6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="12.5,4 4,12 12.5,20"/>
+          <polygon points="20.5,4 12,12 20.5,20"/>
         </svg>
         <span class="sp-ctrl-lbl">−30s</span>
       </button>
@@ -4722,9 +4732,9 @@
       </button>
 
       <button class="sp-ctrl-btn" id="sp-skip-fwd-btn" data-i18n-title="skipFwd" title="+30 sekunder">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 4c4.42 0 8 3.58 8 8s-3.58 8-8 8-8-3.58-8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <polyline points="16.5,1.5 20,4 16.5,6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="3.5,4 12,12 3.5,20"/>
+          <polygon points="11.5,4 20,12 11.5,20"/>
         </svg>
         <span class="sp-ctrl-lbl">+30s</span>
       </button>
@@ -4765,18 +4775,18 @@
       <!-- Mini controls -->
       <div class="sp-mini-controls">
         <button class="sp-mini-ctrl" id="sp-mini-skip-back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <polyline points="7.5,1.5 4,4 7.5,6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12.5,4 4,12 12.5,20"/>
+            <polygon points="20.5,4 12,12 20.5,20"/>
           </svg>
         </button>
         <button class="sp-mini-play" id="sp-mini-play">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>
         </button>
         <button class="sp-mini-ctrl" id="sp-mini-skip-fwd">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4c4.42 0 8 3.58 8 8s-3.58 8-8 8-8-3.58-8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <polyline points="16.5,1.5 20,4 16.5,6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="3.5,4 12,12 3.5,20"/>
+            <polygon points="11.5,4 20,12 11.5,20"/>
           </svg>
         </button>
       </div>
