@@ -1460,61 +1460,53 @@
 
     /* ── Fav chip animations ── */
 
-    /* POP IN: grows from a ball at left, overshoots like a bouncy ball rolling in */
+    /* POP IN: grows from a ball, quick start, soft landing */
     @keyframes favChipPopIn {
       0%   { transform: scale(0);    opacity: 0;   max-width: 0;     margin-right: 0; }
-      35%  { transform: scale(1.22); opacity: 1;   max-width: 200px; margin-right: 8px; }
-      58%  { transform: scale(0.90);               }
-      76%  { transform: scale(1.07);               }
-      90%  { transform: scale(0.97);               }
-      100% { transform: scale(1);                  max-width: 200px; margin-right: 8px; }
+      60%  { opacity: 1; }
+      100% { transform: scale(1);    opacity: 1;   max-width: 200px; margin-right: 8px; }
     }
 
-    /* FALL OUT: drops down and behind like falling off a shelf — translateY + scale shrink + fade */
+    /* FALL OUT: slides down and fades */
     @keyframes favChipFallOut {
-      0%   { transform: scale(1)    translateY(0px)  rotateX(0deg);   opacity: 1;   max-width: 200px; margin-right: 8px; }
-      20%  { transform: scale(1.05) translateY(-4px) rotateX(-8deg);  opacity: 1;   }
-      55%  { transform: scale(0.88) translateY(18px) rotateX(20deg);  opacity: 0.5; max-width: 120px; }
-      100% { transform: scale(0.6)  translateY(42px) rotateX(40deg);  opacity: 0;   max-width: 0;     margin-right: 0; }
+      0%   { transform: translateY(0)    scale(1);    opacity: 1;   max-width: 200px; margin-right: 8px; }
+      100% { transform: translateY(28px) scale(0.8);  opacity: 0;   max-width: 0;     margin-right: 0; }
     }
 
-    /* Siblings bounce RIGHT (pushed by ball rolling in) */
+    /* Siblings bounce RIGHT */
     @keyframes chipBounceRight {
       0%   { transform: translateX(0); }
-      25%  { transform: translateX(12px); }
-      50%  { transform: translateX(-5px); }
-      70%  { transform: translateX(3px); }
-      85%  { transform: translateX(-1px); }
+      30%  { transform: translateX(10px); }
+      60%  { transform: translateX(-3px); }
+      80%  { transform: translateX(2px); }
       100% { transform: translateX(0); }
     }
 
-    /* Siblings snap LEFT to fill gap (fav chip gone) */
-    @keyframes chipSnapLeft {
+    /* Siblings bounce LEFT */
+    @keyframes chipBounceLeft {
       0%   { transform: translateX(0); }
-      22%  { transform: translateX(-16px); }
-      48%  { transform: translateX(7px); }
-      68%  { transform: translateX(-3px); }
-      84%  { transform: translateX(1px); }
+      30%  { transform: translateX(-10px); }
+      60%  { transform: translateX(3px); }
+      80%  { transform: translateX(-2px); }
       100% { transform: translateX(0); }
     }
 
     .fav-chip-entering {
       display: inline-flex !important;
-      transform-origin: center center;
+      transform-origin: left center;
       overflow: hidden;
-      animation: favChipPopIn 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: favChipPopIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     .fav-chip-leaving {
-      transform-origin: center bottom;
+      transform-origin: center center;
       overflow: hidden;
-      perspective: 400px;
-      animation: favChipFallOut 0.44s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+      animation: favChipFallOut 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
     }
     .chip-nudge-right {
-      animation: chipBounceRight 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: chipBounceRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     .chip-nudge-left {
-      animation: chipSnapLeft 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: chipBounceLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     .fav-count-badge {
       background: #a84040; color: #fff;
@@ -1548,8 +1540,8 @@
     .moon-icon svg { display: block; }
 
     /* ── FILTER ── */
-    .filter-wrap { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .filter-wrap { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: margin-bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
     .filter-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip-bg); border: 1.5px solid transparent; border-radius: 30px; padding: 5px 12px 5px 8px; box-shadow: var(--chip-shadow); font-size: .78rem; font-weight: 500; font-family: inherit; cursor: pointer; color: var(--text); transition: all 0.2s ease; }
     .filter-chip:hover { box-shadow: 0 3px 12px rgba(0,0,0,.18); transform: translateY(-1px); }
     .filter-chip.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); box-shadow: 0 4px 14px rgba(26,74,68,.3); animation: chipPulse 3.2s ease-in-out infinite; }
@@ -2705,14 +2697,12 @@
         chip.classList.remove('fav-chip-entering');
       }, { once: true });
 
-      // Ball rolls in — delay siblings so the ball visibly hits them first
-      siblings.forEach((s, i) => {
+      // Siblings glide right
+      siblings.forEach(s => {
         s.classList.remove('chip-nudge-right', 'chip-nudge-left');
         void s.offsetWidth;
-        setTimeout(() => {
-          s.classList.add('chip-nudge-right');
-          s.addEventListener('animationend', () => s.classList.remove('chip-nudge-right'), { once: true });
-        }, 160 + i * 24);
+        s.classList.add('chip-nudge-right');
+        s.addEventListener('animationend', () => s.classList.remove('chip-nudge-right'), { once: true });
       });
 
     } else if (count === 0 && chip.style.display !== 'none') {
@@ -2724,14 +2714,12 @@
         chip.style.display = 'none';
       }, { once: true });
 
-      // Chip falls away — siblings snap left to fill the gap, staggered like dominoes
-      siblings.forEach((s, i) => {
+      // Siblings glide left
+      siblings.forEach(s => {
         s.classList.remove('chip-nudge-right', 'chip-nudge-left');
         void s.offsetWidth;
-        setTimeout(() => {
-          s.classList.add('chip-nudge-left');
-          s.addEventListener('animationend', () => s.classList.remove('chip-nudge-left'), { once: true });
-        }, 80 + i * 26);
+        s.classList.add('chip-nudge-left');
+        s.addEventListener('animationend', () => s.classList.remove('chip-nudge-left'), { once: true });
       });
 
       // Återställ filter om favs var aktivt
