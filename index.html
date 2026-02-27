@@ -1457,6 +1457,65 @@
     /* Favorit filter-chip */
     .filter-chip.fav-chip .fav-chip-heart { transition: color 0.2s; }
     .filter-chip.fav-chip.active .fav-chip-heart { color: #a84040; }
+
+    /* ── Fav chip animations ── */
+
+    /* POP IN: grows from a ball at left, overshoots like a bouncy ball rolling in */
+    @keyframes favChipPopIn {
+      0%   { transform: scale(0);    opacity: 0;   max-width: 0;     margin-right: 0; }
+      35%  { transform: scale(1.22); opacity: 1;   max-width: 200px; margin-right: 8px; }
+      58%  { transform: scale(0.90);               }
+      76%  { transform: scale(1.07);               }
+      90%  { transform: scale(0.97);               }
+      100% { transform: scale(1);                  max-width: 200px; margin-right: 8px; }
+    }
+
+    /* FALL OUT: drops down and behind like falling off a shelf — translateY + scale shrink + fade */
+    @keyframes favChipFallOut {
+      0%   { transform: scale(1)    translateY(0px)  rotateX(0deg);   opacity: 1;   max-width: 200px; margin-right: 8px; }
+      20%  { transform: scale(1.05) translateY(-4px) rotateX(-8deg);  opacity: 1;   }
+      55%  { transform: scale(0.88) translateY(18px) rotateX(20deg);  opacity: 0.5; max-width: 120px; }
+      100% { transform: scale(0.6)  translateY(42px) rotateX(40deg);  opacity: 0;   max-width: 0;     margin-right: 0; }
+    }
+
+    /* Siblings bounce RIGHT (pushed by ball rolling in) */
+    @keyframes chipBounceRight {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(12px); }
+      50%  { transform: translateX(-5px); }
+      70%  { transform: translateX(3px); }
+      85%  { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Siblings snap LEFT to fill gap (fav chip gone) */
+    @keyframes chipSnapLeft {
+      0%   { transform: translateX(0); }
+      22%  { transform: translateX(-16px); }
+      48%  { transform: translateX(7px); }
+      68%  { transform: translateX(-3px); }
+      84%  { transform: translateX(1px); }
+      100% { transform: translateX(0); }
+    }
+
+    .fav-chip-entering {
+      display: inline-flex !important;
+      transform-origin: center center;
+      overflow: hidden;
+      animation: favChipPopIn 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .fav-chip-leaving {
+      transform-origin: center bottom;
+      overflow: hidden;
+      perspective: 400px;
+      animation: favChipFallOut 0.44s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+    .chip-nudge-right {
+      animation: chipBounceRight 0.58s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .chip-nudge-left {
+      animation: chipSnapLeft 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
     .fav-count-badge {
       background: #a84040; color: #fff;
       font-size: 0.58rem; font-weight: 700;
@@ -1823,7 +1882,7 @@
   <!-- FILTER -->
   <div class="filter-wrap" id="filter-wrap">
     <div class="filter-chips" id="filter-chips">
-      <button class="filter-chip fav-chip" id="fav-filter-chip" data-imam="favs" onclick="toggleFilter('favs')">
+      <button class="filter-chip fav-chip" id="fav-filter-chip" data-imam="favs" onclick="toggleFilter('favs')" style="display:none">
         <span class="fav-chip-heart" data-i18n-title="favTip" style="display:flex;align-items:center;color:rgba(0,0,0,0.4);">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </span>
@@ -2624,12 +2683,66 @@
   }
 
   function updateFavChip() {
-    const count = getFavs().length;
-    const chip  = document.getElementById('fav-filter-chip');
+    const count    = getFavs().length;
+    const chip     = document.getElementById('fav-filter-chip');
     if (!chip) return;
-    const badge = chip.querySelector('.fav-count-badge');
-    if (badge) badge.textContent = count > 0 ? count : '';
-    badge.style.display = count > 0 ? '' : 'none';
+    const badge    = chip.querySelector('.fav-count-badge');
+    const wasHidden = chip.style.display === 'none' || chip.style.display === '';
+    const siblings  = Array.from(chip.parentElement.querySelectorAll('.filter-chip:not(#fav-filter-chip)'));
+
+    if (badge) {
+      badge.textContent = count > 0 ? count : '';
+      badge.style.display = count > 0 ? '' : 'none';
+    }
+
+    if (count > 0 && (chip.style.display === 'none' || chip.style.display === '')) {
+      // — POP IN —
+      chip.style.display = 'inline-flex';
+      chip.classList.remove('fav-chip-leaving');
+      void chip.offsetWidth; // force reflow
+      chip.classList.add('fav-chip-entering');
+      chip.addEventListener('animationend', () => {
+        chip.classList.remove('fav-chip-entering');
+      }, { once: true });
+
+      // Ball rolls in — delay siblings so the ball visibly hits them first
+      siblings.forEach((s, i) => {
+        s.classList.remove('chip-nudge-right', 'chip-nudge-left');
+        void s.offsetWidth;
+        setTimeout(() => {
+          s.classList.add('chip-nudge-right');
+          s.addEventListener('animationend', () => s.classList.remove('chip-nudge-right'), { once: true });
+        }, 160 + i * 24);
+      });
+
+    } else if (count === 0 && chip.style.display !== 'none') {
+      // — POP OUT —
+      chip.classList.remove('fav-chip-entering');
+      chip.classList.add('fav-chip-leaving');
+      chip.addEventListener('animationend', () => {
+        chip.classList.remove('fav-chip-leaving');
+        chip.style.display = 'none';
+      }, { once: true });
+
+      // Chip falls away — siblings snap left to fill the gap, staggered like dominoes
+      siblings.forEach((s, i) => {
+        s.classList.remove('chip-nudge-right', 'chip-nudge-left');
+        void s.offsetWidth;
+        setTimeout(() => {
+          s.classList.add('chip-nudge-left');
+          s.addEventListener('animationend', () => s.classList.remove('chip-nudge-left'), { once: true });
+        }, 80 + i * 26);
+      });
+
+      // Återställ filter om favs var aktivt
+      if (chip.classList.contains('active')) {
+        chip.classList.remove('active');
+        if (typeof activeFilter !== 'undefined' && activeFilter === 'favs') {
+          activeFilter = null;
+          if (typeof applyFilter === 'function') applyFilter();
+        }
+      }
+    }
   }
 
   function syncAllFavBtns() {
