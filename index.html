@@ -842,7 +842,7 @@
       padding: 4px 18px 20px;
       transform: translateY(100%);
       opacity: 0;
-      transition: transform 0.48s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
+      transition: transform 0.48s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease;
       will-change: transform;
       pointer-events: none;
     }
@@ -936,7 +936,7 @@
     [data-theme="light"] .sp-mini-ctrl:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
     .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; }
+    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; transition: transform 0.48s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease; }
     /* Gold top line */
     .player-full::before {
       content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
