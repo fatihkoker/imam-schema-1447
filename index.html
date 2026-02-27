@@ -1178,17 +1178,9 @@
       transform: scaleY(0.04);
       will-change: transform;
     }
-    /* Peak-markör: liten linje som håller kvar och faller */
+    /* Peak-markör: dold */
     .sw-peak {
-      position: absolute;
-      width: 3px;
-      height: 2px;
-      border-radius: 1px;
-      background: #ffe87a;
-      box-shadow: 0 0 5px rgba(255,230,100,0.85), 0 0 10px rgba(255,200,50,0.4);
-      pointer-events: none;
-      will-change: bottom;
-      bottom: 0;
+      display: none;
     }
     [data-theme="light"] .sw-bar {
       background: linear-gradient(to top, #8a5c00 0%, #c4830a 40%, #e8a820 100%);
@@ -1203,7 +1195,7 @@
 
     /* ══ SLEEP TIMER ══ */
     .sp-sleep-btn {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 34px; height: 34px; border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.05);
       color: rgba(255,255,255,0.35); cursor: pointer;
@@ -1331,10 +1323,11 @@
 
     /* ── Sound wave CSS-animation (iOS fallback) ── */
     @keyframes swPulse {
-      0%, 100% { transform: scaleY(var(--sw-floor)); }
-      50%       { transform: scaleY(var(--sw-peak));  }
+      0%        { transform: scaleY(var(--sw-floor)); }
+      30%       { transform: scaleY(var(--sw-peak));  }
+      100%      { transform: scaleY(var(--sw-floor)); }
     }
-    .sw-bar--animate { animation: swPulse var(--sw-dur, 0.9s) ease-in-out infinite; }
+    .sw-bar--animate { animation: swPulse var(--sw-dur, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
 
     /* ── MINI PLAYER ── */
     .player-mini {
@@ -3104,14 +3097,14 @@
           b.style.transform = 'scaleY(' + smooth[i] + ')';
         });
 
-        const FALL_SPEED = 0.040;
-        const PEAK_FALL  = 0.018;
+        const FALL_SPEED = 0.012;
+        const PEAK_FALL  = 0.008;
 
         function fallDown() {
           let anyVisible = false;
           for (let i = 0; i < BAR_COUNT; i++) {
             if (smooth[i] > MIN_SCALE) {
-              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.5 + smooth[i]));
+              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.3 + smooth[i] * 0.5));
               bars[i].style.transform = 'scaleY(' + smooth[i] + ')';
               anyVisible = true;
             }
