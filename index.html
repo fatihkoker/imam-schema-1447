@@ -2941,7 +2941,6 @@
       // Försök autoplay via muted-trick:
       // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
       const a = new Audio();
-      a.crossOrigin = 'anonymous';
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
       a.muted = true;
@@ -3672,19 +3671,13 @@
   function _stopAudio(datum) {
     const a = audioState[datum];
     if (!a) return Promise.resolve();
-    const pending = _playingPromise[datum];
+    // Märk _stopping DIREKT — förhindrar att playing-event triggar openPlayer igen
+    a._stopping = true;
     _playingPromise[datum] = null;
-    if (pending) {
-      a._stopping = true;
-      return pending
-        .catch(() => {})
-        .then(() => {
-          if (!a.paused) try { a.pause(); } catch(e) {}
-          a._stopping = false;
-          setBtns(datum, PLAY_SVG, false);
-        });
-    }
-    if (!a.paused) try { a.pause(); } catch(e) {}
+    // Pausa synkront. Om play()-promise fortfarande är pending absorberar catch felet.
+    try { a.pause(); } catch(e) {}
+    // Nollställ flaggan i nästa microtask så eventkedjan hinner köras klart
+    Promise.resolve().then(() => { a._stopping = false; });
     setBtns(datum, PLAY_SVG, false);
     return Promise.resolve();
   }
@@ -3706,7 +3699,6 @@
 
       if (!audioState[datum]) {
         const a = new Audio();
-        a.crossOrigin = 'anonymous';
         a.preload = 'auto';
         a.setAttribute('playsinline', '');
         a.muted = !!window._globalMuted;
