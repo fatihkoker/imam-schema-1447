@@ -3038,37 +3038,28 @@
     syncAllFavBtns();
     updateFavChip();
 
-    // ══ SOUND WAVE ══
+    // ══ SOUND WAVE — CSS-animation, ingen Web Audio API ══
     (function() {
       const waveEl = document.getElementById('sp-soundwave');
       if (!waveEl) return;
 
-      const BAR_COUNT  = 52;
-      const MIN_SCALE  = 0.04;  // minsta stapelhöjd i vila
-      const COL_H      = 38;    // px — matchar .sw-bar height i CSS
-      const HOLD_FRAMES = 30;   // ~0.5s @ 60fps peak stannar kvar
-      const PEAK_DECAY  = 0.012; // hastighet peak faller per frame (0..1)
+      const BAR_COUNT = 52;
+      const MIN_SCALE = 0.04;
+      const COL_H     = 38;
 
-      const bars     = [];
-      const peakEls  = [];
-      const smooth   = new Float32Array(BAR_COUNT).fill(0);
-      const peakVal  = new Float32Array(BAR_COUNT).fill(0);
-      const peakHold = new Int32Array(BAR_COUNT).fill(0);
+      const bars    = [];
+      const peakEls = [];
 
       // Bygg DOM: .sw-col > .sw-bar + .sw-peak
       for (let i = 0; i < BAR_COUNT; i++) {
         const col = document.createElement('div');
         col.className = 'sw-col';
         col.style.cssText = 'position:relative;display:flex;align-items:flex-end;justify-content:center;height:' + COL_H + 'px;width:3px;flex-shrink:0;';
-
         const bar = document.createElement('div');
         bar.className = 'sw-bar';
-
         const pk = document.createElement('div');
         pk.className = 'sw-peak';
-        // Startposition: mitten av kolumnen
-        pk.style.top = Math.round(COL_H / 2) + 'px';
-
+        pk.style.bottom = '0px';
         col.appendChild(bar);
         col.appendChild(pk);
         waveEl.appendChild(col);
@@ -3076,143 +3067,56 @@
         peakEls.push(pk);
       }
 
-      // Safari stödjer Web Audio när crossOrigin="anonymous" är satt på audio-elementet
-      // och GitHub Pages skickar rätt CORS-headers
-      const isIOS = false;
-
-      let actx     = null;
-      let analyser = null;
-      let rafId    = null;
-      let running  = false;
-      const sources = {};
-
-      // ── CSS-animation fallback (iOS) ──
+      // Samma värden som tidigare — exakt samma animation
       const PEAK_CSS = [0.20,0.25,0.30,0.35,0.40,0.46,0.52,0.58,0.64,0.70,0.75,0.80,0.84,0.87,0.90,0.91,0.92,0.91,0.90,0.91,0.90,0.91,0.92,0.91,0.90,0.88,0.86,0.82,0.78,0.74,0.70,0.66,0.62,0.58,0.54,0.50,0.46,0.42,0.38,0.36,0.34,0.36,0.38,0.34,0.30,0.36,0.32,0.28,0.30,0.26,0.24,0.20];
       const DUR_CSS  = [1.0,0.95,0.90,0.85,0.82,0.80,0.78,0.75,0.72,0.70,0.68,0.72,0.70,0.75,0.72,0.68,0.70,0.74,0.70,0.76,0.68,0.74,0.70,0.76,0.72,0.68,0.70,0.74,0.72,0.76,0.70,0.74,0.72,0.76,0.80,0.78,0.82,0.80,0.85,0.82,0.88,0.85,0.90,0.88,0.92,0.90,0.94,0.92,0.96,0.94,0.97,1.0];
       const DLY_CSS  = [0,0.05,0.10,0.08,0.15,0.12,0.20,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.10,0.22,0.08,0.16,0.04,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0.16,0.08,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0];
+
       function startCSS() {
         bars.forEach((b, i) => {
+          b.style.removeProperty('transform'); // ta bort inline transform så animation tar över
           b.style.setProperty('--sw-floor', MIN_SCALE);
           b.style.setProperty('--sw-peak',  PEAK_CSS[i]);
           b.style.setProperty('--sw-dur',   DUR_CSS[i] + 's');
           b.style.animationDelay = DLY_CSS[i] + 's';
           b.classList.add('sw-bar--animate');
         });
-      }
-      function stopCSS() {
-        bars.forEach(b => {
-          b.classList.remove('sw-bar--animate');
-          b.style.transform = 'scaleY(' + MIN_SCALE + ')';
+        // Sätt peak-markörer på rätt höjd direkt
+        peakEls.forEach((p, i) => {
+          p.style.bottom = Math.round(PEAK_CSS[i] * COL_H) + 'px';
+          p.style.top = 'auto';
         });
-        peakEls.forEach(p => { p.style.bottom = '0px'; p.style.top = 'auto'; });
       }
 
-      // ── Draw-loop ──
-      // getByteTimeDomainData: råa PCM-samplar (0–255, 128=tyst)
-      // Varje stapel visar max-amplitud i sitt segment → exakt synk med filen
-      function draw() {
-        if (!running || !analyser) return;
-        rafId = requestAnimationFrame(draw);
-
-        const N  = analyser.fftSize;
-        const td = new Uint8Array(N);
-        analyser.getByteTimeDomainData(td);
-
-        const segSize = Math.floor(N / BAR_COUNT);
-
-        for (let i = 0; i < BAR_COUNT; i++) {
-          // Max-amplitud inom segmentet
-          let maxAmp = 0;
-          const off = i * segSize;
-          for (let j = 0; j < segSize; j++) {
-            const s = Math.abs(td[off + j] - 128) / 128;
-            if (s > maxAmp) maxAmp = s;
-          }
-
-          // Smoothing: snabb attack, långsam decay
-          const prev = smooth[i];
-          smooth[i]  = maxAmp > prev
-            ? prev + (maxAmp - prev) * 0.90
-            : prev + (maxAmp - prev) * 0.08;
-          const val = Math.max(smooth[i], MIN_SCALE);
-
-          // Stapel: scaleY från mitten
-          bars[i].style.transform = 'scaleY(' + Math.min(val, 1.0) + ')';
-
-          // Peak hold + fall
-          if (val >= peakVal[i]) {
-            peakVal[i]  = val;
-            peakHold[i] = HOLD_FRAMES;
-          } else if (peakHold[i] > 0) {
-            peakHold[i]--;
-          } else {
-            peakVal[i] = Math.max(MIN_SCALE, peakVal[i] - PEAK_DECAY);
-          }
-
-          // Peak-markörens bottom-position räknat från stapelns botten
-          // val=1.0 → peak högst upp = COL_H px från botten
-          // val=MIN_SCALE → peak nästan vid botten
-          const peakBottom = Math.round(peakVal[i] * COL_H);
-          peakEls[i].style.bottom = peakBottom + 'px';
-          peakEls[i].style.top = 'auto';
-        }
-      }
-
-      function buildGraph() {
-        if (actx) return true;
-        try {
-          actx     = new (window.AudioContext || window.webkitAudioContext)();
-          analyser = actx.createAnalyser();
-          analyser.fftSize             = 1024;
-          analyser.smoothingTimeConstant = 0;
-          analyser.connect(actx.destination);
-          return true;
-        } catch(e) { actx = analyser = null; return false; }
-      }
-
-      window._primeAudioCtx = function() {
-        if (isIOS) return;
-        buildGraph();
-      };
-
-      window._connectAnalyser = function(datum, audioEl) {
-        if (isIOS) { startCSS(); return; }
-        if (!buildGraph()) { startCSS(); return; }
-        if (!sources[datum]) {
-          try {
-            const src = actx.createMediaElementSource(audioEl);
-            src.connect(analyser);
-            sources[datum] = src;
-          } catch(e) {
-            // crossOrigin ej satt eller CORS-fel — kör CSS-animation istället
-            startCSS(); return;
-          }
-        }
-        const go = () => { running = true; draw(); };
-        if (actx.state === 'suspended') {
-          actx.resume().then(go).catch(() => startCSS());
-        } else { go(); }
-      };
+      // Mjuk fall-animation på paus — staplarna och topparna glider ner stegvis
+      let fallRafId = null;
+      const smooth  = new Float32Array(BAR_COUNT);
+      const peakVal = new Float32Array(BAR_COUNT);
 
       window._stopWaveDraw = function() {
-        running = false;
-        cancelAnimationFrame(rafId);
-        rafId = null;
-        // Mjuk fall-animation — staplarna glider ner istället för att snäppa till botten
-        let fallRafId = null;
-        const FALL_SPEED = 0.045;
-        const PEAK_FALL  = 0.022;
+        cancelAnimationFrame(fallRafId);
+        // Stoppa CSS-animation och läs av ungefärlig nuvarande höjd per stapel
+        bars.forEach((b, i) => {
+          b.classList.remove('sw-bar--animate');
+          // Uppskatta nuvarande scaleY baserat på CSS-peak (animationen är någonstans mellan floor och peak)
+          smooth[i]  = PEAK_CSS[i] * 0.6; // konservativ uppskattning
+          peakVal[i] = PEAK_CSS[i];
+          b.style.transform = 'scaleY(' + smooth[i] + ')';
+        });
+
+        const FALL_SPEED = 0.040;
+        const PEAK_FALL  = 0.018;
+
         function fallDown() {
           let anyVisible = false;
           for (let i = 0; i < BAR_COUNT; i++) {
             if (smooth[i] > MIN_SCALE) {
-              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.6 + smooth[i] * 0.8));
+              smooth[i] = Math.max(MIN_SCALE, smooth[i] - FALL_SPEED * (0.5 + smooth[i]));
               bars[i].style.transform = 'scaleY(' + smooth[i] + ')';
               anyVisible = true;
             }
             if (peakVal[i] > MIN_SCALE) {
               peakVal[i] = Math.max(MIN_SCALE, peakVal[i] - PEAK_FALL);
-              peakHold[i] = 0;
               peakEls[i].style.bottom = Math.round(peakVal[i] * COL_H) + 'px';
               peakEls[i].style.top = 'auto';
               anyVisible = true;
@@ -3221,18 +3125,17 @@
           if (anyVisible) {
             fallRafId = requestAnimationFrame(fallDown);
           } else {
-            smooth.fill(0);
-            peakVal.fill(0);
-            peakHold.fill(0);
-            stopCSS();
+            bars.forEach(b => { b.style.transform = 'scaleY(' + MIN_SCALE + ')'; });
+            peakEls.forEach(p => { p.style.bottom = '0px'; p.style.top = 'auto'; });
           }
         }
         fallRafId = requestAnimationFrame(fallDown);
       };
 
-      window._resumeAudioCtx = function() {
-        if (actx && actx.state === 'suspended') actx.resume().catch(() => {});
-      };
+      // Stubs — inga Web Audio API-anrop
+      window._primeAudioCtx   = function() {};
+      window._resumeAudioCtx  = function() {};
+      window._connectAnalyser = function() { startCSS(); };
     })();
 
     const muteBtn = document.getElementById('sticky-mute');
@@ -3618,7 +3521,7 @@
         };
         const color = IMAM_COLORS[row.imam] || '#24645d';
         const initials = row.imamLabel.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        // Använd endast ASCII i SVG — btoa() kraschar på icke-ASCII (svenska tecken etc)
+        // Endast ASCII i SVG — btoa() kraschar annars på svenska tecken
         const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">'
           + '<rect width="512" height="512" fill="#0f1614"/>'
           + '<rect width="512" height="512" fill="' + color + '" opacity="0.3"/>'
@@ -3626,23 +3529,17 @@
           + '<text x="256" y="258" font-family="system-ui" font-size="110" font-weight="700" fill="white" text-anchor="middle">' + initials + '</text>'
           + '<text x="256" y="380" font-family="system-ui" font-size="40" fill="rgba(255,255,255,0.7)" text-anchor="middle">Natt ' + row.day + '</text>'
           + '</svg>';
-        // btoa() är säker nu — inga icke-ASCII tecken i strängen
-        const artUrl = 'data:image/svg+xml;base64,' + btoa(svg);
+        let artUrl = '';
+        try { artUrl = 'data:image/svg+xml;base64,' + btoa(svg); } catch(e) {}
         try {
           navigator.mediaSession.metadata = new MediaMetadata({
             title: row.imamLabel,
             artist: 'Natt ' + row.day,
             album: 'Tarawih Kampingehallen 2026',
-            artwork: [{ src: artUrl, sizes: '512x512', type: 'image/svg+xml' }]
+            artwork: artUrl ? [{ src: artUrl, sizes: '512x512', type: 'image/svg+xml' }] : []
           });
-        } catch(e) {
-          // MediaMetadata misslyckades — sätt utan artwork
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: row.imamLabel,
-            artist: 'Natt ' + row.day,
-            album: 'Tarawih Kampingehallen 2026'
-          });
-        }
+        } catch(e) {}
+        // Sätt playbackState direkt — iOS behöver detta för att tillåta bakgrundsuppspelning
         navigator.mediaSession.playbackState = 'playing';
         navigator.mediaSession.setActionHandler('play', () => {
           const a = audioState[datum];
@@ -3733,7 +3630,6 @@
         a.addEventListener('playing',  () => {
           if (a._stopping) return;
           setBtns(datum, PAUSE_SVG, true);
-          // openPlayer bara om detta datum inte redan är aktivt — annars kraschar vid resume
           if (_activeDatum !== datum) openPlayer(datum);
           if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
           if (window._connectAnalyser) window._connectAnalyser(datum, a);
