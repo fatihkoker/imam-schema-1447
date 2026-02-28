@@ -935,8 +935,8 @@
     [data-theme="light"] .sp-mini-ctrl { color: rgba(0,0,0,0.45); }
     [data-theme="light"] .sp-mini-ctrl:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
-    .sticky-player.visible .player-full { transform: translateY(0); opacity: 1; pointer-events: auto; transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease; }
-    .sticky-player.mini-mode .player-full { transform: translateY(100%); opacity: 0; pointer-events: none; transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease; }
+    .sticky-player.visible .player-full { transform: translateY(0) scale(1); opacity: 1; filter: blur(0px); pointer-events: auto; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, filter 0.4s ease; }
+    .sticky-player.mini-mode .player-full { transform: translateY(40px) scale(0.92); opacity: 0; filter: blur(12px); pointer-events: none; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease, filter 0.4s ease; }
     /* Gold top line */
     .player-full::before {
       content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -1402,12 +1402,13 @@
       position: absolute; bottom: 0; left: 0; right: 0;
       padding: 0 10px 10px;
       pointer-events: none;
-      transform: translateY(100%);
+      transform: translateY(20px) scale(0.9);
       opacity: 0;
-      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
-      will-change: transform;
+      filter: blur(8px);
+      transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, filter 0.4s ease;
+      will-change: transform, opacity, filter;
     }
-    .sticky-player.mini-mode .player-mini { transform: translateY(0); opacity: 1; pointer-events: none; transition: transform 0.38s cubic-bezier(0.32,0.72,0,1) 0.06s, opacity 0.28s ease 0.06s; }
+    .sticky-player.mini-mode .player-mini { transform: translateY(0) scale(1); opacity: 1; filter: blur(0px); pointer-events: none; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94) 0.08s, opacity 0.35s ease 0.08s, filter 0.4s ease 0.08s; }
     .sticky-player.mini-mode .sp-mini-inner { pointer-events: auto; }
 
     .sp-mini-inner {
