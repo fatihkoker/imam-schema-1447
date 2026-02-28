@@ -3383,7 +3383,10 @@
       const DUR_CSS  = [1.0,0.95,0.90,0.85,0.82,0.80,0.78,0.75,0.72,0.70,0.68,0.72,0.70,0.75,0.72,0.68,0.70,0.74,0.70,0.76,0.68,0.74,0.70,0.76,0.72,0.68,0.70,0.74,0.72,0.76,0.70,0.74,0.72,0.76,0.80,0.78,0.82,0.80,0.85,0.82,0.88,0.85,0.90,0.88,0.92,0.90,0.94,0.92,0.96,0.94,0.97,1.0];
       const DLY_CSS  = [0,0.05,0.10,0.08,0.15,0.12,0.20,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.08,0.20,0.12,0.04,0.18,0.25,0.06,0.14,0.22,0.03,0.16,0.28,0.10,0.22,0.08,0.16,0.04,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0.16,0.08,0.20,0.12,0.24,0.06,0.18,0.10,0.22,0.04,0];
 
+      let _waveRunning = false;
+
       function startCSS() {
+        _waveRunning = true;
         bars.forEach((b, i) => {
           b.style.removeProperty('transform'); // ta bort inline transform så animation tar över
           b.style.setProperty('--sw-floor', MIN_SCALE);
@@ -3405,6 +3408,8 @@
       const peakVal = new Float32Array(BAR_COUNT);
 
       window._stopWaveDraw = function() {
+        if (!_waveRunning) return;
+        _waveRunning = false;
         cancelAnimationFrame(fallRafId);
         // Stoppa CSS-animation och läs av ungefärlig nuvarande höjd per stapel
         bars.forEach((b, i) => {
