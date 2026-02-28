@@ -3021,7 +3021,13 @@
     btn.addEventListener('click', e => {
       e.stopPropagation();
       triggerPlayBtnSpring(btn);
-      toggleAudio(datum);
+      // Om isha spelas — pausa den och återgå till tarawih-läge
+      if (_activeTrackType[datum] === 'isha' && ishaState[datum] && !ishaState[datum].paused) {
+        ishaState[datum].pause();
+        _activeTrackType[datum] = 'tarawih';
+      } else {
+        toggleAudio(datum);
+      }
     });
     return btn;
   }
@@ -3493,7 +3499,6 @@
       if (type === 'isha') {
         _toggleIshaAudio(_activeDatum);
       } else {
-        // Make sure isha is stopped before toggling tarawih
         if (ishaState[_activeDatum] && !ishaState[_activeDatum].paused) {
           ishaState[_activeDatum].pause();
         }
@@ -3559,7 +3564,14 @@
 
     // Mini play button
     document.getElementById('sp-mini-play')?.addEventListener('click', e => {
-      if (!_activeDatum) return; toggleAudio(_activeDatum); e.stopPropagation();
+      if (!_activeDatum) return;
+      const type = _activeTrackType[_activeDatum] || 'tarawih';
+      if (type === 'isha') {
+        _toggleIshaAudio(_activeDatum);
+      } else {
+        toggleAudio(_activeDatum);
+      }
+      e.stopPropagation();
     });
 
     // Prev/next
