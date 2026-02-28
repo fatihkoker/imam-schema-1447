@@ -3101,8 +3101,9 @@
   }
 
   let _miniTimer = null;
+  let _shareNavActive = false;
   window.addEventListener('scroll', () => {
-    if (!_activeDatum || _seekActive) return;
+    if (!_activeDatum || _seekActive || _shareNavActive) return;
     const p = document.getElementById('sticky-player');
     if (!p || !p.classList.contains('visible') || p.classList.contains('mini-mode')) return;
     clearTimeout(_miniTimer);
@@ -3215,6 +3216,9 @@
         return;
       }
 
+      // Blockera scroll→mini under navigeringen
+      _shareNavActive = true;
+
       // Scrolla till raden
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -3225,28 +3229,8 @@
       showSticky();
       clearTimeout(_autoMiniTimer);
 
-      // Pulsa sticky play-knappen efter att spelaren visats
-      setTimeout(() => {
-        const stickyBtn = document.getElementById('sticky-play-btn');
-        if (stickyBtn) startPulse(stickyBtn);
-      }, 350);
-    }
-
-    function startPulse(playBtn) {
-      let pulseCount = 0;
-      const maxPulses = 8;
-      function doPulse() {
-        if (pulseCount >= maxPulses) return;
-        pulseCount++;
-        playBtn.classList.remove('share-pulse');
-        void playBtn.offsetWidth;
-        playBtn.classList.add('share-pulse');
-        playBtn.addEventListener('animationend', () => {
-          playBtn.classList.remove('share-pulse');
-          setTimeout(doPulse, 180);
-        }, { once: true });
-      }
-      doPulse();
+      // Släpp scroll-blockeringen efter att scroll är klar (~1s)
+      setTimeout(() => { _shareNavActive = false; }, 1200);
     }
 
     setTimeout(tryInit, 400);
