@@ -3217,68 +3217,15 @@
       // Scrolla till raden
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      // Försök autoplay via muted-trick:
-      // Registrera i audioState och koppla lyssnare FÖRE play() — annars missar vi events
-      const a = new Audio();
-      a.preload = 'auto';
-      a.setAttribute('playsinline', '');
-      a.muted = true;
-      a.src = audioUrls[row.datum];
+      // Öppna full player utan att starta ljud — användaren klickar play själv
+      _activeDatum = row.datum;
+      updateStickyControls();
+      showSegmentControl(row.datum);
+      showSticky();
+      clearTimeout(_autoMiniTimer);
 
-      // Registrera direkt så att toggleAudio/closePlayer fungerar korrekt
-      audioState[row.datum] = a;
-
-      a.addEventListener('waiting',  () => setBtns(row.datum, SPIN_SVG, true));
-      a.addEventListener('playing',  () => {
-        if (a._stopping) return;
-        setBtns(row.datum, PAUSE_SVG, true);
-        openPlayer(row.datum);
-        if (!window._globalMuted) a.muted = false;
-        // Give the player DOM a frame to render before starting wave animation
-        requestAnimationFrame(() => {
-          if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
-        });
-      });
-      a.addEventListener('pause', () => {
-        setBtns(row.datum, PLAY_SVG, false);
-        updateStickyPlayBtn(false);
-        if (_activeDatum === row.datum && window._stopWaveDraw) window._stopWaveDraw();
-      });
-      a.addEventListener('timeupdate', () => {
-        if (!a._seekLock) {
-          updatePlayerUI(row.datum, a.currentTime, a.duration);
-        }
-      });
-      a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
-      a.addEventListener('ended', () => {
-        closePlayer(row.datum); setBtns(row.datum, PLAY_SVG, false);
-        updatePlayerUI(row.datum, 0, a.duration);
-        if (window._stopWaveDraw) window._stopWaveDraw();
-      });
-      a.addEventListener('error', () => {
-        _playingPromise[row.datum] = null;
-        setBtns(row.datum, PLAY_SVG, false);
-        if (_activeDatum === row.datum) closePlayer(row.datum);
-        if (window._stopWaveDraw) window._stopWaveDraw();
-        // Falla tillbaka på pulsande knapp
-        waitForBtnAndPulse(target);
-      });
-
-      setBtns(row.datum, SPIN_SVG, true);
-      const p = a.play();
-      _playingPromise[row.datum] = p;
-      if (p && typeof p.then === 'function') {
-        p.then(() => {
-          if (_playingPromise[row.datum] === p) _playingPromise[row.datum] = null;
-          a.muted = !!window._globalMuted;
-        }).catch(() => {
-          _playingPromise[row.datum] = null;
-          delete audioState[row.datum];
-          setBtns(row.datum, PLAY_SVG, false);
-          // Autoplay blockerades — visa pulsande knapp istället
-          waitForBtnAndPulse(target);
-        });
-      }
+      // Pulsa play-knappen så att användaren ser vad de ska klicka på
+      waitForBtnAndPulse(target);
     }
 
     function waitForBtnAndPulse(target) {
@@ -3588,19 +3535,6 @@
       if (e.target.closest('.sp-mini-ctrl') || e.target.closest('.sp-mini-play')) return;
       clearTimeout(_autoMiniTimer);
       showSticky();
-      // Sync UI state when expanding from mini to full
-      if (_activeDatum) {
-        const a = audioState[_activeDatum] || ishaState[_activeDatum];
-        if (a && !a.paused) {
-          const btn = document.getElementById('sticky-play-btn');
-          if (btn) btn._lastPlayState = null;
-          updateStickyPlayBtn(true);
-          updatePlayerUI(_activeDatum, a.currentTime, a.duration);
-          if (window._connectAnalyser) window._connectAnalyser(_activeDatum, a);
-        } else {
-          updateStickyPlayBtn(false);
-        }
-      }
       e.stopPropagation();
     });
 
@@ -4020,20 +3954,7 @@
     // stanna kvar i mini-läge — expandera INTE till full player
     const alreadyMini = p && p.classList.contains('mini-mode') && p.classList.contains('visible');
     if (!alreadyMini) {
-      setTimeout(() => {
-        showSticky();
-        // Re-sync UI state after player becomes visible
-        const a = audioState[datum] || ishaState[datum];
-        if (a && !a.paused) {
-          // Force play state regardless of cached _lastPlayState
-          const btn = document.getElementById('sticky-play-btn');
-          if (btn) { btn._lastPlayState = null; }
-          updateStickyPlayBtn(true);
-          updatePlayerUI(datum, a.currentTime, a.duration);
-          // Restart wave animation in case it was stopped
-          if (window._connectAnalyser) window._connectAnalyser(datum, a);
-        }
-      }, 200);
+      setTimeout(showSticky, 200);
     }
     clearTimeout(_autoMiniTimer);
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
