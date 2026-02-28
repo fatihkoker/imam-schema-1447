@@ -1603,6 +1603,7 @@
       100% { transform: scale(1);    box-shadow: 0 2px 8px rgba(36,100,93,.3); }
     }
     .play-btn.share-pulse { animation: sharePulse 0.55s ease-in-out; }
+    .sp-play-hero.share-pulse { animation: sharePulse 0.55s ease-in-out; }
     .play-btn-ripple { position: absolute; border-radius: 50%; width: 36px; height: 36px; left: 0; top: 0; background: rgba(255,255,255,0.28); transform: scale(0); pointer-events: none; animation: spmRipple 0.55s ease-out forwards; }
     .td-moon { text-align: center; width: 32px; padding: 12px 8px 12px 0; }
     .moon-icon svg { display: block; }
@@ -3224,21 +3225,11 @@
       showSticky();
       clearTimeout(_autoMiniTimer);
 
-      // Pulsa play-knappen så att användaren ser vad de ska klicka på
-      waitForBtnAndPulse(target);
-    }
-
-    function waitForBtnAndPulse(target) {
-      const btnDeadline = Date.now() + 5000;
-      function waitForBtn() {
-        const playBtn = target.querySelector('.play-btn');
-        if (playBtn) {
-          startPulse(playBtn);
-        } else if (Date.now() < btnDeadline) {
-          setTimeout(waitForBtn, 150);
-        }
-      }
-      setTimeout(waitForBtn, 200);
+      // Pulsa sticky play-knappen efter att spelaren visats
+      setTimeout(() => {
+        const stickyBtn = document.getElementById('sticky-play-btn');
+        if (stickyBtn) startPulse(stickyBtn);
+      }, 350);
     }
 
     function startPulse(playBtn) {
