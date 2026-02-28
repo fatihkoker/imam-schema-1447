@@ -3025,6 +3025,9 @@
       if (_activeTrackType[datum] === 'isha' && ishaState[datum] && !ishaState[datum].paused) {
         ishaState[datum].pause();
         _activeTrackType[datum] = 'tarawih';
+        setBtns(datum, PLAY_SVG, false);
+        updateStickyPlayBtn(false);
+        if (window._stopWaveDraw) window._stopWaveDraw();
       } else {
         toggleAudio(datum);
       }
