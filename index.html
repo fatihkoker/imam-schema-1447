@@ -3588,6 +3588,19 @@
       if (e.target.closest('.sp-mini-ctrl') || e.target.closest('.sp-mini-play')) return;
       clearTimeout(_autoMiniTimer);
       showSticky();
+      // Sync UI state when expanding from mini to full
+      if (_activeDatum) {
+        const a = audioState[_activeDatum] || ishaState[_activeDatum];
+        if (a && !a.paused) {
+          const btn = document.getElementById('sticky-play-btn');
+          if (btn) btn._lastPlayState = null;
+          updateStickyPlayBtn(true);
+          updatePlayerUI(_activeDatum, a.currentTime, a.duration);
+          if (window._connectAnalyser) window._connectAnalyser(_activeDatum, a);
+        } else {
+          updateStickyPlayBtn(false);
+        }
+      }
       e.stopPropagation();
     });
 
@@ -4010,10 +4023,15 @@
       setTimeout(() => {
         showSticky();
         // Re-sync UI state after player becomes visible
-        const a = audioState[datum];
+        const a = audioState[datum] || ishaState[datum];
         if (a && !a.paused) {
+          // Force play state regardless of cached _lastPlayState
+          const btn = document.getElementById('sticky-play-btn');
+          if (btn) { btn._lastPlayState = null; }
           updateStickyPlayBtn(true);
           updatePlayerUI(datum, a.currentTime, a.duration);
+          // Restart wave animation in case it was stopped
+          if (window._connectAnalyser) window._connectAnalyser(datum, a);
         }
       }, 200);
     }
