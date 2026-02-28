@@ -2966,6 +2966,9 @@
   function updateStickyPlayBtn(isPlaying) {
     const btn = document.getElementById('sticky-play-btn');
     if (!btn) return;
+    // Skip if state hasn't changed — avoids spring/ripple glitch on repeated calls
+    const alreadyPlaying = btn.classList.contains('playing');
+    if (isPlaying === alreadyPlaying) return;
     // Spring animation on ring-inner
     btn.classList.remove('springing');
     void btn.offsetWidth;
@@ -3219,8 +3222,7 @@
       a.addEventListener('playing',  () => {
         if (a._stopping) return;
         setBtns(row.datum, PAUSE_SVG, true);
-        updateStickyPlayBtn(true);
-        if (_activeDatum !== row.datum) openPlayer(row.datum);
+        openPlayer(row.datum);
         if (!window._globalMuted) a.muted = false;
         // Give the player DOM a frame to render before starting wave animation
         requestAnimationFrame(() => {
@@ -3235,8 +3237,6 @@
       a.addEventListener('timeupdate', () => {
         if (!a._seekLock) {
           updatePlayerUI(row.datum, a.currentTime, a.duration);
-          // Make sure sticky play btn reflects playing state
-          if (_activeDatum === row.datum && a && !a.paused) updateStickyPlayBtn(true);
         }
       });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
@@ -3261,13 +3261,6 @@
         p.then(() => {
           if (_playingPromise[row.datum] === p) _playingPromise[row.datum] = null;
           a.muted = !!window._globalMuted;
-          // Ensure UI is fully synced after autoplay succeeds
-          setBtns(row.datum, PAUSE_SVG, true);
-          updateStickyPlayBtn(true);
-          updatePlayerUI(row.datum, a.currentTime, a.duration);
-          requestAnimationFrame(() => {
-            if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
-          });
         }).catch(() => {
           _playingPromise[row.datum] = null;
           delete audioState[row.datum];
