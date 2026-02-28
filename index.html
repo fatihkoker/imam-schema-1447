@@ -2966,9 +2966,22 @@
   function updateStickyPlayBtn(isPlaying) {
     const btn = document.getElementById('sticky-play-btn');
     if (!btn) return;
-    // Skip if state hasn't changed — avoids spring/ripple glitch on repeated calls
-    const alreadyPlaying = btn.classList.contains('playing');
-    if (isPlaying === alreadyPlaying) return;
+    // Always update play/pause class
+    if (isPlaying) btn.classList.add('playing');
+    else           btn.classList.remove('playing');
+    // Skip spring/ripple animations if state hasn't changed — avoids glitch on repeated calls
+    const stateChanged = isPlaying !== btn._lastPlayState;
+    btn._lastPlayState = isPlaying;
+    if (!stateChanged) {
+      // Still update mini play button icon
+      const miniPlay = document.getElementById('sp-mini-play');
+      if (miniPlay) {
+        miniPlay.innerHTML = isPlaying
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>'
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>';
+      }
+      return;
+    }
     // Spring animation on ring-inner
     btn.classList.remove('springing');
     void btn.offsetWidth;
@@ -2980,9 +2993,6 @@
     rip.style.background = 'rgba(255,255,255,0.18)';
     btn.appendChild(rip);
     rip.addEventListener('animationend', () => rip.remove(), { once: true });
-    // Play/pause state
-    if (isPlaying) btn.classList.add('playing');
-    else           btn.classList.remove('playing');
     // Sound wave — startas/stoppas via audio events (playing/pause), inte här
     // Mini play button icon
     const miniPlay = document.getElementById('sp-mini-play');
@@ -3997,7 +4007,15 @@
     // stanna kvar i mini-läge — expandera INTE till full player
     const alreadyMini = p && p.classList.contains('mini-mode') && p.classList.contains('visible');
     if (!alreadyMini) {
-      setTimeout(showSticky, 200);
+      setTimeout(() => {
+        showSticky();
+        // Re-sync UI state after player becomes visible
+        const a = audioState[datum];
+        if (a && !a.paused) {
+          updateStickyPlayBtn(true);
+          updatePlayerUI(datum, a.currentTime, a.duration);
+        }
+      }, 200);
     }
     clearTimeout(_autoMiniTimer);
     _autoMiniTimer = setTimeout(() => { if (_activeDatum) miniSticky(); }, 5000);
