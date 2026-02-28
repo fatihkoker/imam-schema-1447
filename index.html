@@ -3219,16 +3219,26 @@
       a.addEventListener('playing',  () => {
         if (a._stopping) return;
         setBtns(row.datum, PAUSE_SVG, true);
+        updateStickyPlayBtn(true);
         if (_activeDatum !== row.datum) openPlayer(row.datum);
         if (!window._globalMuted) a.muted = false;
-        if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
+        // Give the player DOM a frame to render before starting wave animation
+        requestAnimationFrame(() => {
+          if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
+        });
       });
       a.addEventListener('pause', () => {
         setBtns(row.datum, PLAY_SVG, false);
         updateStickyPlayBtn(false);
         if (_activeDatum === row.datum && window._stopWaveDraw) window._stopWaveDraw();
       });
-      a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(row.datum, a.currentTime, a.duration); });
+      a.addEventListener('timeupdate', () => {
+        if (!a._seekLock) {
+          updatePlayerUI(row.datum, a.currentTime, a.duration);
+          // Make sure sticky play btn reflects playing state
+          if (_activeDatum === row.datum && a && !a.paused) updateStickyPlayBtn(true);
+        }
+      });
       a.addEventListener('loadedmetadata', () => updatePlayerUI(row.datum, a.currentTime, a.duration));
       a.addEventListener('ended', () => {
         closePlayer(row.datum); setBtns(row.datum, PLAY_SVG, false);
@@ -3250,9 +3260,14 @@
       if (p && typeof p.then === 'function') {
         p.then(() => {
           if (_playingPromise[row.datum] === p) _playingPromise[row.datum] = null;
-          // Unmute nu när play lyckats — om _connectAnalyser redan körts, resumea AudioContext
           a.muted = !!window._globalMuted;
-          if (window._resumeAudioCtx) window._resumeAudioCtx(row.datum);
+          // Ensure UI is fully synced after autoplay succeeds
+          setBtns(row.datum, PAUSE_SVG, true);
+          updateStickyPlayBtn(true);
+          updatePlayerUI(row.datum, a.currentTime, a.duration);
+          requestAnimationFrame(() => {
+            if (window._connectAnalyser) window._connectAnalyser(row.datum, a);
+          });
         }).catch(() => {
           _playingPromise[row.datum] = null;
           delete audioState[row.datum];
