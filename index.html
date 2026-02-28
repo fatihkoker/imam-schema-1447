@@ -3293,42 +3293,70 @@
     setTimeout(tryInit, 400);
   });
 
-  // ── ISHA AUDIO TOGGLE ──
+  // ── MASTER STOP — pausar absolut allt ljud ──
+  function _stopAll(exceptDatum, exceptType) {
+    Object.keys(audioState).forEach(d => {
+      if (audioState[d] && !audioState[d].paused) {
+        if (d === exceptDatum && exceptType === 'tarawih') return;
+        audioState[d].pause();
+        if (d !== exceptDatum) setBtns(d, PLAY_SVG, false);
+      }
+    });
+    Object.keys(ishaState).forEach(d => {
+      if (ishaState[d] && !ishaState[d].paused) {
+        if (d === exceptDatum && exceptType === 'isha') return;
+        ishaState[d].pause();
+      }
+    });
+  }
+
+    // ── ISHA AUDIO TOGGLE ──
   function _toggleIshaAudio(datum) {
     if (!ishaUrls[datum]) return;
 
     if (!ishaState[datum]) {
-      // First play — create audio object
       const a = new Audio();
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
       a.muted = !!window._globalMuted;
       a.src = ishaUrls[datum];
 
-      a.addEventListener('waiting',  () => { setBtns(datum, SPIN_SVG, true); updateStickyPlayBtn(false); });
-      a.addEventListener('playing',  () => {
+      a.addEventListener('waiting', () => {
+        if (_activeTrackType[datum] !== 'isha') return;
+        setBtns(datum, SPIN_SVG, true);
+        updateStickyPlayBtn(false);
+      });
+      a.addEventListener('playing', () => {
         if (a._stopping) return;
-        setBtns(datum, PAUSE_SVG, true);
-        updateStickyPlayBtn(true);
+        // Only update UI if this is still the active track
+        if (_activeTrackType[datum] === 'isha' && _activeDatum === datum) {
+          setBtns(datum, PAUSE_SVG, true);
+          updateStickyPlayBtn(true);
+        }
         if (window._connectAnalyser) window._connectAnalyser(datum, a);
       });
       a.addEventListener('pause', () => {
-        setBtns(datum, PLAY_SVG, false);
-        updateStickyPlayBtn(false);
+        if (_activeTrackType[datum] === 'isha' && _activeDatum === datum) {
+          setBtns(datum, PLAY_SVG, false);
+          updateStickyPlayBtn(false);
+        }
         if (window._stopWaveDraw) window._stopWaveDraw();
       });
       a.addEventListener('timeupdate', () => {
-        if (!a._seekLock && _activeTrackType[datum] === 'isha') {
+        if (!a._seekLock && _activeTrackType[datum] === 'isha' && _activeDatum === datum) {
           updatePlayerUI(datum, a.currentTime, a.duration);
         }
       });
       a.addEventListener('loadedmetadata', () => {
-        if (_activeTrackType[datum] === 'isha') updatePlayerUI(datum, a.currentTime, a.duration);
+        if (_activeTrackType[datum] === 'isha' && _activeDatum === datum)
+          updatePlayerUI(datum, a.currentTime, a.duration);
       });
       a.addEventListener('ended', () => {
-        setBtns(datum, PLAY_SVG, false);
-        updateStickyPlayBtn(false);
-        updatePlayerUI(datum, 0, a.duration);
+        if (_activeDatum === datum) {
+          setBtns(datum, PLAY_SVG, false);
+          updateStickyPlayBtn(false);
+          updatePlayerUI(datum, 0, a.duration);
+        }
         if (window._stopWaveDraw) window._stopWaveDraw();
       });
 
@@ -3337,10 +3365,7 @@
 
     const a = ishaState[datum];
     if (a.paused) {
-      // Make sure tarawih is paused first
-      if (audioState[datum] && !audioState[datum].paused) {
-        audioState[datum].pause();
-      }
+      _stopAll(datum, 'isha'); // stop everything else first
       const p = a.play();
       if (p) p.catch(() => {});
     } else {
@@ -3518,9 +3543,12 @@
       if (!_activeDatum) return;
       const type = _activeTrackType[_activeDatum] || 'tarawih';
       if (type === 'isha') {
-        // Handle isha play/pause
         _toggleIshaAudio(_activeDatum);
       } else {
+        // Make sure isha is stopped before toggling tarawih
+        if (ishaState[_activeDatum] && !ishaState[_activeDatum].paused) {
+          ishaState[_activeDatum].pause();
+        }
         toggleAudio(_activeDatum);
       }
       e.stopPropagation();
@@ -3872,7 +3900,17 @@
   }
 
   function openPlayer(datum) {
+    // Stop isha from any previously active day
+    if (_activeDatum && _activeDatum !== datum) {
+      if (ishaState[_activeDatum] && !ishaState[_activeDatum].paused) {
+        ishaState[_activeDatum].pause();
+      }
+    }
     _activeDatum = datum;
+    // Segment control: reset to tarawih unless isha is actively playing for this datum
+    if (!ishaState[datum] || ishaState[datum].paused) {
+      _activeTrackType[datum] = 'tarawih';
+    }
     updatePlayingRow(datum);
     updateStickyControls();
     updateStickyPlayBtn(true);
@@ -3979,14 +4017,17 @@
     _toggleBusy = true;
 
     try {
-      // Stoppa alla andra aktiva spår
+      // Stop ALL audio (tarawih + isha across all days) — only one can play at a time
+      _stopAll(datum, 'tarawih');
+      // Also stop other days' tarawih via closePlayer
       const others = Object.keys(audioState).filter(d => d !== datum);
       for (const d of others) {
-        if (audioState[d] && !audioState[d].paused) {
-          _stopAudio(d); // kör async utan att blockera
-          if (_activeDatum === d) closePlayer(d);
-        }
+        if (_activeDatum === d) closePlayer(d);
       }
+      // Reset track type to tarawih — table row click always means tarawih
+      _activeTrackType[datum] = 'tarawih';
+      // Update segment pill if player is open for this datum
+      if (_activeDatum === datum) _updateSegmentPill('tarawih');
 
       if (!audioState[datum]) {
         const a = new Audio();
