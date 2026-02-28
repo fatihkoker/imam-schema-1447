@@ -1328,60 +1328,63 @@
     }
     .sw-bar--animate { animation: swPulse var(--sw-dur, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
 
-    /* ── TRACK SEGMENT CONTROL (Tarawih / Isha) ── */
+    /* ── TRACK FLOATING PILL (Tarawih / Isha) ── */
     .sp-segment-wrap {
-      display: none; /* shown only when isha exists */
-      margin: 6px 0 12px;
-      padding: 0 2px;
+      display: none;
+      justify-content: center;
+      margin: 8px 0 14px;
     }
-    .sp-segment-wrap.visible { display: block; }
+    .sp-segment-wrap.visible { display: flex; }
     .sp-segment {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      background: rgba(255,255,255,0.07);
-      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
       padding: 3px;
       position: relative;
-      gap: 0;
-      width: 100%;
+      gap: 2px;
     }
     [data-theme="light"] .sp-segment {
-      background: rgba(0,0,0,0.07);
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.08);
     }
     .sp-segment-pill {
       position: absolute;
       top: 3px; bottom: 3px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.13);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-      transition: left 0.28s cubic-bezier(0.34,1.2,0.64,1), width 0.28s cubic-bezier(0.34,1.2,0.64,1);
+      border-radius: 17px;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.35);
+      box-shadow: 0 1px 8px rgba(201,168,76,0.12), 0 0 0 0 rgba(201,168,76,0);
+      transition: left 0.3s cubic-bezier(0.34,1.2,0.64,1), width 0.3s cubic-bezier(0.34,1.2,0.64,1);
       pointer-events: none;
       z-index: 0;
     }
     [data-theme="light"] .sp-segment-pill {
-      background: rgba(255,255,255,0.85);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      background: rgba(201,168,76,0.12);
+      border-color: rgba(201,168,76,0.4);
     }
     .sp-segment-btn {
-      flex: 1;
       position: relative; z-index: 1;
       background: none; border: none;
-      padding: 6px 10px;
-      font-family: inherit; font-size: 0.72rem; font-weight: 600;
-      color: rgba(255,255,255,0.40);
-      border-radius: 8px;
+      padding: 5px 14px;
+      font-family: inherit; font-size: 0.70rem; font-weight: 600;
+      color: rgba(255,255,255,0.30);
+      border-radius: 17px;
       cursor: pointer;
       transition: color 0.2s ease;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
       white-space: nowrap;
       text-align: center;
       -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 5px;
     }
     .sp-segment-btn.active {
-      color: rgba(255,255,255,0.92);
+      color: rgba(201,168,76,0.95);
     }
-    [data-theme="light"] .sp-segment-btn { color: rgba(0,0,0,0.38); }
-    [data-theme="light"] .sp-segment-btn.active { color: rgba(0,0,0,0.85); }
+    .sp-segment-btn .sp-seg-icon { font-size: 0.75rem; line-height: 1; }
+    [data-theme="light"] .sp-segment-btn { color: rgba(0,0,0,0.30); }
+    [data-theme="light"] .sp-segment-btn.active { color: rgba(140,100,30,0.95); }
 
     /* Small dot indicator on table row when isha exists */
     .isha-dot {
@@ -5029,12 +5032,16 @@
     <div class="sp-drag-handle"></div>
 
 
-    <!-- Track segment control — Tarawih / Isha -->
+    <!-- Track floating pill — Tarawih / Isha -->
     <div class="sp-segment-wrap" id="sp-segment-wrap">
       <div class="sp-segment" id="sp-segment">
         <div class="sp-segment-pill" id="sp-segment-pill"></div>
-        <button class="sp-segment-btn active" id="sp-seg-tarawih" data-track="tarawih">Tarawih</button>
-        <button class="sp-segment-btn" id="sp-seg-isha" data-track="isha">Isha</button>
+        <button class="sp-segment-btn active" id="sp-seg-tarawih" data-track="tarawih">
+          <span class="sp-seg-icon">🌙</span> Tarawih
+        </button>
+        <button class="sp-segment-btn" id="sp-seg-isha" data-track="isha">
+          <span class="sp-seg-icon">⭐</span> Isha
+        </button>
       </div>
     </div>
 
