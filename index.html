@@ -3643,16 +3643,9 @@
     btn.addEventListener('click', e => {
       e.stopPropagation();
       triggerPlayBtnSpring(btn);
-      // Om isha spelas — pausa den och återgå till tarawih-läge
-      if (_activeTrackType[datum] === 'isha' && ishaState[datum] && !ishaState[datum].paused) {
-        ishaState[datum].pause();
-        _activeTrackType[datum] = 'tarawih';
-        setBtns(datum, PLAY_SVG, false);
-        updateStickyPlayBtn(false);
-        if (window._stopWaveDraw) window._stopWaveDraw();
-      } else {
-        toggleAudio(datum);
-      }
+      // Alltid starta/pausa tarawih för denna natt
+      // toggleAudio hanterar att stoppa allt annat via _stopAll
+      toggleAudio(datum);
     });
     return btn;
   }
@@ -4610,6 +4603,12 @@
     try {
       // Stop ALL audio (tarawih + isha across all days) — only one can play at a time
       _stopAll(datum, 'tarawih');
+      // Stoppa isha för samma datum explicit
+      if (ishaState[datum] && !ishaState[datum].paused) {
+        ishaState[datum]._stopping = true;
+        ishaState[datum].pause();
+        Promise.resolve().then(() => { ishaState[datum]._stopping = false; });
+      }
       // Also stop other days' tarawih via closePlayer
       const others = Object.keys(audioState).filter(d => d !== datum);
       for (const d of others) {
@@ -4664,25 +4663,44 @@
       const audio = audioState[datum];
 
       if (audio.paused) {
-        // SPELA — frigör låset DIREKT så paus-knappen inte fryser
+        // SPELA — frigör låset DIREKT
         _toggleBusy = false;
         setBtns(datum, SPIN_SVG, true);
         if (window._primeAudioCtx) window._primeAudioCtx();
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
-        const p = audio.play();
-        _playingPromise[datum] = p;
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            if (_playingPromise[datum] === p) _playingPromise[datum] = null;
-          }).catch(err => {
-            _playingPromise[datum] = null;
-            if (err.name !== 'AbortError') {
-              console.warn('Play failed:', err);
-              setBtns(datum, PLAY_SVG, false);
-              updateStickyPlayBtn(false);
-            }
-          });
-        }
+
+        const tryPlay = () => {
+          const p = audio.play();
+          _playingPromise[datum] = p;
+          if (p && typeof p.then === 'function') {
+            p.then(() => {
+              if (_playingPromise[datum] === p) _playingPromise[datum] = null;
+            }).catch(err => {
+              _playingPromise[datum] = null;
+              if (err.name === 'AbortError') {
+                // iOS: föregående pause() var inte klar — försök igen direkt
+                if (!audio._retried) {
+                  audio._retried = true;
+                  const p2 = audio.play();
+                  if (p2) p2.then(() => { audio._retried = false; }).catch(() => {
+                    audio._retried = false;
+                    setBtns(datum, PLAY_SVG, false);
+                    updateStickyPlayBtn(false);
+                  });
+                } else {
+                  audio._retried = false;
+                  setBtns(datum, PLAY_SVG, false);
+                  updateStickyPlayBtn(false);
+                }
+              } else {
+                console.warn('Play failed:', err.name, err.message);
+                setBtns(datum, PLAY_SVG, false);
+                updateStickyPlayBtn(false);
+              }
+            });
+          }
+        };
+        tryPlay();
         return;
       } else {
         // PAUSA — frigör låset DIREKT, kör cleanup async
