@@ -5717,13 +5717,16 @@
           const res = await fetch(url, { method: 'HEAD' });
           if (!res.ok) return;
           const lastMod = res.headers.get('Last-Modified');
-          const modTime = lastMod ? new Date(lastMod).getTime() : (Date.now() - row.day * 60000);
-          found.push({ row, modTime, seen: !!seen[`day-${row.day}`] });
+          // Om Last-Modified saknas (GitHub Pages CORS) — använd day som fallback-sortering
+          const modTime = lastMod ? new Date(lastMod).getTime() : row.day;
+          found.push({ row, modTime, hasRealTime: !!lastMod, seen: !!seen[`day-${row.day}`] });
         } catch(e) {}
       }));
 
-      // Sort newest first
-      found.sort((a, b) => b.modTime - a.modTime);
+      // Sortera: om riktiga Last-Modified finns → senast uppladdad först
+      // annars → högsta nattnummer först (senaste natten överst)
+      const hasRealTimes = found.some(f => f.hasRealTime);
+      found.sort((a, b) => hasRealTimes ? b.modTime - a.modTime : b.row.day - a.row.day);
       newItems = found;
       renderPanel(found, seen);
       const unread = found.filter(f => !f.seen).length;
@@ -5769,14 +5772,20 @@
         item.addEventListener('click', () => {
           markItemRead(row.day);
           closePanel();
-          // Scroll to row
-          const tr = document.querySelector(`tr[data-datum="${row.datum}"]`) ||
-                     document.querySelector(`div[data-datum="${row.datum}"]`);
-          if (tr) { tr.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-          // Auto-play
-          const playBtn = document.getElementById(`play-btn-desktop-${row.datum}`) ||
-                          document.querySelector(`[data-datum="${row.datum}"] .play-btn`);
-          if (playBtn) setTimeout(() => playBtn.click(), 600);
+          // Hitta rätt element — mobilkort eller tabellrad
+          const isMobile = window.innerWidth <= 640;
+          const target = isMobile
+            ? document.querySelector(`.day-card-mobile[data-datum="${row.datum}"]`)
+            : document.querySelector(`tr[data-datum="${row.datum}"]`);
+          if (target) {
+            const y = target.getBoundingClientRect().top + window.scrollY - 90;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+          // Starta uppspelning efter scroll
+          setTimeout(() => {
+            const playBtn = document.querySelector(`[data-datum="${row.datum}"] .play-btn`);
+            if (playBtn) playBtn.click();
+          }, 500);
         });
         npList.appendChild(item);
       });
