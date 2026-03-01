@@ -4642,11 +4642,7 @@
         a.addEventListener('pause', () => {
           if (a._stopping) return;
           if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-          if (_activeDatum === datum) {
-            setBtns(datum, PLAY_SVG, false);
-            updateStickyPlayBtn(false);
-            if (window._stopWaveDraw) window._stopWaveDraw();
-          }
+          if (_activeDatum === datum && window._stopWaveDraw) window._stopWaveDraw();
         });
         a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
         a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
@@ -4671,9 +4667,6 @@
         // SPELA — frigör låset DIREKT så paus-knappen inte fryser
         _toggleBusy = false;
         setBtns(datum, SPIN_SVG, true);
-        // Öppna player redan nu så UI inte fastnar
-        if (_activeDatum !== datum) openPlayer(datum);
-        // Skapa/resumea AudioContext direkt i user gesture (krävs på mobil)
         if (window._primeAudioCtx) window._primeAudioCtx();
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
         const p = audio.play();
