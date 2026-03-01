@@ -3077,12 +3077,10 @@
     // Injicera EN sweep-div som täcker hela today desktop-raden
     if (isToday) {
       tr.style.position = 'relative';
-      const sweepTd = document.createElement('td');
-      sweepTd.style.cssText = 'position:absolute;inset:0;padding:0;border:none;pointer-events:none;overflow:hidden;';
       const sweep = document.createElement('div');
       sweep.className = 'td-sweep';
-      sweepTd.appendChild(sweep);
-      tr.appendChild(sweepTd);
+      sweep.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;';
+      tr.appendChild(sweep);
     }
     const cell = tr.querySelector('.surah-cell');
     if (cell) {
@@ -4378,8 +4376,14 @@
       if (_toggleBusy) return;
       _toggleBusy = true;
       const d = _activeDatum;
-      // Stäng spelaren visuellt direkt — vänta inte på audio-cleanup
+      // Stoppa både tarawih och isha för aktiv natt
+      if (ishaState[d] && !ishaState[d].paused) {
+        ishaState[d]._stopping = true;
+        ishaState[d].pause();
+        Promise.resolve().then(() => { ishaState[d]._stopping = false; });
+      }
       closePlayer(d);
+      setBtns(d, PLAY_SVG, false);
       _stopAudio(d).finally(() => { _toggleBusy = false; });
     });
 
