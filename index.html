@@ -3879,6 +3879,7 @@
         a._stopping = true;
         a.pause();
         Promise.resolve().then(() => { a._stopping = false; });
+        setBtns(d, PLAY_SVG, false); // återställ knappen för isha-natt
       }
     });
   }
@@ -5723,10 +5724,8 @@
         } catch(e) {}
       }));
 
-      // Sortera: om riktiga Last-Modified finns → senast uppladdad först
-      // annars → högsta nattnummer först (senaste natten överst)
-      const hasRealTimes = found.some(f => f.hasRealTime);
-      found.sort((a, b) => hasRealTimes ? b.modTime - a.modTime : b.row.day - a.row.day);
+      // Senaste natten överst alltid
+      found.sort((a, b) => b.row.day - a.row.day);
       newItems = found;
       renderPanel(found, seen);
       const unread = found.filter(f => !f.seen).length;
