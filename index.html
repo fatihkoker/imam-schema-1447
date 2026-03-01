@@ -3870,16 +3870,22 @@
   // ── MASTER STOP — pausar absolut allt ljud ──
   function _stopAll(exceptDatum, exceptType) {
     Object.keys(audioState).forEach(d => {
-      if (audioState[d] && !audioState[d].paused) {
+      const a = audioState[d];
+      if (a && !a.paused) {
         if (d === exceptDatum && exceptType === 'tarawih') return;
-        audioState[d].pause();
+        a._stopping = true;
+        a.pause();
+        Promise.resolve().then(() => { a._stopping = false; });
         if (d !== exceptDatum) setBtns(d, PLAY_SVG, false);
       }
     });
     Object.keys(ishaState).forEach(d => {
-      if (ishaState[d] && !ishaState[d].paused) {
+      const a = ishaState[d];
+      if (a && !a.paused) {
         if (d === exceptDatum && exceptType === 'isha') return;
-        ishaState[d].pause();
+        a._stopping = true;
+        a.pause();
+        Promise.resolve().then(() => { a._stopping = false; });
       }
     });
   }
