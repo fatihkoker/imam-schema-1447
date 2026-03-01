@@ -3876,7 +3876,7 @@
         a._stopping = true;
         a.pause();
         Promise.resolve().then(() => { a._stopping = false; });
-        if (d !== exceptDatum) setBtns(d, PLAY_SVG, false);
+        setBtns(d, PLAY_SVG, false); // alltid återställ UI
       }
     });
     Object.keys(ishaState).forEach(d => {
@@ -4620,6 +4620,11 @@
       // Update segment pill if player is open for this datum
       if (_activeDatum === datum) _updateSegmentPill('tarawih');
 
+      // Om audio-objektet är i error-state — skapa nytt
+      if (audioState[datum] && audioState[datum].error) {
+        audioState[datum] = null;
+      }
+
       if (!audioState[datum]) {
         const a = new Audio();
         a.preload = 'auto';
@@ -4666,6 +4671,8 @@
         // SPELA — frigör låset DIREKT så paus-knappen inte fryser
         _toggleBusy = false;
         setBtns(datum, SPIN_SVG, true);
+        // Öppna player redan nu så UI inte fastnar
+        if (_activeDatum !== datum) openPlayer(datum);
         // Skapa/resumea AudioContext direkt i user gesture (krävs på mobil)
         if (window._primeAudioCtx) window._primeAudioCtx();
         if (window._resumeAudioCtx) window._resumeAudioCtx(datum);
@@ -4679,10 +4686,11 @@
             if (err.name !== 'AbortError') {
               console.warn('Play failed:', err);
               setBtns(datum, PLAY_SVG, false);
+              updateStickyPlayBtn(false);
             }
           });
         }
-        return; // låset redan frigjort ovan
+        return;
       } else {
         // PAUSA — frigör låset DIREKT, kör cleanup async
         _toggleBusy = false;
