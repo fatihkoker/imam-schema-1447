@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-theme="light">
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CP3TPCPMEB"></script>
@@ -12,7 +12,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tarawih Schema — Kämpingehallen | Ramadan 2026</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
   <style>
@@ -68,6 +68,25 @@
       --ios-thumb:       #ffffff;
     }
 
+    [data-theme="light"] {
+      --bg:              #f7f4ef;
+      --surface:         #ffffff;
+      --surface-2:       #f0ece4;
+      --border:          rgba(36,100,93,0.10);
+      --text:            #1a1a1a;
+      --muted:           #6b7280;
+      --muted-2:         #9ca3af;
+      --primary:         #24645d;
+      --primary-dark:    #1a4a44;
+      --today-bg:        #e8f7f0;
+      --row-hover:       rgba(36,100,93,0.04);
+      --chip-bg:         #ffffff;
+      --mobile-shadow:   0 2px 12px rgba(36,100,93,0.08);
+      --cell-bg:         #ffffff;
+      --header-bg:       #24645d;
+      --legend-bg:       #ffffff;
+    }
+
     [data-theme="dark"] {
       --bg:              #0f1614;
       --surface:         #1a2420;
@@ -108,11 +127,16 @@
 
     html { scrollbar-gutter: stable; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html[data-theme="light"], html[data-theme="light"] body { background-color: #f7f4ef !important; color: #1a1a1a; }
+    html[data-theme="dark"],  html[data-theme="dark"]  body { background-color: #0f1614 !important; color: #e8e3db; }
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; }
 
     /* ══ iOS TOGGLE ══ */
-    .theme-toggle {
+    .header-right-group {
       position: absolute; top: 10px; right: 12px; z-index: 10;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+    }
+    .theme-toggle {
       display: inline-flex; align-items: center;
       background: none; border: none; padding: 0;
       cursor: pointer; font-family: inherit;
@@ -157,8 +181,177 @@
     .theme-toggle:active .ios-thumb { width: 28px; }
     [data-theme="dark"] .theme-toggle:active .ios-thumb { width: 28px; left: 3px; }
 
+    /* ── Bell notif button ── */
+    .bell-notif-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(255,255,255,0.10);
+      border: none; cursor: pointer; color: rgba(255,255,255,0.85);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bell-notif-btn:hover { background: rgba(255,255,255,0.18); }
+    .bell-notif-btn.active { background: rgba(201,168,76,0.18); }
+    .bell-notif-btn.ringing { animation: bellRingAnim 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes bellRingAnim {
+      0%  { transform: rotate(0deg); }
+      20% { transform: rotate(18deg); }
+      40% { transform: rotate(-15deg); }
+      60% { transform: rotate(10deg); }
+      80% { transform: rotate(-6deg); }
+      100%{ transform: rotate(0deg); }
+    }
+    .bell-notif-badge {
+      position: absolute; top: -2px; right: -2px;
+      min-width: 15px; height: 15px; border-radius: 8px;
+      background: #e8320a; color: #fff;
+      font-size: 8px; font-weight: 700;
+      display: none; align-items: center; justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      opacity: 0; transform: scale(0);
+      transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .bell-notif-badge.show {
+      display: flex; opacity: 1; transform: scale(1);
+    }
+
+    /* ── Notification panel ── */
+    .notif-panel-wrap {
+      position: absolute;
+      top: calc(100% + 6px); right: 0;
+      width: min(340px, calc(100vw - 24px));
+      z-index: 9999; pointer-events: none;
+    }
+    .notif-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03);
+      transform-origin: top right;
+      transform: scale(0.88) translateY(-12px);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .notif-panel-wrap.open .notif-panel {
+      transform: scale(1) translateY(0); opacity: 1; pointer-events: auto;
+    }
+    [data-theme="light"] .notif-panel {
+      box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.12);
+    }
+    .np-header {
+      padding: 14px 16px 11px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .np-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .np-title-icon {
+      width: 20px; height: 20px; border-radius: 6px;
+      background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 10px;
+    }
+    .np-mark-read {
+      font-size: 11px; color: var(--gold);
+      background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      opacity: 0.8; transition: opacity 0.15s; padding: 3px 0;
+    }
+    .np-mark-read:hover { opacity: 1; }
+    .np-list {
+      padding: 6px; display: flex; flex-direction: column; gap: 3px;
+      max-height: 320px; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .np-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 11px; border-radius: 12px; cursor: pointer;
+      transition: background 0.15s; position: relative;
+      border: 1px solid transparent;
+      opacity: 0; transform: translateY(6px);
+    }
+    .notif-panel-wrap.open .np-item {
+      animation: npItemIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .notif-panel-wrap.open .np-item:nth-child(1) { animation-delay: 0.05s; }
+    .notif-panel-wrap.open .np-item:nth-child(2) { animation-delay: 0.09s; }
+    .notif-panel-wrap.open .np-item:nth-child(3) { animation-delay: 0.13s; }
+    .notif-panel-wrap.open .np-item:nth-child(4) { animation-delay: 0.17s; }
+    .notif-panel-wrap.open .np-item:nth-child(5) { animation-delay: 0.21s; }
+    @keyframes npItemIn { to { opacity: 1; transform: translateY(0); } }
+    .np-item:hover { background: var(--row-hover); border-color: var(--border); }
+    .np-item.unread { background: rgba(201,168,76,0.04); border-color: rgba(201,168,76,0.08); }
+    .np-item.unread:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.15); }
+    .np-unread-dot {
+      position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
+      width: 5px; height: 5px; border-radius: 50%; background: var(--gold);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .np-item.unread .np-unread-dot { opacity: 1; }
+    .np-imam-art {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 16px; position: relative; overflow: hidden;
+    }
+    .np-imam-art::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 60%);
+    }
+    .np-body { flex: 1; min-width: 0; }
+    .np-night {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 2px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .np-new-chip {
+      background: rgba(232,99,10,0.15); color: #e8630a;
+      border: 1px solid rgba(232,99,10,0.2); border-radius: 4px;
+      font-size: 7px; font-weight: 700; padding: 1px 4px; letter-spacing: 0.06em;
+    }
+    .np-imam-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .np-meta { font-size: 10.5px; color: var(--muted); }
+    .np-time {
+      font-size: 10px; color: var(--muted-2);
+      white-space: nowrap; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    }
+    .np-play-chip {
+      display: flex; align-items: center; gap: 3px;
+      background: rgba(36,100,93,0.15); border: 1px solid rgba(36,100,93,0.25);
+      border-radius: 20px; padding: 2px 7px;
+      font-size: 9.5px; color: var(--today-green); font-weight: 600;
+    }
+    .np-arrow { color: var(--muted-2); font-size: 14px; flex-shrink: 0; transition: transform 0.2s, color 0.2s; }
+    .np-item:hover .np-arrow { transform: translateX(3px); color: var(--gold); }
+    .np-empty { padding: 28px 20px; text-align: center; }
+    .np-empty-icon { font-size: 26px; margin-bottom: 8px; opacity: 0.3; }
+    .np-empty-text { font-size: 12px; color: var(--muted); }
+    .np-footer {
+      padding: 9px 16px 12px; border-top: 1px solid var(--border); text-align: center;
+    }
+    .np-footer-text {
+      font-size: 10px; color: var(--muted-2);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .np-footer-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--today-green);
+      animation: npFooterPulse 2s ease infinite;
+    }
+    @keyframes npFooterPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
     /* ── HEADER ── */
-    header { background: var(--header-bg); padding: 28px 20px 22px; text-align: center; position: relative; overflow: hidden; transition: background 0.35s ease; }
+    header { background: var(--header-bg); padding: 28px 20px 22px; text-align: center; position: relative; transition: background 0.35s ease; }
     header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%); pointer-events: none; }
     [data-theme="dark"] header::before { background: radial-gradient(ellipse at 80% 25%, rgba(201,168,76,0.09) 0%, transparent 55%), radial-gradient(ellipse at 15% 70%, rgba(36,100,93,0.18) 0%, transparent 40%); }
     .ornament { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 2; }
@@ -632,102 +825,93 @@
 
     /* Spring "blow up" animation */
 
-    .moon-bubble {
-      position: absolute;
-      bottom: calc(100% + 10px);
-      right: -10px;
-      transform: translateY(120px);
-      transform-origin: bottom right;
-
-      width: 260px;
-      max-width: 90vw;
-
-      background: #12211f;
-      border-radius: 10px;
-      padding: 10px 12px;
-      border: 1px solid rgba(201,168,76,0.40);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-
-      color: rgba(255,255,255,0.88);
-      font-size: 0.72rem;
-      line-height: 1.55;
-      font-style: italic;
-      text-align: left;
-      font-family: 'DM Sans', sans-serif;
-
+    /* ── Moon bubble — Scroll style ── */
+    #global-moon-bubble {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-140px);
+      width: min(380px, calc(100vw - 32px));
       z-index: 10002;
-      pointer-events: none;
       opacity: 0;
       visibility: hidden;
-      transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
-      will-change: transform, opacity;
+      pointer-events: none;
+      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease, visibility 0s 0.5s;
     }
-
-    /* Open state — desktop */
-    .moon-wrap.bubble-open .moon-bubble {
-      visibility: visible;
+    #global-moon-bubble.bubble-open {
+      transform: translateX(-50%) translateY(0);
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
-      transform: translateY(0);
+      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease, visibility 0s 0s;
     }
-
-    /* Close animation — desktop */
-    .moon-bubble.bubble-closing {
-      opacity: 0 !important;
-      transform: translateY(120px) !important;
-      pointer-events: none !important;
+    #global-moon-bubble.bubble-closing {
+      transform: translateX(-50%) translateY(-140px);
+      opacity: 0;
+      pointer-events: none;
     }
-
-    .moon-bubble::before {
+    .gmb-inner {
+      background: linear-gradient(160deg, #1a2e28 0%, #111f1b 100%);
+      border: 1px solid rgba(201,168,76,0.28);
+      border-radius: 18px;
+      padding: 18px 20px 14px;
+      box-shadow:
+        0 8px 40px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(201,168,76,0.05),
+        inset 0 1px 0 rgba(201,168,76,0.09);
+      position: relative;
+      overflow: hidden;
+    }
+    .gmb-inner::before {
       content: '';
-      position: absolute;
-      top: 0; left: 14px; right: 14px; height: 1px;
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent);
-      border-radius: 999px;
     }
-
-    /* Downward tail pointing at the moon — far right */
-    .moon-bubble::after {
+    .gmb-inner::after {
       content: '';
-      position: absolute;
-      top: 100%; right: 12px; left: auto;
-      transform: none;
-      width: 0; height: 0;
-      border-left: 7px solid transparent;
-      border-right: 7px solid transparent;
-      border-top: 8px solid #12211f;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.25), transparent);
     }
-
-    /* Gold label row — "🌙 Laylatul-Qadr" */
-    .moon-bubble-label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.60rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.90);
-      margin-bottom: 7px;
-      font-style: normal;
-      line-height: 1;
+    .gmb-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 11px;
     }
-
-    /* Hadith body text */
-    .moon-bubble-text {
-      display: block;
-      font-style: italic;
+    .gmb-moon-icon { font-size: 15px; }
+    .gmb-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(201,168,76,0.7);
+      flex: 1; font-family: 'DM Sans', sans-serif;
     }
-
-    /* Desktop hover trigger */
-    @media (hover: hover) {
-      .moon-wrap:hover .moon-bubble {
-        visibility: visible;
-        opacity: 1;
-        pointer-events: auto;
-        transform: translateY(0);
-      }
+    .gmb-night {
+      font-size: 9px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      color: rgba(255,255,255,0.28); letter-spacing: 0.06em;
+    }
+    .gmb-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.18), transparent);
+      margin-bottom: 13px;
+    }
+    .gmb-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px; font-weight: 400; font-style: italic;
+      color: rgba(232,227,219,0.9); line-height: 1.75;
+      text-align: center;
+    }
+    .gmb-source {
+      margin-top: 10px; text-align: center;
+      font-size: 10px; color: rgba(201,168,76,0.45);
+      letter-spacing: 0.06em; font-family: 'DM Sans', sans-serif;
+    }
+    .gmb-ornament {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: 10px;
+    }
+    .gmb-orn-line { height: 1px; width: 36px; }
+    .gmb-orn-line.l { background: linear-gradient(to right, transparent, rgba(201,168,76,0.25)); }
+    .gmb-orn-line.r { background: linear-gradient(to left, transparent, rgba(201,168,76,0.25)); }
+    .gmb-orn-diamond { width: 5px; height: 5px; background: rgba(201,168,76,0.35); transform: rotate(45deg); }
+    .gmb-swipe {
+      text-align: center; font-size: 9px; color: rgba(255,255,255,0.18);
+      margin-top: 11px; letter-spacing: 0.06em; font-family: 'DM Sans', sans-serif;
     }
 
     /* ── Last 10 nights: table row & today card adjustments ── */
@@ -765,8 +949,112 @@
     .dcm-tooltip { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; padding: 0 10px; background: var(--primary-dark); color: #fff; font-size: .75rem; font-weight: 500; border-radius: 7px; letter-spacing: .02em; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease, margin-top 0.35s ease, padding 0.35s ease; }
     .dcm-tooltip.visible { max-height: 80px; opacity: 1; margin-top: 6px; padding: 7px 10px; }
 
+    /* ── Progressiv scroll-animering ── */
+    @media (prefers-reduced-motion: no-preference) {
+      tbody tr.stagger-hidden {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      tbody tr.stagger-in {
+        animation: staggerRowIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .day-card-mobile.stagger-hidden {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      .day-card-mobile.stagger-in {
+        animation: staggerRowIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes staggerRowIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+
+    /* ── Skeleton screens ── */
+    @keyframes skShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .sk-block {
+      border-radius: 6px;
+      height: 12px;
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.09) 50%,
+        rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: skShimmer 1.6s ease-in-out infinite;
+    }
+    [data-theme="light"] .sk-block {
+      background: linear-gradient(90deg,
+        rgba(0,0,0,0.06) 25%,
+        rgba(0,0,0,0.12) 50%,
+        rgba(0,0,0,0.06) 75%);
+      background-size: 200% 100%;
+    }
+    .sk-w20 { width: 20px; }
+    .sk-w30 { width: 40px; }
+    .sk-w40 { width: 55%; }
+    .sk-w45 { width: 45%; }
+    .sk-w50 { width: 55%; }
+    .sk-w55 { width: 55%; }
+    .sk-w60 { width: 70%; }
+    .sk-w70 { width: 70%; }
+    .sk-circle { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+    .sk-circle-sm { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+    .sk-row td { padding: 12px 10px; }
+    .sk-row { opacity: 0; animation: skFadeIn 0.3s ease forwards, skShimmer 0s; }
+    @keyframes skFadeIn {
+      to { opacity: 1; }
+    }
+    .sk-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--surface);
+      margin-bottom: 8px;
+      border: 1px solid var(--border-subtle);
+      opacity: 0;
+      animation: skFadeIn 0.3s ease forwards;
+    }
+    .sk-card-left { flex-shrink: 0; }
+    .sk-card-body { flex: 1; }
+
     /* ── Mobile last-ten ── */
     .day-card-mobile.last-ten { background: var(--surface); }
+
+    /* ══ Laylatul-Qadr — udda nätter i de sista tio (21,23,25,27,29) ══ */
+    @keyframes qadrBreath {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+      50%       { box-shadow: 0 0 28px 4px rgba(201,168,76,0.10); }
+    }
+    @keyframes qadrBreathCard {
+      0%, 100% { box-shadow: 0 2px 12px rgba(36,100,93,0.08), 0 0 0 0 rgba(201,168,76,0); }
+      50%       { box-shadow: 0 2px 12px rgba(36,100,93,0.08), 0 0 24px 3px rgba(201,168,76,0.10); }
+    }
+    tbody tr.qadr {
+      background: linear-gradient(to right, rgba(201,168,76,0.04), rgba(201,168,76,0.02), transparent) !important;
+      border-left: 2px solid rgba(201,168,76,0.30) !important;
+      animation: qadrBreath 3.5s ease-in-out infinite;
+    }
+    tbody tr.qadr td:first-child { color: var(--gold) !important; font-weight: 700; }
+    [data-theme="light"] tbody tr.qadr {
+      background: linear-gradient(to right, rgba(201,168,76,0.06), rgba(201,168,76,0.02), transparent) !important;
+      border-left: 2px solid rgba(180,130,0,0.35) !important;
+    }
+    .day-card-mobile.qadr {
+      background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, var(--surface) 60%) !important;
+      border-left: 2px solid rgba(201,168,76,0.30) !important;
+      animation: qadrBreathCard 3.5s ease-in-out infinite;
+    }
+    [data-theme="light"] .day-card-mobile.last-ten,
+    [data-theme="light"] .day-card-mobile.qadr {
+      background: #ffffff !important;
+      border-left-color: rgba(180,130,0,0.25) !important;
+    }
+    .day-card-mobile.qadr .dcm-dag { color: var(--gold) !important; }
     .day-card-mobile.last-ten.today { background: #0f2d5e !important; border-left-color: #3a7bd5; }
     [data-theme="dark"] .day-card-mobile.last-ten.today { background: #0a2040 !important; }
     .day-card-mobile.last-ten.today .dcm-dag,
@@ -779,45 +1067,13 @@
     .day-card-mobile.last-ten.today .today-badge { background: #3a7bd5; }
     .day-card-mobile.last-ten.today .dcm-dag.today-day { color: #7eb8f7 !important; }
 
-    /* ══ Mobile: .moon-bubble becomes full-screen bottom sheet ══ */
+    /* ══ Mobile: scroll-notis glider ned från toppen ══ */
     @media (max-width: 640px) {
-      .moon-bubble {
-        position: fixed !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important;
-        top: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        border-radius: 22px 22px 0 0 !important;
-        padding: 24px 22px 40px !important;
-        font-size: 0.88rem !important;
-        line-height: 1.7 !important;
-        z-index: 10001 !important;
-        pointer-events: none !important;
-        opacity: 1 !important;
-        visibility: hidden !important;
-        transform: translateY(100%) !important;
-        transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease !important;
-        border-bottom: none !important;
-        will-change: transform;
+      #global-moon-bubble {
+        top: 12px !important;
+        width: min(360px, calc(100vw - 24px)) !important;
       }
-      .moon-bubble::before { display: none !important; }
-      .moon-bubble::after  { display: none !important; }
-
-      /* Open state */
-      .moon-wrap.bubble-open .moon-bubble,
-      .today-moon-wrap.bubble-open .moon-bubble {
-        visibility: visible !important;
-        pointer-events: auto !important;
-        transform: translateY(0) !important;
-      }
-      /* Close */
-      .moon-bubble.bubble-closing {
-        visibility: visible !important;
-        pointer-events: none !important;
-        transform: translateY(100%) !important;
-        opacity: 0 !important;
-      }
-      .moon-wrap:hover .moon-bubble { visibility: hidden !important; }
+      .gmb-text { font-size: 14.5px !important; }
     }
 
     /* Backdrop above player on mobile */
@@ -1699,6 +1955,159 @@
     }
     .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* iOS-style prayer banner */
+    .prayer-banner {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-120px);
+      z-index: 99999;
+      width: min(360px, calc(100vw - 32px));
+      background: rgba(16, 24, 20, 0.97);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.35s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .prayer-banner.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .prayer-banner.hide {
+      transform: translateX(-50%) translateY(-120px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .pb-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(36,100,93,0.8), rgba(58,144,136,0.6));
+      border: 1px solid rgba(58,144,136,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .pb-icon::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.12), transparent 60%);
+    }
+    .pb-body { flex: 1; min-width: 0; }
+    .pb-app {
+      font-family: 'Syne', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 3px;
+    }
+    .pb-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e8e3db;
+      line-height: 1.2;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pb-sub {
+      font-size: 11.5px;
+      color: rgba(255,255,255,0.45);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pb-close {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      border: none;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .pb-close:hover { background: rgba(255,255,255,0.13); color: rgba(255,255,255,0.7); }
+    .pb-progress {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 0 0 20px 20px;
+      overflow: hidden;
+    }
+    .pb-progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, rgba(36,100,93,0.8), rgba(58,144,136,1));
+      border-radius: 0 0 20px 20px;
+      width: 100%;
+      transform-origin: left;
+      transition: transform linear;
+    }
+    [data-theme="light"] .prayer-banner {
+      background: rgba(255,255,255,0.96);
+      border-color: rgba(0,0,0,0.08);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+    [data-theme="light"] .pb-app { color: rgba(0,0,0,0.35); }
+    [data-theme="light"] .pb-title { color: #1a1a1a; }
+    [data-theme="light"] .pb-sub { color: rgba(0,0,0,0.45); }
+    .pb-time-pill {
+      flex-shrink: 0;
+      background: rgba(201,168,76,0.10);
+      border: 1px solid rgba(201,168,76,0.20);
+      border-radius: 20px;
+      padding: 5px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .pb-time-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.6);
+      line-height: 1;
+    }
+    .pb-time-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+    .pb-swipe-hint {
+      position: absolute;
+      bottom: 7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px; height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    [data-theme="light"] .pb-swipe-hint { background: rgba(0,0,0,0.10); }
+
     /* Lang dropdown */
     .lang-wrap { position: relative; }
     .lang-trigger {
@@ -1750,6 +2159,7 @@
 <body>
 
 <header>
+  <div class="header-right-group">
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Byt tema">
     <div class="ios-track" id="ios-track">
       <span class="ios-track-label" id="toggle-label">LJUST<br>LÄGE</span>
@@ -1775,6 +2185,34 @@
       </div>
     </div>
   </button>
+  <button class="bell-notif-btn" id="bell-notif-btn" aria-label="Nya ljud" title="Nya ljud">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="bell-notif-badge" id="bell-notif-badge"></span>
+  </button>
+  <!-- Notif panel -->
+  <div class="notif-panel-wrap" id="notif-panel-wrap">
+    <div class="notif-panel" id="notif-panel">
+      <div class="np-header">
+        <div class="np-title">
+          <div class="np-title-icon">🔔</div>
+          <span data-i18n="bellTitle">Nya ljud</span>
+        </div>
+        <button class="np-mark-read" id="np-mark-read" data-i18n="bellMarkRead">Markera alla lästa</button>
+      </div>
+      <div class="np-list" id="np-list">
+        <div class="np-empty" id="np-empty">
+          <div class="np-empty-icon">🔔</div>
+          <div class="np-empty-text" data-i18n="bellEmpty">Inga nya ljud uppladdade</div>
+        </div>
+      </div>
+      <div class="np-footer">
+        <div class="np-footer-text">
+          <div class="np-footer-dot"></div>
+          Kollar efter nya ljud automatiskt</div>
+      </div>
+    </div>
+  </div>
+  </div>
   <div class="ornament">
     <div class="orn-line l"></div><div class="orn-dot"></div>
     <div class="orn-diamond"></div><div class="orn-dot"></div>
@@ -1814,10 +2252,40 @@
   </div>
   <!-- SHARE TOAST -->
   <div class="share-toast" id="share-toast"></div>
+  <div class="prayer-banner" id="prayer-banner" role="alert" aria-live="polite">
+    <div class="pb-icon">🕌</div>
+    <div class="pb-body">
+      <div class="pb-app">Tarawih · Kämpingehallen</div>
+      <div class="pb-title" id="pb-title">Tarawih om 15 minuter</div>
+      <div class="pb-sub" id="pb-sub">Isha börjar kl. —</div>
+    </div>
+    <div class="pb-time-pill">
+      <div class="pb-time-label">Isha om</div>
+      <div class="pb-time-val" id="pb-countdown">15:00</div>
+    </div>
+    <div class="pb-progress"><div class="pb-progress-fill" id="pb-progress-fill"></div></div>
+    <div class="pb-swipe-hint"></div>
+  </div>
 </header>
-
-<!-- Mobile backdrop for moon bubble -->
+<!-- Moon bubble and backdrop — must be direct children of body for position:fixed to work on iOS -->
 <div class="moon-tooltip-backdrop" id="moon-tooltip-backdrop"></div>
+<div id="global-moon-bubble">
+  <div class="gmb-inner">
+    <div class="gmb-header">
+      <span class="gmb-moon-icon">🌙</span>
+      <span class="gmb-label">Laylatul-Qadr</span>
+      <span class="gmb-night" id="gmb-night"></span>
+    </div>
+    <div class="gmb-divider"></div>
+    <div class="gmb-text" id="global-moon-bubble-text"></div>
+    <div class="gmb-source" id="gmb-source"></div>
+    <div class="gmb-ornament">
+      <div class="gmb-orn-line l"></div>
+      <div class="gmb-orn-diamond"></div>
+      <div class="gmb-orn-line r"></div>
+    </div>
+  </div>
+</div>
 
 <div class="wave">
   <svg viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -2065,6 +2533,18 @@
       notifBody:       'Bönetiden har börjat — kl. ',
       notifGranted:    'Notis aktiv',
       notifDenied:     'Notis blockerad',
+      bellTitle:       'Nya ljud',
+      bellAria:        'Nya ljud',
+      bellMarkRead:    'Markera alla lästa',
+      bellEmpty:       'Inga nya ljud uppladdade',
+      bellChecking:    'Kollar efter nya ljud automatiskt',
+      bellNight:       'Natt',
+      bellNew:         'NY',
+      bellPlay:        '▶ Spela',
+      bellJustNow:     'just nu',
+      bellMinAgo:      'm sedan',
+      bellHourAgo:     'h sedan',
+      bellDayAgo:      'd sedan',
     },
     ar: {
       days: { Monday:'الاثنين', Tuesday:'الثلاثاء', Wednesday:'الأربعاء', Thursday:'الخميس', Friday:'الجمعة', Saturday:'السبت', Sunday:'الأحد' },
@@ -2121,6 +2601,18 @@
       notifBody:       'بدأت الصلاة — الساعة ',
       notifGranted:    'الإشعار نشط',
       notifDenied:     'الإشعار محظور',
+      bellTitle:       'أصوات جديدة',
+      bellAria:        'أصوات جديدة',
+      bellMarkRead:    'تحديد الكل كمقروء',
+      bellEmpty:       'لا توجد أصوات جديدة',
+      bellChecking:    'جارٍ التحقق من الأصوات الجديدة تلقائياً',
+      bellNight:       'ليلة',
+      bellNew:         'جديد',
+      bellPlay:        '▶ تشغيل',
+      bellJustNow:     'الآن',
+      bellMinAgo:      'د',
+      bellHourAgo:     'س',
+      bellDayAgo:      'ي',
     },
     en: {
       days: { Monday:'Monday', Tuesday:'Tuesday', Wednesday:'Wednesday', Thursday:'Thursday', Friday:'Friday', Saturday:'Saturday', Sunday:'Sunday' },
@@ -2177,6 +2669,18 @@
       notifBody:       'Prayer time has started — ',
       notifGranted:    'Notification active',
       notifDenied:     'Notification blocked',
+      bellTitle:       'New audio',
+      bellAria:        'New audio',
+      bellMarkRead:    'Mark all as read',
+      bellEmpty:       'No new audio uploaded',
+      bellChecking:    'Checking for new audio automatically',
+      bellNight:       'Night',
+      bellNew:         'NEW',
+      bellPlay:        '▶ Play',
+      bellJustNow:     'just now',
+      bellMinAgo:      'm ago',
+      bellHourAgo:     'h ago',
+      bellDayAgo:      'd ago',
     },
     tr: {
       days: { Monday:'Pazartesi', Tuesday:'Salı', Wednesday:'Çarşamba', Thursday:'Perşembe', Friday:'Cuma', Saturday:'Cumartesi', Sunday:'Pazar' },
@@ -2233,6 +2737,18 @@
       notifBody:       'Namaz başladı — saat ',
       notifGranted:    'Bildirim aktif',
       notifDenied:     'Bildirim engellendi',
+      bellTitle:       'Yeni ses',
+      bellAria:        'Yeni ses',
+      bellMarkRead:    'Tümünü okundu işaretle',
+      bellEmpty:       'Yeni ses yüklenmedi',
+      bellChecking:    'Yeni sesler otomatik kontrol ediliyor',
+      bellNight:       'Gece',
+      bellNew:         'YENİ',
+      bellPlay:        '▶ Oynat',
+      bellJustNow:     'şimdi',
+      bellMinAgo:      'dk önce',
+      bellHourAgo:     'sa önce',
+      bellDayAgo:      'g önce',
     },
     so: {
       days: { Monday:'Isniin', Tuesday:'Talaado', Wednesday:'Arbaco', Thursday:'Khamiis', Friday:'Jimce', Saturday:'Sabti', Sunday:'Axad' },
@@ -2289,6 +2805,18 @@
       notifBody:       'Salaadda waxay bilaabatay — ',
       notifGranted:    'Ogeysiiska waa firfircoon',
       notifDenied:     'Ogeysiiska waa la xidhay',
+      bellTitle:       'Codad cusub',
+      bellAria:        'Codad cusub',
+      bellMarkRead:    'Dhammaan u calaamadee akhrinta',
+      bellEmpty:       'Codad cusub lama soo gelinin',
+      bellChecking:    'Si toos ah ayaa loo hubinayaa codadka cusub',
+      bellNight:       'Habeenka',
+      bellNew:         'CUS',
+      bellPlay:        '▶ Ciyaar',
+      bellJustNow:     'hadda',
+      bellMinAgo:      'dq kahor',
+      bellHourAgo:     'sA kahor',
+      bellDayAgo:      'mB kahor',
     },
   };
 
@@ -2367,75 +2895,63 @@
   let _activeMoonWrap = null;
 
   // ── Animationstider — matchar CSS-transitions ───────────────
-  const BUBBLE_CLOSE_MS      = 2050;
+  const BUBBLE_CLOSE_MS      = 420;
 
   function isMobile() { return window.innerWidth <= 640; }
 
+  const globalBubble = document.getElementById('global-moon-bubble');
+  const globalBubbleText = document.getElementById('global-moon-bubble-text');
+
   function closeBubble(animate = true) {
     if (!_activeMoonWrap) return;
-    const bubble = _activeMoonWrap.querySelector('.moon-bubble');
     _activeMoonWrap.classList.remove('bubble-open');
-    if (bubble) {
-      if (animate && isMobile()) {
-        bubble.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-          bubble.style.cssText = '';
-          bubble.classList.remove('bubble-closing');
-        }, BUBBLE_CLOSE_MS);
-      } else if (animate) {
-        bubble.classList.add('bubble-closing');
-        setTimeout(() => {
-          bubble.classList.remove('bubble-closing');
-          bubble.style.cssText = '';
-        }, BUBBLE_CLOSE_MS);
-      } else {
-        bubble.classList.remove('bubble-closing');
-        bubble.style.cssText = '';
-      }
-    }
-    if (isMobile()) {
-      backdrop.classList.add('hiding');
-      backdrop.classList.remove('visible');
-      backdrop.addEventListener('animationend', () => backdrop.classList.remove('hiding'), { once: true });
-    }
+    globalBubble.classList.remove('bubble-open');
+    globalBubble.classList.add('bubble-closing');
+    setTimeout(() => globalBubble.classList.remove('bubble-closing'), BUBBLE_CLOSE_MS);
     _activeMoonWrap = null;
   }
 
   function openBubble(wrapEl) {
+    if (!globalBubble) return;
     if (_activeMoonWrap === wrapEl) { closeBubble(true); return; }
     if (_activeMoonWrap) closeBubble(false);
     _activeMoonWrap = wrapEl;
-    const bubble = wrapEl.querySelector('.moon-bubble');
-    if (bubble) {
-      bubble.classList.remove('bubble-closing');
-      if (isMobile()) {
-        bubble.style.visibility = 'visible';
-        bubble.style.transform = 'translateY(100%)';
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => { bubble.style.transform = 'translateY(0)'; });
-        });
-      } else {
-        bubble.style.cssText = '';
-        requestAnimationFrame(() => {
-          const playerEl = document.getElementById('sticky-player');
-          if (!playerEl || !playerEl.classList.contains('visible')) return;
-          const bubbleRect = bubble.getBoundingClientRect();
-          const playerRect = playerEl.getBoundingClientRect();
-          if (bubbleRect.bottom > playerRect.top) {
-            const overlap = bubbleRect.bottom - playerRect.top + 8;
-            bubble.style.bottom = `calc(100% + 10px + ${overlap}px)`;
-          }
-        });
-      }
+
+    // Set hadith text
+    const key = wrapEl.dataset.moontextkey || DEFAULT_MOON_TEXT;
+    const fullText = (T[_currentLang]?.hadith?.[key]) || T['sv'].hadith[key] || '';
+    // Split source from text — source is in parentheses at end
+    const sourceMatch = fullText.match(/\(([^)]+)\)\s*$/);
+    const source = sourceMatch ? sourceMatch[1] : '';
+    const mainText = sourceMatch ? fullText.replace(sourceMatch[0], '').trim() : fullText;
+    if (globalBubbleText) globalBubbleText.textContent = mainText;
+    const sourceEl = document.getElementById('gmb-source');
+    if (sourceEl) sourceEl.textContent = source;
+    // Night number
+    const nightEl = document.getElementById('gmb-night');
+    if (nightEl && wrapEl.closest('[data-datum]')) {
+      const datum = wrapEl.closest('[data-datum]')?.dataset.datum;
+      const row = SCHEDULE.find(r => r.datum === datum);
+      if (row) nightEl.textContent = ((T[_currentLang]||T['sv']).bellNight||'Natt') + ' ' + row.day;
     }
+
+    globalBubble.classList.remove('bubble-closing');
+    // Same behaviour on all screen sizes — drop down from top
+    globalBubble.classList.add('bubble-open');
     wrapEl.classList.add('bubble-open');
-    if (isMobile()) {
-      backdrop.classList.add('visible');
-      backdrop.classList.remove('hiding');
-    }
+    globalBubble.classList.add('bubble-open');
   }
 
   backdrop.addEventListener('click', () => closeBubble(true));
+
+  // Swipe up to close the scroll bubble
+  let _bubbleSwipeStartY = 0;
+  globalBubble.addEventListener('touchstart', e => {
+    _bubbleSwipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+  globalBubble.addEventListener('touchend', e => {
+    if (_bubbleSwipeStartY - e.changedTouches[0].clientY > 40) closeBubble(true);
+  });
 
   document.addEventListener('click', (e) => {
     // Klick utanför full player → mini
@@ -2469,13 +2985,54 @@
 
   /* ── Build moon bubble HTML — identical for ALL last-ten days ── */
   function makeMoonBubble(text) {
-    return `<div class="moon-bubble"><span class="moon-bubble-label">🌙 Laylatul-Qadr</span><span class="moon-bubble-text">${text}</span></div>`;
+    return ''; // Bubble is now global — rendered once in body
   }
 
   /* ── Moon icon SVG ── */
   function moonSvg(fill, size) {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" fill="${fill}"/></svg>`;
   }
+
+  /* ── Skeleton screens ── */
+  (function injectSkeletons() {
+    const skCount = 8;
+    const tbodyEl = document.getElementById('table-body');
+    const mobileEl = document.getElementById('mobile-cards');
+
+    // Desktop skeleton rows
+    for (let i = 0; i < skCount; i++) {
+      const tr = document.createElement('tr');
+      tr.className = 'sk-row';
+      tr.style.animationDelay = (i * 60) + 'ms';
+      tr.innerHTML = `
+        <td><div class="sk-block sk-w20"></div></td>
+        <td><div class="sk-block sk-w30"></div></td>
+        <td><div class="sk-block sk-w60"></div></td>
+        <td><div class="sk-block sk-w50" style="border-radius:20px;height:22px;"></div></td>
+        <td><div class="sk-block sk-w40"></div></td>
+        <td></td><td></td>
+        <td><div class="sk-block sk-w30"></div></td>
+      `;
+      tbodyEl.appendChild(tr);
+    }
+
+    // Mobile skeleton cards
+    for (let i = 0; i < skCount; i++) {
+      const card = document.createElement('div');
+      card.className = 'sk-card';
+      card.style.animationDelay = (i * 60) + 'ms';
+      card.innerHTML = `
+        <div class="sk-card-left"><div class="sk-block sk-circle"></div></div>
+        <div class="sk-card-body">
+          <div class="sk-block sk-w70" style="height:14px;margin-bottom:8px;"></div>
+          <div class="sk-block sk-w45" style="height:11px;margin-bottom:6px;"></div>
+          <div class="sk-block sk-w55" style="height:11px;"></div>
+        </div>
+        <div class="sk-block sk-circle-sm"></div>
+      `;
+      mobileEl.appendChild(card);
+    }
+  })();
 
   /* ── Build desktop table ── */
   const tbody = document.getElementById('table-body');
@@ -2488,6 +3045,8 @@
     const badge = isToday ? '<span class="today-badge" data-i18n="todayBadge">' + (T[_currentLang].todayBadge || 'Idag') + '</span>' : '';
     const isLastTen = row.day >= 21;
     if (isLastTen) tr.classList.add('last-ten');
+    const isQadr = isLastTen && row.day % 2 !== 0;
+    if (isQadr) tr.classList.add('qadr');
 
     const isOdd = row.day % 2 !== 0;
     const moonFill = isOdd ? '#fff2c0' : 'white';
@@ -2495,7 +3054,7 @@
     const moonText = getMoonText(row);
 
     const moonCell = isLastTen
-      ? `<span class="moon-wrap"><span class="${moonClass}">${moonSvg(moonFill, 12)}</span>${makeMoonBubble(moonText)}</span>`
+      ? `<span class="moon-wrap" data-moontextkey="${row.moonText || DEFAULT_MOON_TEXT}"><span class="${moonClass}">${moonSvg(moonFill, 12)}</span></span>`
       : '';
 
     const hijriDay = row.day - 1;
@@ -2538,13 +3097,50 @@
     tbody.appendChild(tr);
   });
 
+  // Remove desktop skeletons
+  document.querySelectorAll('#table-body .sk-row').forEach(el => el.remove());
+
+  // Stagger desktop rows
+  (function() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => row.classList.add('stagger-hidden'));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const row = entry.target;
+        const siblings = Array.from(tbody.querySelectorAll('tr.stagger-hidden:not(.stagger-in)'));
+        const visibleBatch = siblings.slice(0, 6);
+        visibleBatch.forEach((r, i) => {
+          r.style.animationDelay = (i * 38) + 'ms';
+          r.classList.add('stagger-in');
+          r.classList.remove('stagger-hidden');
+        });
+        io.unobserve(row);
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+    if (rows.length) io.observe(rows[0]);
+    // Re-observe on scroll to catch remaining rows
+    const scrollIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.style.animationDelay = '0ms';
+        entry.target.classList.add('stagger-in');
+        entry.target.classList.remove('stagger-hidden');
+        scrollIo.unobserve(entry.target);
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -10px 0px' });
+    rows.forEach(row => scrollIo.observe(row));
+  })();
+
   /* ── Build mobile cards ── */
   const container = document.getElementById('mobile-cards');
   SCHEDULE.forEach(row => {
     const isToday = row.datum === today;
     const card = document.createElement('div');
     const isLastTenM = row.day >= 21;
-    card.className = 'day-card-mobile' + (isToday ? ' today' : '') + (isLastTenM ? ' last-ten' : '');
+    const isQadrM = isLastTenM && row.day % 2 !== 0;
+    card.className = 'day-card-mobile' + (isToday ? ' today' : '') + (isLastTenM ? ' last-ten' : '') + (isQadrM ? ' qadr' : '');
     card.setAttribute('data-datum', row.datum);
     if (isToday) card.id = 'today-row-mobile';
     const veckaClass = row.vecka === 'Friday' ? 'fredag' : row.vecka === 'Saturday' ? 'lordag' : row.vecka === 'Sunday' ? 'sondag' : '';
@@ -2555,7 +3151,7 @@
     const moonText = getMoonText(row);
 
     const moonSpan = isLastTenM
-      ? `<span class="moon-wrap" style="margin-left:5px;"><span class="${moonClass}">${moonSvg(moonFill, 11)}</span>${makeMoonBubble(moonText)}</span>`
+      ? `<span class="moon-wrap" style="margin-left:5px;" data-moontextkey="${row.moonText || DEFAULT_MOON_TEXT}"><span class="${moonClass}">${moonSvg(moonFill, 11)}</span></span>`
       : '';
 
     card.innerHTML = `
@@ -2604,6 +3200,30 @@
     container.appendChild(card);
   });
 
+  // Remove mobile skeletons
+  document.querySelectorAll('#mobile-cards .sk-card').forEach(el => el.remove());
+
+  // Stagger mobile cards
+  (function() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cards = container.querySelectorAll('.day-card-mobile');
+    cards.forEach(c => c.classList.add('stagger-hidden'));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.style.animationDelay = '0ms';
+        entry.target.classList.add('stagger-in');
+        entry.target.classList.remove('stagger-hidden');
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -10px 0px' });
+    // First batch with stagger delay
+    Array.from(cards).slice(0, 5).forEach((c, i) => {
+      c.style.animationDelay = (i * 45) + 'ms';
+    });
+    cards.forEach(c => io.observe(c));
+  })();
+
   /* ── Today card ── */
   if (isAfterRamadan) document.getElementById('eid-card').style.display = 'block';
 
@@ -2627,7 +3247,8 @@
       const moonWrap = document.createElement('span');
       moonWrap.className = 'today-moon-wrap';
       moonWrap.style.marginLeft = '8px';
-      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}">${moonSvg(moonFill, 12)}</span>${makeMoonBubble(todayMoonText)}`;
+      moonWrap.innerHTML = `<span class="today-moon-icon${oddClass}">${moonSvg(moonFill, 12)}</span>`;
+      moonWrap.dataset.moontextkey = todayData.moonText || DEFAULT_MOON_TEXT;
       dateEl.parentNode.appendChild(moonWrap);
 
       // Inline hadith in today-card header
@@ -4150,6 +4771,17 @@
       el.title = t.favTip || 'Spara favorit';
     });
 
+    // Bell notification — update aria/title and re-render panel
+    const bellBtn = document.getElementById('bell-notif-btn');
+    if (bellBtn) { bellBtn.setAttribute('aria-label', t.bellAria||'Nya ljud'); bellBtn.title = t.bellAria||'Nya ljud'; }
+    const npFooterText = document.querySelector('.np-footer-text');
+    if (npFooterText) {
+      const dot = npFooterText.querySelector('.np-footer-dot');
+      npFooterText.textContent = t.bellChecking || 'Kollar efter nya ljud automatiskt';
+      if (dot) npFooterText.prepend(dot);
+    }
+    if (window._bellRenderPanel) window._bellRenderPanel();
+
     // Mobile cards surah label (dynamically rendered)
     document.querySelectorAll('.dcm-surahs-label').forEach(el => {
       el.textContent = t.surahsDetail;
@@ -4810,12 +5442,148 @@
     updateNotifBtn();
     notifBtn.addEventListener('click', async () => {
       if (!('Notification' in window)) return;
-      if (Notification.permission === 'default') { await Notification.requestPermission(); updateNotifBtn(); }
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+        updateNotifBtn();
+      }
     });
 
     function fireIshaNotification(ishaStr) {
       if (!('Notification' in window) || Notification.permission !== 'granted') return;
-      new Notification(T[_currentLang].notifTitle, { body: T[_currentLang].notifBody + ishaStr, icon: '/favicon.ico', badge: '/favicon.ico', tag: 'isha-prayer', renotify: false, silent: false });
+      new Notification(T[_currentLang].notifTitle, { body: T[_currentLang].notifBody + ishaStr, icon: 'favicon.ico', badge: 'favicon.ico', tag: 'isha-prayer', renotify: false, silent: false });
+    }
+
+    function showPrayerBanner(ishaStr) {
+      const banner = document.getElementById('prayer-banner');
+      const pbTitle = document.getElementById('pb-title');
+      const pbSub = document.getElementById('pb-sub');
+      const pbFill = document.getElementById('pb-progress-fill');
+      const pbCountdown = document.getElementById('pb-countdown');
+      if (!banner) return;
+
+      pbTitle.textContent = 'Tarawih om 15 minuter';
+      pbSub.textContent = 'Isha börjar kl. ' + ishaStr + ' · Tarawih direkt efter';
+
+      // Live countdown from 15:00
+      let secondsLeft = 15 * 60;
+      function updatePbCountdown() {
+        const m = Math.floor(secondsLeft / 60);
+        const s = secondsLeft % 60;
+        if (pbCountdown) pbCountdown.textContent = m + ':' + String(s).padStart(2, '0');
+      }
+      updatePbCountdown();
+      clearInterval(window._pbCountdownTimer);
+      window._pbCountdownTimer = setInterval(() => {
+        secondsLeft = Math.max(0, secondsLeft - 1);
+        updatePbCountdown();
+        if (secondsLeft === 0) clearInterval(window._pbCountdownTimer);
+      }, 1000);
+
+      banner.classList.remove('hide');
+      banner.style.transform = '';
+      banner.style.opacity = '';
+      banner.style.transition = '';
+      banner.classList.add('show');
+
+      // Progress bar auto-dismiss
+      const DURATION = 8000;
+      pbFill.style.transition = 'none';
+      pbFill.style.transform = 'scaleX(1)';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        pbFill.style.transition = `transform ${DURATION}ms linear`;
+        pbFill.style.transform = 'scaleX(0)';
+      }));
+      let autoDismiss = setTimeout(() => dismissBanner(), DURATION);
+
+      function dismissBanner() {
+        clearTimeout(autoDismiss);
+        clearInterval(window._pbCountdownTimer);
+        banner.style.transition = 'transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease';
+        banner.style.transform = 'translateX(-50%) translateY(-140px)';
+        banner.style.opacity = '0';
+        setTimeout(() => {
+          banner.classList.add('hide');
+          banner.classList.remove('show');
+          banner.style.transform = '';
+          banner.style.opacity = '';
+          banner.style.transition = '';
+        }, 400);
+      }
+
+      // Swipe to dismiss
+      let startX = 0, startY = 0, startTime = 0, dragging = false;
+
+      function onStart(e) {
+        const t = e.touches ? e.touches[0] : e;
+        startX = t.clientX; startY = t.clientY;
+        startTime = Date.now();
+        dragging = true;
+        clearTimeout(autoDismiss);
+        pbFill.style.transition = 'none';
+        banner.style.transition = 'none';
+        banner.style.cursor = 'grabbing';
+      }
+
+      function onMove(e) {
+        if (!dragging) return;
+        const t = e.touches ? e.touches[0] : e;
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        banner.style.transform = `translateX(calc(-50% + ${dx}px)) translateY(${Math.min(8, dy)}px)`;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        banner.style.opacity = Math.max(0, 1 - dist / 140);
+        if (e.cancelable) e.preventDefault();
+      }
+
+      function onEnd(e) {
+        if (!dragging) return;
+        dragging = false;
+        banner.style.cursor = 'grab';
+        const t = e.changedTouches ? e.changedTouches[0] : e;
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const velocity = dist / Math.max(1, Date.now() - startTime);
+        if (dist > 70 || velocity > 0.45) {
+          const angle = Math.atan2(dy, dx);
+          banner.style.transition = 'transform 0.32s cubic-bezier(0.4,0,1,1), opacity 0.28s ease';
+          banner.style.transform = `translateX(calc(-50% + ${Math.cos(angle) * 320}px)) translateY(${Math.min(-10, Math.sin(angle) * 320)}px)`;
+          banner.style.opacity = '0';
+          setTimeout(() => dismissBanner(), 320);
+        } else {
+          banner.style.transition = 'transform 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease';
+          banner.style.transform = 'translateX(-50%) translateY(0)';
+          banner.style.opacity = '1';
+          autoDismiss = setTimeout(() => dismissBanner(), 8000);
+        }
+      }
+
+      banner.addEventListener('touchstart', onStart, { passive: true });
+      banner.addEventListener('touchmove', onMove, { passive: false });
+      banner.addEventListener('touchend', onEnd);
+      banner.addEventListener('mousedown', onStart);
+      window.addEventListener('mousemove', (e) => { if (dragging) onMove(e); });
+      window.addEventListener('mouseup', (e) => { if (dragging) onEnd(e); });
+
+      banner.onclick = (e) => {
+        if (Math.abs(e.clientX - startX) > 5) return;
+        dismissBanner();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    }
+
+    function schedule15MinNotif(ishaStr) {
+      const now = new Date();
+      const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const [ishaH, ishaM] = ishaStr.split(':').map(Number);
+      const ishaSec = ishaH * 3600 + ishaM * 60;
+      const msUntil15Before = (ishaSec - 15 * 60 - nowSec) * 1000;
+      if (msUntil15Before > 0) {
+        clearTimeout(window._isha15Timer);
+        window._isha15Timer = setTimeout(() => {
+          showPrayerBanner(ishaStr);
+        }, msUntil15Before);
+      }
     }
 
     function triggerDoneAnimation(ishaStr) {
@@ -4860,6 +5628,11 @@
         const diff = ishaSec - nowSec;
         const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
         timerEl.textContent = padZ(h) + ':' + padZ(m) + ':' + padZ(s);
+        // Schedule 15-min advance notif once per session
+        if (!window._isha15Scheduled) {
+          window._isha15Scheduled = true;
+          schedule15MinNotif(ishaStr);
+        }
         // Guld-ton när < 30 min kvar
         if (ringEl && diff < 1800) {
           timerEl.style.color = 'var(--gold)';
@@ -4875,12 +5648,242 @@
   }
   startIshaCountdown();
 
+  /* ── BELL NOTIFICATION SYSTEM ── */
+  (function initBellNotif() {
+    const bellBtn   = document.getElementById('bell-notif-btn');
+    const badge     = document.getElementById('bell-notif-badge');
+    const panelWrap = document.getElementById('notif-panel-wrap');
+    const npList    = document.getElementById('np-list');
+    const npEmpty   = document.getElementById('np-empty');
+    const markRead  = document.getElementById('np-mark-read');
+    if (!bellBtn) return;
+
+    const SEEN_KEY = 'tarawih-seen-audio';
+    const IMAM_COLORS = {
+      abdurrahman: 'linear-gradient(135deg,#8a3a06,#e8630a)',
+      saed:        'linear-gradient(135deg,#7a5c00,#d4a800)',
+      noor:        'linear-gradient(135deg,#1a3a6b,#2980b9)',
+      abdul:       'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
+      mohammed:    'linear-gradient(135deg,#1a3a28,#219150)',
+      yacquub:     'linear-gradient(135deg,#5a1a8a,#7d3aac)',
+      abdelsalam:  'linear-gradient(135deg,#4a2800,#7b3f00)',
+      hatem:       'linear-gradient(135deg,#1a3a28,#2d6a4f)',
+      ibrahim:     'linear-gradient(135deg,#1a3a6b,#2d5fa8)',
+    };
+
+    let panelOpen = false;
+    let newItems = [];
+
+    // Check each schedule row for recently uploaded audio (Last-Modified within 24h)
+    async function checkNewAudio() {
+      const now = Date.now();
+      const seen = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      const found = [];
+
+      await Promise.all(SCHEDULE.map(async (row) => {
+        const basePath = (() => {
+          try {
+            const scripts = document.querySelectorAll('script[src]');
+            const loc = window.location.href;
+            return loc.substring(0, loc.lastIndexOf('/') + 1);
+          } catch(e) { return ''; }
+        })();
+        const url = `${basePath}audio/natt${row.day}.mp3`;
+        try {
+          const res = await fetch(url, { method: 'HEAD' });
+          if (!res.ok) return;
+          const lastMod = res.headers.get('Last-Modified');
+          if (!lastMod) return;
+          const modTime = new Date(lastMod).getTime();
+          const age = now - modTime;
+          if (age < 30 * 24 * 60 * 60 * 1000) {
+            found.push({ row, modTime, seen: !!seen[`day-${row.day}`] });
+          }
+        } catch(e) {}
+      }));
+
+      // Sort newest first
+      found.sort((a, b) => b.modTime - a.modTime);
+      newItems = found;
+      renderPanel(found, seen);
+      const unread = found.filter(f => !f.seen).length;
+      updateBadge(unread);
+      if (unread > 0) ringBell();
+    }
+
+    function timeAgo(modTime) {
+      const t = T[_currentLang] || T['sv'];
+      const diff = Math.floor((Date.now() - modTime) / 60000);
+      if (diff < 2) return t.bellJustNow || 'just nu';
+      if (diff < 60) return `${diff}${t.bellMinAgo || 'm sedan'}`;
+      const h = Math.floor(diff / 60);
+      if (h < 24) return `${h}${t.bellHourAgo || 'h sedan'}`;
+      return `${Math.floor(h/24)}${t.bellDayAgo || 'd sedan'}`;
+    }
+
+    function renderPanel(found, seen) {
+      npList.innerHTML = '';
+      if (found.length === 0) {
+        npEmpty.style.display = 'block';
+        return;
+      }
+      npEmpty.style.display = 'none';
+      found.forEach(({ row, modTime, seen: isSeen }) => {
+        const item = document.createElement('div');
+        item.className = 'np-item' + (isSeen ? '' : ' unread');
+        item.dataset.day = row.day;
+        item.innerHTML = `
+          <div class="np-unread-dot"></div>
+          <div class="np-imam-art" style="background:${IMAM_COLORS[row.imam] || IMAM_COLORS.hatem}">🎙</div>
+          <div class="np-body">
+            <div class="np-night">${(T[_currentLang]||T['sv']).bellNight||'Natt'} ${row.day}${!isSeen ? `<span class="np-new-chip">${(T[_currentLang]||T['sv']).bellNew||'NY'}</span>` : ''}</div>
+            <div class="np-imam-name">${row.imamLabel}</div>
+            <div class="np-meta">${row.surahs} · s. ${row.sidor}</div>
+          </div>
+          <div class="np-time">
+            <span>${timeAgo(modTime)}</span>
+            ${!isSeen ? `<span class="np-play-chip">${(T[_currentLang]||T['sv']).bellPlay||'▶ Spela'}</span>` : ''}
+          </div>
+          <div class="np-arrow">›</div>
+        `;
+        item.addEventListener('click', () => {
+          markItemRead(row.day);
+          closePanel();
+          // Scroll to row
+          const tr = document.querySelector(`tr[data-datum="${row.datum}"]`) ||
+                     document.querySelector(`div[data-datum="${row.datum}"]`);
+          if (tr) { tr.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          // Auto-play
+          const playBtn = document.getElementById(`play-btn-desktop-${row.datum}`) ||
+                          document.querySelector(`[data-datum="${row.datum}"] .play-btn`);
+          if (playBtn) setTimeout(() => playBtn.click(), 600);
+        });
+        npList.appendChild(item);
+      });
+    }
+
+    function markItemRead(day) {
+      const seen = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      seen[`day-${day}`] = true;
+      localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+      const item = npList.querySelector(`[data-day="${day}"]`);
+      if (item) {
+        item.classList.remove('unread');
+        item.querySelector('.np-new-chip')?.remove();
+        item.querySelector('.np-play-chip')?.remove();
+      }
+      const unread = npList.querySelectorAll('.np-item.unread').length;
+      updateBadge(unread);
+    }
+
+    function markAllRead() {
+      const seen = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      newItems.forEach(({ row }) => { seen[`day-${row.day}`] = true; });
+      localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+      npList.querySelectorAll('.np-item').forEach(el => {
+        el.classList.remove('unread');
+        el.querySelector('.np-new-chip')?.remove();
+        el.querySelector('.np-play-chip')?.remove();
+      });
+      updateBadge(0);
+    }
+
+    function updateBadge(count) {
+      badge.textContent = count > 9 ? '9+' : count;
+      badge.classList.toggle('show', count > 0);
+    }
+
+    function ringBell() {
+      bellBtn.classList.add('ringing');
+      setTimeout(() => bellBtn.classList.remove('ringing'), 600);
+    }
+
+    function openPanel() {
+      panelOpen = true;
+      panelWrap.classList.add('open');
+      panelWrap.style.pointerEvents = 'auto';
+      bellBtn.classList.add('active');
+    }
+
+    function closePanel() {
+      panelOpen = false;
+      panelWrap.classList.remove('open');
+      panelWrap.style.pointerEvents = 'none';
+      bellBtn.classList.remove('active');
+    }
+
+    // Swipe down to close panel
+    const panel = document.getElementById('notif-panel');
+    let swipeStartY = 0, swipeStartX = 0, swipeDragging = false;
+
+    panel.addEventListener('touchstart', (e) => {
+      // Only initiate swipe if list is scrolled to top
+      if (npList.scrollTop > 4) return;
+      swipeStartY = e.touches[0].clientY;
+      swipeStartX = e.touches[0].clientX;
+      swipeDragging = true;
+      panel.style.transition = 'none';
+    }, { passive: true });
+
+    panel.addEventListener('touchmove', (e) => {
+      if (!swipeDragging) return;
+      const dy = e.touches[0].clientY - swipeStartY;
+      const dx = e.touches[0].clientX - swipeStartX;
+      // Only handle downward swipes, not horizontal scrolling
+      if (Math.abs(dx) > Math.abs(dy)) { swipeDragging = false; return; }
+      if (dy < 0) return;
+      panel.style.transform = `scale(${Math.max(0.92, 1 - dy/800)}) translateY(${dy * 0.4}px)`;
+      panel.style.opacity = Math.max(0, 1 - dy / 200);
+      if (e.cancelable) e.preventDefault();
+    }, { passive: false });
+
+    panel.addEventListener('touchend', (e) => {
+      if (!swipeDragging) return;
+      swipeDragging = false;
+      const dy = e.changedTouches[0].clientY - swipeStartY;
+      panel.style.transition = '';
+      if (dy > 60) {
+        panel.style.transform = 'scale(0.88) translateY(-12px)';
+        panel.style.opacity = '0';
+        setTimeout(() => {
+          closePanel();
+          panel.style.transform = '';
+          panel.style.opacity = '';
+        }, 300);
+      } else {
+        panel.style.transform = '';
+        panel.style.opacity = '';
+      }
+    });
+
+    bellBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panelOpen ? closePanel() : openPanel();
+    });
+
+    markRead.addEventListener('click', (e) => { e.stopPropagation(); markAllRead(); });
+
+    document.addEventListener('click', (e) => {
+      if (panelOpen && !e.target.closest('#bell-notif-btn') && !e.target.closest('#notif-panel-wrap')) {
+        closePanel();
+      }
+    });
+
+    // Run check
+    checkNewAudio();
+    window._bellRenderPanel = () => {
+      const seenNow = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      renderPanel(newItems, seenNow);
+    };
+  })();
+
   /* ── THEME TOGGLE ── */
   const THEME_KEY = 'tarawih-theme';
   const _root = document.documentElement;
 
   function _applyTheme(theme) {
     _root.setAttribute('data-theme', theme);
+    document.body.style.setProperty('background-color', theme === 'dark' ? '#0f1614' : '#f7f4ef', 'important');
     const label    = document.getElementById('toggle-label');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
