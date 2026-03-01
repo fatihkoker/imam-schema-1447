@@ -4629,8 +4629,13 @@
           if (window._connectAnalyser) window._connectAnalyser(datum, a);
         });
         a.addEventListener('pause', () => {
+          if (a._stopping) return;
           if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-          if (_activeDatum === datum && window._stopWaveDraw) window._stopWaveDraw();
+          if (_activeDatum === datum) {
+            setBtns(datum, PLAY_SVG, false);
+            updateStickyPlayBtn(false);
+            if (window._stopWaveDraw) window._stopWaveDraw();
+          }
         });
         a.addEventListener('timeupdate', () => { if (!a._seekLock) updatePlayerUI(datum, a.currentTime, a.duration); });
         a.addEventListener('loadedmetadata', () => updatePlayerUI(datum, a.currentTime, a.duration));
@@ -4696,8 +4701,8 @@
 
   const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
   const audioUrls = {};
-  const ishaUrls  = {}; // datum → isha mp3 URL (only populated if file exists)
-  const ishaState = {}; // datum → Audio object for isha track
+  const ishaUrls  = {};
+  const ishaState = {};
 
   SCHEDULE.forEach(row => {
     const url = basePath + '/' + row.datum + '.mp3';
@@ -4706,7 +4711,6 @@
       .then(res => { if (res.ok || res.status === 206) injectPlayButtons(row.datum); })
       .catch(() => { fetch(url).then(res => { if (res.ok) injectPlayButtons(row.datum); }).catch(() => {}); });
 
-    // Probe for isha track — datum-isha.mp3
     const ishaUrl = basePath + '/' + row.datum + '-isha.mp3';
     fetch(ishaUrl, { method: 'HEAD' })
       .then(res => {
@@ -5681,24 +5685,15 @@
       const found = [];
 
       await Promise.all(SCHEDULE.map(async (row) => {
-        const basePath = (() => {
-          try {
-            const scripts = document.querySelectorAll('script[src]');
-            const loc = window.location.href;
-            return loc.substring(0, loc.lastIndexOf('/') + 1);
-          } catch(e) { return ''; }
-        })();
-        const url = `${basePath}audio/natt${row.day}.mp3`;
+        const loc = window.location.href;
+        const base = loc.substring(0, loc.lastIndexOf('/') + 1);
+        const url = `${base}${row.datum}.mp3`;
         try {
           const res = await fetch(url, { method: 'HEAD' });
           if (!res.ok) return;
           const lastMod = res.headers.get('Last-Modified');
-          if (!lastMod) return;
-          const modTime = new Date(lastMod).getTime();
-          const age = now - modTime;
-          if (age < 30 * 24 * 60 * 60 * 1000) {
-            found.push({ row, modTime, seen: !!seen[`day-${row.day}`] });
-          }
+          const modTime = lastMod ? new Date(lastMod).getTime() : (Date.now() - row.day * 60000);
+          found.push({ row, modTime, seen: !!seen[`day-${row.day}`] });
         } catch(e) {}
       }));
 
