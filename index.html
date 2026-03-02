@@ -11,9 +11,9 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1614" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f7f4ef" media="(prefers-color-scheme: light)" />
-  <meta id="theme-color-meta" name="theme-color" content="#0f1614" />
+  <meta id="theme-color-meta" name="theme-color" content="#000000" />
   <title>Tarawih Schema — Kämpingehallen | Ramadan 2026</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
@@ -132,7 +132,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html[data-theme="light"] { background-color: #f7f4ef !important; color: #1a1a1a; }
     html[data-theme="light"] body { background-color: #f7f4ef !important; color: #1a1a1a; }
-    html[data-theme="dark"]  { background-color: #0f1614 !important; color: #e8e3db; }
+    html[data-theme="dark"]  { background-color: #000000 !important; color: #e8e3db; }
     html[data-theme="dark"]  body { background-color: #0f1614 !important; color: #e8e3db; }
     body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
 
@@ -5922,8 +5922,9 @@
   function _applyTheme(theme) {
     _root.setAttribute('data-theme', theme);
     document.body.style.setProperty('background-color', theme === 'dark' ? '#0f1614' : '#f7f4ef', 'important');
+    document.documentElement.style.setProperty('background-color', theme === 'dark' ? '#000000' : '#f7f4ef', 'important');
     const meta = document.getElementById('theme-color-meta');
-    if (meta) meta.content = theme === 'dark' ? '#0f1614' : '#f7f4ef';
+    if (meta) meta.content = theme === 'dark' ? 'transparent' : '#f7f4ef';
     const label    = document.getElementById('toggle-label');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
