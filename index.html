@@ -16,6 +16,11 @@
   <meta id="theme-color-meta" name="theme-color" content="#f7f4ef" />
   <title>Tarawih Schema — Kämpingehallen | Ramadan 2026</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Tarawih 2026" />
+  <link rel="apple-touch-icon" href="favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
   <style>
@@ -1383,6 +1388,80 @@
     }
     .sp-mute-btn .sp-vol-icon { transition: color 0.22s; }
     .sp-mute-btn.muted .sp-vol-icon { color: #e05555; }
+
+    /* ── Download button in player ── */
+    .sp-download-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 4px 11px;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer; font-family: inherit;
+      font-size: 0.60rem; font-weight: 600; letter-spacing: 0.05em;
+      transition: all 0.22s ease;
+    }
+    .sp-download-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.70); }
+    .sp-download-btn.cached {
+      background: rgba(61,186,126,0.15) !important;
+      border-color: rgba(61,186,126,0.40) !important;
+      color: #3dba7e !important;
+    }
+    .sp-download-btn.loading {
+      background: rgba(201,168,76,0.12) !important;
+      border-color: rgba(201,168,76,0.35) !important;
+      color: #c9a84c !important;
+      pointer-events: none;
+    }
+    .sp-download-btn.error {
+      background: rgba(220,60,60,0.12) !important;
+      border-color: rgba(220,60,60,0.35) !important;
+      color: #e05555 !important;
+    }
+    [data-theme="light"] .sp-download-btn {
+      color: rgba(0,0,0,0.42); background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.09);
+    }
+    [data-theme="light"] .sp-download-btn:hover { background: rgba(0,0,0,0.09); color: rgba(0,0,0,0.7); }
+
+    /* Spinner */
+    @keyframes sp-spin { to { transform: rotate(360deg); } }
+    .sp-spin { animation: sp-spin 0.9s linear infinite; display: inline-block; }
+
+    /* ── PWA Install Banner ── */
+    #pwa-banner {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20000;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.14);
+      padding: 14px 20px 20px;
+      display: flex; align-items: center; gap: 14px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    #pwa-banner.visible { transform: translateY(0); }
+    #pwa-banner .pwa-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--primary); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; font-size: 22px;
+    }
+    #pwa-banner .pwa-text { flex: 1; }
+    #pwa-banner .pwa-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    #pwa-banner .pwa-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    #pwa-banner .pwa-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    #pwa-banner .pwa-install-btn {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 100px;
+      padding: 8px 18px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.2s;
+    }
+    #pwa-banner .pwa-install-btn:hover { background: var(--primary-dark); }
+    #pwa-banner .pwa-dismiss-btn {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 8px 14px; font-size: 0.8rem;
+      cursor: pointer; font-family: inherit;
+    }
+
     /* Mini mute indicator */
     .sp-mini-muted-dot {
       position: absolute; top: 8px; right: 8px;
@@ -4492,6 +4571,9 @@
       }
     }
     _activeDatum = datum;
+
+    // ── Uppdatera nedladdningsknappen för nytt datum ──
+    if (window._onPlayerOpen) window._onPlayerOpen(datum);
     // Segment control: reset to tarawih unless isha is actively playing for this datum
     if (!ishaState[datum] || ishaState[datum].paused) {
       _activeTrackType[datum] = 'tarawih';
@@ -6017,6 +6099,185 @@
     });
   }
 
+  // ══════════════════════════════════════════════════════════════
+  //  SERVICE WORKER + PWA
+  // ══════════════════════════════════════════════════════════════
+
+  let _swReg = null;
+  let _deferredInstallPrompt = null;
+
+  // Fånga upp beforeinstallprompt-händelsen
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    // Visa banner om användaren inte avvisat förut
+    if (!localStorage.getItem('pwa_dismissed')) {
+      setTimeout(() => {
+        const banner = document.getElementById('pwa-banner');
+        if (banner) banner.classList.add('visible');
+      }, 3000); // Visa efter 3s så det inte känns aggressivt
+    }
+  });
+
+  // App installerad
+  window.addEventListener('appinstalled', () => {
+    _deferredInstallPrompt = null;
+    const banner = document.getElementById('pwa-banner');
+    if (banner) banner.classList.remove('visible');
+    localStorage.setItem('pwa_dismissed', '1');
+  });
+
+  // Registrera Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          _swReg = reg;
+          console.log('[SW] Registrerad:', reg.scope);
+          // Kontrollera cached-status för aktuellt spår när SW är redo
+          if (_activeDatum) _checkCachedStatus(_activeDatum);
+        })
+        .catch(err => console.warn('[SW] Registrering misslyckades:', err));
+
+      // Lyssna på meddelanden från SW
+      navigator.serviceWorker.addEventListener('message', event => {
+        const { type, datum, cached } = event.data || {};
+        if (type === 'CACHE_DONE') _onCacheDone(datum, cached);
+        if (type === 'CACHE_ERROR') _onCacheError(datum);
+        if (type === 'CACHED_STATUS') _updateDownloadBtn(datum, cached);
+      });
+    });
+  }
+
+  // ── PWA Install Banner-knappar ──────────────────────────────
+  document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    _deferredInstallPrompt = null;
+    document.getElementById('pwa-banner')?.classList.remove('visible');
+    if (outcome === 'dismissed') localStorage.setItem('pwa_dismissed', '1');
+  });
+
+  document.getElementById('pwa-dismiss-btn')?.addEventListener('click', () => {
+    document.getElementById('pwa-banner')?.classList.remove('visible');
+    localStorage.setItem('pwa_dismissed', '1');
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  //  NEDLADDNINGSKNAPP — Offline-cache per spår
+  // ══════════════════════════════════════════════════════════════
+
+  const _downloadBtn  = document.getElementById('sp-download-btn');
+  const _downloadLbl  = document.getElementById('sp-download-label');
+
+  // Kontrollera om ett datum redan är cachat
+  function _checkCachedStatus(datum) {
+    if (!datum || !_swReg || !navigator.serviceWorker.controller) return;
+    const url = audioUrls[datum];
+    if (!url) return;
+    navigator.serviceWorker.controller.postMessage({ type: 'CHECK_CACHED', url, datum });
+  }
+
+  // Uppdatera knappens utseende
+  function _updateDownloadBtn(datum, isCached) {
+    if (datum !== _activeDatum || !_downloadBtn) return;
+    _downloadBtn.classList.remove('loading', 'cached', 'error');
+    if (isCached) {
+      _downloadBtn.classList.add('cached');
+      _downloadBtn.title = 'Sparat offline ✓';
+      _downloadLbl.textContent = 'Offline ✓';
+      _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="sp-download-label">Offline ✓</span>`;
+    } else {
+      _downloadBtn.title = 'Ladda ner för offline';
+      _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg><span id="sp-download-label">Offline</span>`;
+    }
+  }
+
+  // Callback: nedladdning klar
+  function _onCacheDone(datum, alreadyCached) {
+    _updateDownloadBtn(datum, true);
+    if (!alreadyCached) {
+      // Liten visuell bekräftelse
+      if (_downloadBtn) {
+        _downloadBtn.style.transform = 'scale(1.08)';
+        setTimeout(() => { _downloadBtn.style.transform = ''; }, 280);
+      }
+    }
+  }
+
+  // Callback: fel vid nedladdning
+  function _onCacheError(datum) {
+    if (datum !== _activeDatum || !_downloadBtn) return;
+    _downloadBtn.classList.remove('loading', 'cached');
+    _downloadBtn.classList.add('error');
+    _downloadBtn.title = 'Nedladdning misslyckades';
+    _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="sp-download-label">Fel</span>`;
+    setTimeout(() => {
+      if (datum === _activeDatum) _updateDownloadBtn(datum, false);
+    }, 3000);
+  }
+
+  // Starta nedladdning när knappen klickas
+  if (_downloadBtn) {
+    _downloadBtn.addEventListener('click', () => {
+      if (!_activeDatum || !audioUrls[_activeDatum]) return;
+      if (_downloadBtn.classList.contains('cached')) {
+        // Redan cachat — inget att göra
+        _downloadBtn.style.transform = 'scale(1.05)';
+        setTimeout(() => { _downloadBtn.style.transform = ''; }, 200);
+        return;
+      }
+      if (_downloadBtn.classList.contains('loading')) return;
+
+      // Starta laddning
+      _downloadBtn.classList.remove('error');
+      _downloadBtn.classList.add('loading');
+      _downloadBtn.title = 'Laddar ner…';
+      _downloadBtn.innerHTML = `<span class="sp-spin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg></span><span id="sp-download-label">Laddar…</span>`;
+
+      const url = audioUrls[_activeDatum];
+      if (navigator.serviceWorker.controller) {
+        // Använd Service Worker för att cacha
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CACHE_AUDIO',
+          url,
+          datum: _activeDatum
+        });
+      } else {
+        // Fallback: direkt fetch + Cache API
+        (async () => {
+          try {
+            const cache = await caches.open('tarawih-audio-v1');
+            const existing = await cache.match(url);
+            if (existing) { _onCacheDone(_activeDatum, true); return; }
+            const response = await fetch(url);
+            if (response.ok) {
+              await cache.put(url, response);
+              _onCacheDone(_activeDatum, false);
+            } else { _onCacheError(_activeDatum); }
+          } catch { _onCacheError(_activeDatum); }
+        })();
+      }
+    });
+  }
+
+  // Uppdatera nedladdningsknappen när spelaren öppnas för ett nytt datum
+  // Patchar openPlayer för att trigga cache-kontroll
+  const _origOpenPlayer = typeof openPlayer === 'function' ? openPlayer : null;
+  if (_origOpenPlayer) {
+    window._onPlayerOpen = function(datum) {
+      // Återställ knapp
+      if (_downloadBtn) {
+        _downloadBtn.classList.remove('loading', 'cached', 'error');
+        _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg><span id="sp-download-label">Offline</span>`;
+        _downloadBtn.title = 'Ladda ner för offline';
+      }
+      // Kontrollera om redan cachat
+      setTimeout(() => _checkCachedStatus(datum), 200);
+    };
+  }
+
 </script>
 
 <!-- STICKY BOTTOM PLAYER — New Design -->
@@ -6152,6 +6413,12 @@
     <div class="sp-extras-row">
       <button class="sp-speed-chip" id="sp-speed-btn" data-i18n-title="speedTip" title="Uppspelningshastighet">1×</button>
 
+      <!-- ── DOWNLOAD BUTTON ── -->
+      <button class="sp-download-btn" id="sp-download-btn" title="Ladda ner för offline">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>
+        <span id="sp-download-label">Offline</span>
+      </button>
+
       <!-- ══ SOUND WAVE — flex:1 centrerar den mellan 1× och knapparna ══ -->
       <div class="sp-soundwave" id="sp-soundwave" style="flex:1;"></div>
 
@@ -6201,6 +6468,18 @@
     </div>
   </div>
 
+</div>
+<!-- ── PWA Install Banner ── -->
+<div id="pwa-banner" role="complementary" aria-label="Installera app">
+  <div class="pwa-icon">🌙</div>
+  <div class="pwa-text">
+    <div class="pwa-title">Lägg till på hemskärmen</div>
+    <div class="pwa-sub">Använd appen offline under Ramadan</div>
+  </div>
+  <div class="pwa-btns">
+    <button class="pwa-install-btn" id="pwa-install-btn">Installera</button>
+    <button class="pwa-dismiss-btn" id="pwa-dismiss-btn">Inte nu</button>
+  </div>
 </div>
 
 </body>
