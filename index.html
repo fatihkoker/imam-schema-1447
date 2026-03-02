@@ -4578,9 +4578,8 @@
     }
 
     const p = document.getElementById('sticky-player');
-    // Om spelaren redan är i mini-läge (t.ex. play klickades i mini-spelaren),
-    // stanna kvar i mini-läge — expandera INTE till full player
-    const alreadyMini = p && p.classList.contains('mini-mode') && p.classList.contains('visible');
+    // Om spelaren redan är i mini-läge — stanna kvar, expandera INTE till full player
+    const alreadyMini = p && p.classList.contains('mini-mode');
     if (!alreadyMini) {
       setTimeout(showSticky, 200);
     }
