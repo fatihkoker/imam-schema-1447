@@ -3725,15 +3725,8 @@
     if (!_activeDatum) return;
     const p = document.getElementById('sticky-player');
     if (p.classList.contains('mini-mode')) return;
-    p.classList.add('visible');
-    p.classList.remove('mini-mode');
-    // Force browser to register start state, then animate to mini
-    void p.offsetHeight;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        p.classList.add('mini-mode');
-      });
-    });
+    p.classList.remove('visible');
+    p.classList.add('mini-mode');
   }
 
   let _miniTimer = null;
