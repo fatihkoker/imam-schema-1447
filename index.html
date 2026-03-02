@@ -1089,18 +1089,18 @@
     /* Today-card moon wrap: bubble opens upward, centered on moon */
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
 
-    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; }
+    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; background: transparent; padding-bottom: env(safe-area-inset-bottom); }
     .sticky-player.visible { pointer-events: none; } /* aldrig auto på hela containern */
 
     /* ── FULL PLAYER ── */
     .player-full {
       background: linear-gradient(160deg, #141e1a 0%, #0d1712 100%);
-      border-radius: 24px 24px 0 0;
+      border-radius: 24px;
       border: 1px solid rgba(201,168,76,0.13);
-      border-bottom: none;
       box-shadow: 0 -2px 0 rgba(201,168,76,0.15), 0 -24px 64px rgba(0,0,0,0.75),
                   inset 0 1px 0 rgba(255,255,255,0.04);
       padding: 4px 18px 20px;
+      margin: 0 8px 8px;
       transform: translateY(100%);
       opacity: 0;
       transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
@@ -1111,7 +1111,6 @@
     [data-theme="light"] .player-full {
       background: linear-gradient(160deg, #f0ede7 0%, #e8e4dc 100%);
       border: 1px solid rgba(36,100,93,0.15);
-      border-bottom: none;
       box-shadow: 0 -2px 0 rgba(201,168,76,0.20), 0 -24px 64px rgba(0,0,0,0.12),
                   inset 0 1px 0 rgba(255,255,255,0.6);
     }
@@ -1676,7 +1675,7 @@
       background: rgba(12, 20, 16, 0.97);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(201,168,76,0.15);
-      border-radius: 18px;
+      border-radius: 14px;
       padding: 9px 11px 11px 10px;
       display: flex; align-items: center; gap: 10px;
       box-shadow: 0 8px 36px rgba(0,0,0,0.55),
