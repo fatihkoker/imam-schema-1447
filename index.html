@@ -12,7 +12,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#f7f4ef" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
   <meta id="theme-color-meta" name="theme-color" content="#000000" />
   <title>Tarawih Schema — Kämpingehallen | Ramadan 2026</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -130,7 +130,7 @@
 
     html { scrollbar-gutter: stable; min-height: 100%; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html[data-theme="light"] { background-color: #f7f4ef !important; color: #1a1a1a; }
+    html[data-theme="light"] { background-color: #ffffff !important; color: #1a1a1a; }
     html[data-theme="light"] body { background-color: #f7f4ef !important; color: #1a1a1a; }
     html[data-theme="dark"]  { background-color: #000000 !important; color: #e8e3db; }
     html[data-theme="dark"]  body { background-color: #0f1614 !important; color: #e8e3db; }
@@ -4318,7 +4318,12 @@
       }
       closePlayer(d);
       setBtns(d, PLAY_SVG, false);
-      _stopAudio(d).finally(() => { _toggleBusy = false; });
+      _stopAudio(d).finally(() => {
+        _toggleBusy = false;
+        // Tvinga iOS Safari att uppdatera toolbar-färgen efter att ljud stoppats
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        _applyTheme(currentTheme);
+      });
     });
 
     // Share button — copy ?natt=N URL
@@ -5848,10 +5853,17 @@
 
   function _applyTheme(theme) {
     _root.setAttribute('data-theme', theme);
+    const color = theme === 'dark' ? '#000000' : '#ffffff';
     document.body.style.setProperty('background-color', theme === 'dark' ? '#0f1614' : '#f7f4ef', 'important');
-    document.documentElement.style.setProperty('background-color', theme === 'dark' ? '#000000' : '#f7f4ef', 'important');
-    const meta = document.getElementById('theme-color-meta');
-    if (meta) meta.content = theme === 'dark' ? 'transparent' : '#f7f4ef';
+    document.documentElement.style.setProperty('background-color', color, 'important');
+    // Force iOS Safari to re-read theme-color by removing and recreating the meta tag
+    const oldMeta = document.getElementById('theme-color-meta');
+    if (oldMeta) oldMeta.remove();
+    const newMeta = document.createElement('meta');
+    newMeta.id = 'theme-color-meta';
+    newMeta.name = 'theme-color';
+    newMeta.content = color;
+    document.head.appendChild(newMeta);
     const label    = document.getElementById('toggle-label');
     const wavePath = document.getElementById('wave-path');
     if (theme === 'dark') {
