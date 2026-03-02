@@ -1448,6 +1448,22 @@
       transition: all 0.22s ease; flex-shrink: 0;
       position: relative;
     }
+    [data-theme="light"] .sp-sleep-btn {
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(0,0,0,0.05);
+      color: rgba(0,0,0,0.45);
+    }
+    [data-theme="light"] .sp-sleep-btn:hover {
+      background: rgba(80,100,220,0.10);
+      border-color: rgba(100,120,220,0.25);
+      color: rgba(80,100,220,0.85);
+    }
+    [data-theme="light"] .sp-sleep-btn.active {
+      background: rgba(80,100,220,0.12);
+      border-color: rgba(100,120,220,0.35);
+      color: rgba(80,100,220,1);
+      box-shadow: 0 0 10px rgba(80,100,220,0.20);
+    }
     .sp-sleep-btn:hover {
       background: rgba(100,130,255,0.12);
       border-color: rgba(130,160,255,0.30);
@@ -1672,7 +1688,7 @@
       position: relative; overflow: hidden;
     }
     [data-theme="light"] .sp-mini-inner {
-      background: rgba(247,244,239,0.55);
+      background: rgba(247,244,239,0.92);
       backdrop-filter: blur(48px) saturate(180%);
       -webkit-backdrop-filter: blur(48px) saturate(180%);
       border-top: 1px solid rgba(36,100,93,0.12);
