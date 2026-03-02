@@ -1,0 +1,41 @@
+{
+  "name": "Tarawih Schema — Kämpingehallen",
+  "short_name": "Tarawih 2026",
+  "description": "Tarawih-böneschemat för Ramadan 2026 — Kämpingehallen",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ef",
+  "theme_color": "#24645d",
+  "orientation": "portrait-primary",
+  "lang": "sv",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "form_factor": "narrow",
+      "label": "Tarawih Schema"
+    }
+  ],
+  "categories": ["lifestyle", "religion"],
+  "prefer_related_applications": false
+}
