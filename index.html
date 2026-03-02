@@ -1091,6 +1091,9 @@
 
     .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; height: 0; overflow: visible; z-index: 9999; pointer-events: none; background: transparent; }
     .sticky-player.visible { pointer-events: none; }
+    /* När spelaren är helt stängd — dölj allt */
+    .sticky-player:not(.visible):not(.mini-mode) .player-full,
+    .sticky-player:not(.visible):not(.mini-mode) .player-mini { visibility: hidden; opacity: 0; }
 
     /* ── FULL PLAYER ── */
     .player-full {
@@ -1103,10 +1106,12 @@
       border: 1px solid rgba(201,168,76,0.13);
       box-shadow: 0 -2px 0 rgba(201,168,76,0.15), 0 -24px 64px rgba(0,0,0,0.75),
                   inset 0 1px 0 rgba(255,255,255,0.04);
+      overflow: hidden;
       padding: 4px 18px 20px;
       transform: translateY(110%);
       opacity: 0;
-      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
+      visibility: hidden;
+      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease, visibility 0s 0.4s;
       will-change: transform;
       pointer-events: none;
     }
@@ -1198,7 +1203,7 @@
     [data-theme="light"] .sp-mini-ctrl { color: rgba(0,0,0,0.45); }
     [data-theme="light"] .sp-mini-ctrl:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-mini-progress { background: rgba(0,0,0,0.06); }
-    .sticky-player.visible .player-full { transform: translateY(0) scale(1); opacity: 1; filter: blur(0px); pointer-events: auto; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, filter 0.4s ease; }
+    .sticky-player.visible .player-full { transform: translateY(0) scale(1); opacity: 1; visibility: visible; filter: blur(0px); pointer-events: auto; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, visibility 0s 0s; }
     /* Gold top line */
     .player-full::before {
       content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -1667,13 +1672,14 @@
       pointer-events: none;
       transform: translateY(110%);
       opacity: 0;
+      visibility: hidden;
       filter: blur(8px);
-      transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, filter 0.4s ease;
+      transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s ease, filter 0.4s ease, visibility 0s 0.5s;
       will-change: transform, opacity, filter;
     }
-    .sticky-player.mini-mode .player-mini { transform: translateY(0) scale(1); opacity: 1; filter: blur(0px); pointer-events: none; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94) 0.08s, opacity 0.35s ease 0.08s, filter 0.4s ease 0.08s; }
+    .sticky-player.mini-mode .player-mini { transform: translateY(0) scale(1); opacity: 1; visibility: visible; filter: blur(0px); pointer-events: none; transition: transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94) 0.08s, opacity 0.35s ease 0.08s, filter 0.4s ease 0.08s, visibility 0s 0s; }
     .sticky-player.mini-mode .sp-mini-inner { pointer-events: auto; }
-    .sticky-player.mini-mode .player-full { transform: translateY(110%); opacity: 0; filter: blur(12px); pointer-events: none; }
+    .sticky-player.mini-mode .player-full { transform: translateY(110%); opacity: 0; visibility: hidden; filter: blur(12px); pointer-events: none; }
 
     .sp-mini-inner {
       background: rgba(12, 20, 16, 0.97);
