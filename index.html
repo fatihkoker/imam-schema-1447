@@ -10,7 +10,7 @@
     gtag('config', 'G-CP3TPCPMEB');
   </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f1614" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f7f4ef" media="(prefers-color-scheme: light)" />
   <meta id="theme-color-meta" name="theme-color" content="#0f1614" />
@@ -134,7 +134,7 @@
     html[data-theme="light"] body { background-color: #f7f4ef !important; color: #1a1a1a; }
     html[data-theme="dark"]  { background-color: #0f1614 !important; color: #e8e3db; }
     html[data-theme="dark"]  body { background-color: #0f1614 !important; color: #e8e3db; }
-    body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; min-height: 100vh; }
+    body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; transition: background 0.35s ease, color 0.35s ease; min-height: 100vh; padding-bottom: env(safe-area-inset-bottom); }
 
     /* ══ iOS TOGGLE ══ */
     .header-right-group {
