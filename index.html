@@ -1089,8 +1089,8 @@
     /* Today-card moon wrap: bubble opens upward, centered on moon */
     .today-moon-wrap { position: relative; display: inline-flex; align-items: center; }
 
-    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; background: transparent; padding-bottom: env(safe-area-inset-bottom); }
-    .sticky-player.visible { pointer-events: none; } /* aldrig auto på hela containern */
+    .sticky-player { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; background: transparent; }
+    .sticky-player.visible { pointer-events: none; }
 
     /* ── FULL PLAYER ── */
     .player-full {
@@ -1100,7 +1100,7 @@
       box-shadow: 0 -2px 0 rgba(201,168,76,0.15), 0 -24px 64px rgba(0,0,0,0.75),
                   inset 0 1px 0 rgba(255,255,255,0.04);
       padding: 4px 18px 20px;
-      margin: 0 8px 8px;
+      margin: 0 8px calc(8px + env(safe-area-inset-bottom));
       transform: translateY(100%);
       opacity: 0;
       transition: transform 0.38s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease;
@@ -1660,7 +1660,7 @@
         /* ── MINI PLAYER ── */
     .player-mini {
       position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 0 10px 10px;
+      padding: 0 10px calc(10px + env(safe-area-inset-bottom));
       pointer-events: none;
       transform: translateY(20px) scale(0.9);
       opacity: 0;
