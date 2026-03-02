@@ -373,9 +373,9 @@
     .wave svg { display: block; width: 100%; }
 
     /* ── MAIN ── */
-    main { max-width: 960px; margin: 0 auto; padding: 32px 14px 80px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 14px 160px; }
     @media (min-width: 641px) {
-      main { max-width: 100%; padding: 32px 32px 80px; }
+      main { max-width: 100%; padding: 32px 32px 160px; }
       .table-wrap table { width: 100%; table-layout: auto; }
     }
 
@@ -1081,9 +1081,9 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(13,23,18,0.72);
-      backdrop-filter: blur(36px);
-      -webkit-backdrop-filter: blur(36px);
+      background: rgba(10,18,14,0.55);
+      backdrop-filter: blur(48px) saturate(180%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%);
       border-radius: 24px 24px 0 0;
       border: 1px solid rgba(201,168,76,0.10);
       border-bottom: none;
@@ -1099,9 +1099,9 @@
     }
     /* Light mode full player */
     [data-theme="light"] .player-full {
-      background: rgba(247,244,239,0.78);
-      backdrop-filter: blur(36px);
-      -webkit-backdrop-filter: blur(36px);
+      background: rgba(247,244,239,0.55);
+      backdrop-filter: blur(48px) saturate(180%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%);
       border: 1px solid rgba(36,100,93,0.12);
       border-bottom: none;
       box-shadow: 0 -2px 0 rgba(36,100,93,0.10), 0 -24px 64px rgba(0,0,0,0.08);
@@ -1661,9 +1661,9 @@
     .sticky-player.mini-mode .player-full { transform: translateY(110%); opacity: 0; visibility: hidden; filter: blur(12px); pointer-events: none; }
 
     .sp-mini-inner {
-      background: rgba(13,23,18,0.72);
-      backdrop-filter: blur(36px);
-      -webkit-backdrop-filter: blur(36px);
+      background: rgba(10,18,14,0.55);
+      backdrop-filter: blur(48px) saturate(180%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%);
       border-top: 1px solid rgba(201,168,76,0.10);
       border-radius: 0;
       padding: 9px 14px 11px 12px;
@@ -1672,9 +1672,9 @@
       position: relative; overflow: hidden;
     }
     [data-theme="light"] .sp-mini-inner {
-      background: rgba(247,244,239,0.78);
-      backdrop-filter: blur(36px);
-      -webkit-backdrop-filter: blur(36px);
+      background: rgba(247,244,239,0.55);
+      backdrop-filter: blur(48px) saturate(180%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%);
       border-top: 1px solid rgba(36,100,93,0.12);
       box-shadow: 0 -8px 24px rgba(0,0,0,0.06);
     }
@@ -1898,7 +1898,7 @@
 
     @media (max-width: 640px) {
       header { padding: 20px 16px 18px; }
-      main { padding: 24px 12px 60px; }
+      main { padding: 24px 12px 160px; }
       .table-wrap { display: none; }
       .mobile-cards { display: block; }
       .filter-chips { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; width: 100%; gap: 8px; }
