@@ -954,26 +954,6 @@
     .dcm-tooltip { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; padding: 0 10px; background: var(--primary-dark); color: #fff; font-size: .75rem; font-weight: 500; border-radius: 7px; letter-spacing: .02em; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease, margin-top 0.35s ease, padding 0.35s ease; }
     .dcm-tooltip.visible { max-height: 80px; opacity: 1; margin-top: 6px; padding: 7px 10px; }
 
-    /* ── Progressiv scroll-animering ── */
-    @media (prefers-reduced-motion: no-preference) {
-      tbody tr.stagger-hidden {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      tbody tr.stagger-in {
-        animation: staggerRowIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      .day-card-mobile.stagger-hidden {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      .day-card-mobile.stagger-in {
-        animation: staggerRowIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      @keyframes staggerRowIn {
-        to { opacity: 1; transform: translateY(0); }
-      }
-    }
 
     /* ── Skeleton screens ── */
     @keyframes skShimmer {
@@ -3112,39 +3092,6 @@
   // Remove desktop skeletons
   document.querySelectorAll('#table-body .sk-row').forEach(el => el.remove());
 
-  // Stagger desktop rows
-  (function() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const rows = tbody.querySelectorAll('tr');
-    rows.forEach(row => row.classList.add('stagger-hidden'));
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const row = entry.target;
-        const siblings = Array.from(tbody.querySelectorAll('tr.stagger-hidden:not(.stagger-in)'));
-        const visibleBatch = siblings.slice(0, 6);
-        visibleBatch.forEach((r, i) => {
-          r.style.animationDelay = (i * 38) + 'ms';
-          r.classList.add('stagger-in');
-          r.classList.remove('stagger-hidden');
-        });
-        io.unobserve(row);
-      });
-    }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
-    if (rows.length) io.observe(rows[0]);
-    // Re-observe on scroll to catch remaining rows
-    const scrollIo = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        entry.target.style.animationDelay = '0ms';
-        entry.target.classList.add('stagger-in');
-        entry.target.classList.remove('stagger-hidden');
-        scrollIo.unobserve(entry.target);
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -10px 0px' });
-    rows.forEach(row => scrollIo.observe(row));
-  })();
-
   /* ── Build mobile cards ── */
   const container = document.getElementById('mobile-cards');
   SCHEDULE.forEach(row => {
@@ -3215,26 +3162,6 @@
   // Remove mobile skeletons
   document.querySelectorAll('#mobile-cards .sk-card').forEach(el => el.remove());
 
-  // Stagger mobile cards
-  (function() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const cards = container.querySelectorAll('.day-card-mobile');
-    cards.forEach(c => c.classList.add('stagger-hidden'));
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        entry.target.style.animationDelay = '0ms';
-        entry.target.classList.add('stagger-in');
-        entry.target.classList.remove('stagger-hidden');
-        io.unobserve(entry.target);
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -10px 0px' });
-    // First batch with stagger delay
-    Array.from(cards).slice(0, 5).forEach((c, i) => {
-      c.style.animationDelay = (i * 45) + 'ms';
-    });
-    cards.forEach(c => io.observe(c));
-  })();
 
   /* ── Today card ── */
   if (isAfterRamadan) document.getElementById('eid-card').style.display = 'block';
