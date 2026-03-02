@@ -1077,15 +1077,17 @@
 
     /* ── FULL PLAYER ── */
     .player-full {
-      position: absolute;
+      position: fixed;
       bottom: 0;
-      left: 8px;
-      right: 8px;
-      background: linear-gradient(160deg, #141e1a 0%, #0d1712 100%);
-      border-radius: 24px;
-      border: 1px solid rgba(201,168,76,0.13);
-      box-shadow: 0 -2px 0 rgba(201,168,76,0.15), 0 -24px 64px rgba(0,0,0,0.75),
-                  inset 0 1px 0 rgba(255,255,255,0.04);
+      left: 0;
+      right: 0;
+      background: rgba(13,23,18,0.72);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-radius: 24px 24px 0 0;
+      border: 1px solid rgba(201,168,76,0.10);
+      border-bottom: none;
+      box-shadow: 0 -2px 0 rgba(201,168,76,0.12), 0 -24px 64px rgba(0,0,0,0.5);
       overflow: hidden;
       padding: 4px 18px 20px;
       transform: translateY(110%);
@@ -1097,10 +1099,12 @@
     }
     /* Light mode full player */
     [data-theme="light"] .player-full {
-      background: linear-gradient(160deg, #f0ede7 0%, #e8e4dc 100%);
-      border: 1px solid rgba(36,100,93,0.15);
-      box-shadow: 0 -2px 0 rgba(201,168,76,0.20), 0 -24px 64px rgba(0,0,0,0.12),
-                  inset 0 1px 0 rgba(255,255,255,0.6);
+      background: rgba(247,244,239,0.78);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border: 1px solid rgba(36,100,93,0.12);
+      border-bottom: none;
+      box-shadow: 0 -2px 0 rgba(36,100,93,0.10), 0 -24px 64px rgba(0,0,0,0.08);
     }
     [data-theme="light"] .sp-drag-handle { background: rgba(0,0,0,0.12); }
     #sp-close-btn {
@@ -1173,11 +1177,6 @@
     [data-theme="light"] #sp-fav-btn.active { color: #a84040; background: rgba(168,64,64,0.06); }
 
     /* Light mode mini player */
-    [data-theme="light"] .sp-mini-inner {
-      background: rgba(245,242,236,0.97);
-      border: 1px solid rgba(36,100,93,0.15);
-      box-shadow: 0 8px 36px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
-    }
     [data-theme="light"] .sp-mini-imam { color: #1a1a1a; }
     [data-theme="light"] .sp-mini-sub { color: rgba(0,0,0,0.40); }
     [data-theme="light"] .sp-mini-ctrl { color: rgba(0,0,0,0.45); }
@@ -1646,9 +1645,9 @@
 
         /* ── MINI PLAYER ── */
     .player-mini {
-      position: absolute;
+      position: fixed;
       bottom: 0; left: 0; right: 0;
-      padding: 0 10px 10px;
+      padding: 0;
       pointer-events: none;
       transform: translateY(110%);
       opacity: 0;
@@ -1662,22 +1661,29 @@
     .sticky-player.mini-mode .player-full { transform: translateY(110%); opacity: 0; visibility: hidden; filter: blur(12px); pointer-events: none; }
 
     .sp-mini-inner {
-      background: rgba(12, 20, 16, 0.97);
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(201,168,76,0.15);
-      border-radius: 14px;
-      padding: 9px 11px 11px 10px;
+      background: rgba(13,23,18,0.72);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-top: 1px solid rgba(201,168,76,0.10);
+      border-radius: 0;
+      padding: 9px 14px 11px 12px;
       display: flex; align-items: center; gap: 10px;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.55),
-                  inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
       position: relative; overflow: hidden;
+    }
+    [data-theme="light"] .sp-mini-inner {
+      background: rgba(247,244,239,0.78);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-top: 1px solid rgba(36,100,93,0.12);
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.06);
     }
 
     /* Mini progress bar at bottom */
     .sp-mini-progress {
       position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
       background: rgba(255,255,255,0.10);
-      border-radius: 0 0 18px 18px;
+      border-radius: 0;
       overflow: hidden;
     }
     .sp-mini-progress-fill {
