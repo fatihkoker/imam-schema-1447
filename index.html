@@ -1148,7 +1148,11 @@
     [data-theme="light"] .sp-ctrl-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-ctrl-btn:disabled { color: rgba(0,0,0,0.20); }
     [data-theme="light"] .sp-ctrl-lbl { color: rgba(0,0,0,0.28); }
-    [data-theme="light"] .sp-ring-inner { box-shadow: inset 0 2px 8px rgba(0,0,0,0.12); color: rgba(0,0,0,0.50); }
+    [data-theme="light"] .sp-ring-inner {
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
+      background: rgba(220,217,210,0.9) !important;
+    }
+    [data-theme="light"] .sp-ring-inner svg { fill: rgba(0,0,0,0.60) !important; }
     [data-theme="light"] .sp-speed-chip {
       color: rgba(0,0,0,0.45);
       background: rgba(0,0,0,0.05);
@@ -6125,8 +6129,8 @@
         </svg>
         <div class="sp-ring-inner" id="sp-ring-inner">
           <span class="spm-icon-wrap">
-            <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
-            <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>
+            <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>
+            <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>
           </span>
         </div>
       </button>
