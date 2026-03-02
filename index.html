@@ -1078,7 +1078,7 @@
     /* ── FULL PLAYER ── */
     .player-full {
       position: absolute;
-      bottom: calc(8px + env(safe-area-inset-bottom));
+      bottom: 0;
       left: 8px;
       right: 8px;
       background: linear-gradient(160deg, #141e1a 0%, #0d1712 100%);
@@ -1648,7 +1648,7 @@
     .player-mini {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      padding: 0 10px calc(10px + env(safe-area-inset-bottom));
+      padding: 0 10px 10px;
       pointer-events: none;
       transform: translateY(110%);
       opacity: 0;
