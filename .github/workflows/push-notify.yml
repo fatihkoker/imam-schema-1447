@@ -15,21 +15,59 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Hitta ny/ändrad MP3
+      - name: Hitta ny/ändrad MP3 och slå upp imam
         id: mp3
         run: |
           CHANGED=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD | grep '\.mp3$' | grep -v '\-isha\.mp3$' || true)
           if [ -z "$CHANGED" ]; then
             echo "Inga nya tarawih-MP3:er — avbryter"
             echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            FIRST=$(echo "$CHANGED" | head -1)
-            NIGHT=$(basename "$FIRST" .mp3)
-            echo "file=$FIRST" >> $GITHUB_OUTPUT
-            echo "night=$NIGHT" >> $GITHUB_OUTPUT
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "Ny MP3: $FIRST (natt: $NIGHT)"
+            exit 0
           fi
+
+          FIRST=$(echo "$CHANGED" | head -1)
+          NIGHT=$(basename "$FIRST" .mp3)
+
+          # Imam-uppslagstabell
+          declare -A IMAMS
+          IMAMS["2026-02-17"]="Abdurrahman Sudani"
+          IMAMS["2026-02-18"]="Saed Magan"
+          IMAMS["2026-02-19"]="Noor"
+          IMAMS["2026-02-20"]="Abdul Qadir"
+          IMAMS["2026-02-21"]="Mohammed Haji"
+          IMAMS["2026-02-22"]="Abdurrahman Sudani"
+          IMAMS["2026-02-23"]="Abdurrahman Sudani"
+          IMAMS["2026-02-24"]="Saed Magan"
+          IMAMS["2026-02-25"]="Ibrahim Noor"
+          IMAMS["2026-02-26"]="Ibrahim Noor"
+          IMAMS["2026-02-27"]="Mohammed Haji"
+          IMAMS["2026-02-28"]="Saed Magan"
+          IMAMS["2026-03-01"]="Abdelsalam Nour"
+          IMAMS["2026-03-02"]="Saed Magan"
+          IMAMS["2026-03-03"]="Noor"
+          IMAMS["2026-03-04"]="Mohammed Haji"
+          IMAMS["2026-03-05"]="Saed Magan"
+          IMAMS["2026-03-06"]="Saed Magan"
+          IMAMS["2026-03-07"]="Yacquub"
+          IMAMS["2026-03-08"]="Yacquub"
+          IMAMS["2026-03-09"]="Noor"
+          IMAMS["2026-03-10"]="Mohammed Haji"
+          IMAMS["2026-03-11"]="Abdurrahman Sudani"
+          IMAMS["2026-03-12"]="Abdul Qadir"
+          IMAMS["2026-03-13"]="Hatem"
+          IMAMS["2026-03-14"]="Abdurrahman Sudani"
+          IMAMS["2026-03-15"]="Noor"
+          IMAMS["2026-03-16"]="Mohammed Haji"
+          IMAMS["2026-03-17"]="Yacquub"
+          IMAMS["2026-03-18"]="Noor"
+
+          IMAM="${IMAMS[$NIGHT]:-Imam}"
+
+          echo "file=$FIRST"     >> $GITHUB_OUTPUT
+          echo "night=$NIGHT"    >> $GITHUB_OUTPUT
+          echo "imam=$IMAM"      >> $GITHUB_OUTPUT
+          echo "skip=false"      >> $GITHUB_OUTPUT
+          echo "Ny MP3: $FIRST → Imam: $IMAM"
 
       - name: Hämta OAuth2-token från service account
         if: steps.mp3.outputs.skip != 'true'
@@ -50,8 +88,10 @@ jobs:
         if: steps.mp3.outputs.skip != 'true'
         run: |
           NIGHT="${{ steps.mp3.outputs.night }}"
+          IMAM="${{ steps.mp3.outputs.imam }}"
           PROJECT_ID="sverigesimamer"
           SITE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          DEEP_LINK="${SITE_URL}/#natt=${NIGHT}"
           TOKEN="${{ steps.token.outputs.access_token }}"
 
           HTTP_CODE=$(curl -s -o /tmp/fcm_resp.json -w "%{http_code}" -X POST \
@@ -63,11 +103,12 @@ jobs:
                 \"topic\": \"tarawih-new-audio\",
                 \"notification\": {
                   \"title\": \"🎙️ Nytt Tarawih-ljud!\",
-                  \"body\": \"Natt ${NIGHT} har laddats upp. Lyssna nu.\"
+                  \"body\": \"${IMAM}s recitation har laddats upp. Lyssna nu.\"
                 },
                 \"data\": {
-                  \"url\": \"${SITE_URL}\",
-                  \"night\": \"${NIGHT}\"
+                  \"url\": \"${DEEP_LINK}\",
+                  \"night\": \"${NIGHT}\",
+                  \"imam\": \"${IMAM}\"
                 },
                 \"webpush\": {
                   \"notification\": {
@@ -75,10 +116,10 @@ jobs:
                     \"tag\": \"new-audio\",
                     \"renotify\": \"true\"
                   },
-                  \"fcm_options\": { \"link\": \"${SITE_URL}\" }
+                  \"fcm_options\": { \"link\": \"${DEEP_LINK}\" }
                 }
               }
             }")
 
           cat /tmp/fcm_resp.json
-          [ "$HTTP_CODE" = "200" ] && echo "✅ Push skickad för $NIGHT" || { echo "❌ HTTP $HTTP_CODE"; exit 1; }
+          [ "$HTTP_CODE" = "200" ] && echo "✅ Push skickad: ${IMAM} / ${NIGHT}" || { echo "❌ HTTP $HTTP_CODE"; exit 1; }
