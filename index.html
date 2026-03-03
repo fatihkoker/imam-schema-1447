@@ -1389,25 +1389,29 @@
     .sp-mute-btn .sp-vol-icon { transition: color 0.22s; }
     .sp-mute-btn.muted .sp-vol-icon { color: #e05555; }
 
-    /* ── Download button in player ── */
+    /* ── Download button — top-left, symmetrisk mot ×-knappen ── */
     .sp-download-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
       display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 100px; padding: 4px 11px;
-      color: rgba(255,255,255,0.45);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px; padding: 3px 10px;
+      color: rgba(255,255,255,0.30);
       cursor: pointer; font-family: inherit;
       font-size: 0.60rem; font-weight: 600; letter-spacing: 0.05em;
       transition: all 0.22s ease;
     }
-    .sp-download-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.70); }
+    .sp-download-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.65); border-color: rgba(255,255,255,0.22); }
     .sp-download-btn.cached {
       background: rgba(61,186,126,0.15) !important;
-      border-color: rgba(61,186,126,0.40) !important;
+      border-color: rgba(61,186,126,0.45) !important;
       color: #3dba7e !important;
     }
     .sp-download-btn.loading {
-      background: rgba(201,168,76,0.12) !important;
+      background: rgba(201,168,76,0.10) !important;
       border-color: rgba(201,168,76,0.35) !important;
       color: #c9a84c !important;
       pointer-events: none;
@@ -1418,9 +1422,9 @@
       color: #e05555 !important;
     }
     [data-theme="light"] .sp-download-btn {
-      color: rgba(0,0,0,0.42); background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.09);
+      color: rgba(0,0,0,0.28); border-color: rgba(0,0,0,0.12); background: none;
     }
-    [data-theme="light"] .sp-download-btn:hover { background: rgba(0,0,0,0.09); color: rgba(0,0,0,0.7); }
+    [data-theme="light"] .sp-download-btn:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.6); border-color: rgba(0,0,0,0.20); }
 
     /* Spinner */
     @keyframes sp-spin { to { transform: rotate(360deg); } }
@@ -6106,25 +6110,147 @@
   let _swReg = null;
   let _deferredInstallPrompt = null;
 
-  // Fånga upp beforeinstallprompt-händelsen
+  // ── Hjälpfunktioner för nedladdningsknappen ──────────────────
+  const _DL_ICON_DOWNLOAD = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>`;
+  const _DL_ICON_CHECK    = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const _DL_ICON_ERROR    = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+  const _DL_ICON_SPIN     = `<span class="sp-spin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg></span>`;
+
+  function _dlBtn() { return document.getElementById('sp-download-btn'); }
+
+  function _setDlState(state) {
+    const btn = _dlBtn();
+    if (!btn) return;
+    btn.classList.remove('loading', 'cached', 'error');
+    switch (state) {
+      case 'idle':
+        btn.innerHTML = _DL_ICON_DOWNLOAD + `<span id="sp-download-label">Offline</span>`;
+        btn.title = 'Ladda ner för offline';
+        break;
+      case 'loading':
+        btn.classList.add('loading');
+        btn.innerHTML = _DL_ICON_SPIN + `<span id="sp-download-label">Laddar…</span>`;
+        btn.title = 'Laddar ner…';
+        break;
+      case 'cached':
+        btn.classList.add('cached');
+        btn.innerHTML = _DL_ICON_CHECK + `<span id="sp-download-label">Offline ✓</span>`;
+        btn.title = 'Sparat offline ✓';
+        break;
+      case 'error':
+        btn.classList.add('error');
+        btn.innerHTML = _DL_ICON_ERROR + `<span id="sp-download-label">Fel</span>`;
+        btn.title = 'Nedladdning misslyckades';
+        break;
+    }
+  }
+
+  function _checkCachedStatus(datum) {
+    if (!datum) return;
+    const url = audioUrls[datum];
+    if (!url) return;
+    const ctrl = navigator.serviceWorker && navigator.serviceWorker.controller;
+    if (ctrl) {
+      ctrl.postMessage({ type: 'CHECK_CACHED', url, datum });
+    } else {
+      caches.open('tarawih-audio-v1').then(cache =>
+        cache.match(url).then(hit => {
+          if (datum === _activeDatum) _setDlState(hit ? 'cached' : 'idle');
+        })
+      ).catch(() => {});
+    }
+  }
+
+  function _onCacheDone(datum) {
+    if (datum === _activeDatum) {
+      _setDlState('cached');
+      const btn = _dlBtn();
+      if (btn) {
+        btn.style.transform = 'scale(1.1)';
+        setTimeout(() => { btn.style.transform = ''; }, 300);
+      }
+    }
+  }
+
+  function _onCacheError(datum) {
+    if (datum !== _activeDatum) return;
+    _setDlState('error');
+    setTimeout(() => { if (_activeDatum === datum) _setDlState('idle'); }, 3000);
+  }
+
+  // Hook: körs från openPlayer varje gång ett datum öppnas
+  window._onPlayerOpen = function(datum) {
+    _setDlState('idle');
+    setTimeout(() => _checkCachedStatus(datum), 300);
+  };
+
+  // PWA: fånga beforeinstallprompt
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     _deferredInstallPrompt = e;
-    // Visa banner om användaren inte avvisat förut
     if (!localStorage.getItem('pwa_dismissed')) {
       setTimeout(() => {
         const banner = document.getElementById('pwa-banner');
         if (banner) banner.classList.add('visible');
-      }, 3000); // Visa efter 3s så det inte känns aggressivt
+      }, 3000);
     }
   });
 
-  // App installerad
   window.addEventListener('appinstalled', () => {
     _deferredInstallPrompt = null;
     const banner = document.getElementById('pwa-banner');
     if (banner) banner.classList.remove('visible');
     localStorage.setItem('pwa_dismissed', '1');
+  });
+
+  // Delegerade klick-lyssnare (säkra mot dynamic innerHTML)
+  document.addEventListener('click', e => {
+    // PWA-install
+    if (e.target.id === 'pwa-install-btn') {
+      if (!_deferredInstallPrompt) return;
+      _deferredInstallPrompt.prompt();
+      _deferredInstallPrompt.userChoice.then(({ outcome }) => {
+        _deferredInstallPrompt = null;
+        document.getElementById('pwa-banner')?.classList.remove('visible');
+        if (outcome === 'dismissed') localStorage.setItem('pwa_dismissed', '1');
+      });
+    }
+    // PWA-avvisa
+    if (e.target.id === 'pwa-dismiss-btn') {
+      document.getElementById('pwa-banner')?.classList.remove('visible');
+      localStorage.setItem('pwa_dismissed', '1');
+    }
+    // Nedladdningsknapp
+    const dlBtn = e.target.closest('#sp-download-btn');
+    if (dlBtn) {
+      if (!_activeDatum || !audioUrls[_activeDatum]) return;
+      if (dlBtn.classList.contains('cached')) {
+        dlBtn.style.transform = 'scale(1.06)';
+        setTimeout(() => { dlBtn.style.transform = ''; }, 200);
+        return;
+      }
+      if (dlBtn.classList.contains('loading')) return;
+      _setDlState('loading');
+      const url   = audioUrls[_activeDatum];
+      const datum = _activeDatum;
+      const ctrl  = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (ctrl) {
+        ctrl.postMessage({ type: 'CACHE_AUDIO', url, datum });
+      } else {
+        (async () => {
+          try {
+            const cache    = await caches.open('tarawih-audio-v1');
+            const existing = await cache.match(url);
+            if (existing) { _onCacheDone(datum); return; }
+            const response = await fetch(url);
+            if (response.ok) {
+              await cache.put(url, response.clone());
+              _onCacheDone(datum);
+            } else { _onCacheError(datum); }
+          } catch { _onCacheError(datum); }
+        })();
+      }
+    }
   });
 
   // Registrera Service Worker
@@ -6134,148 +6260,17 @@
         .then(reg => {
           _swReg = reg;
           console.log('[SW] Registrerad:', reg.scope);
-          // Kontrollera cached-status för aktuellt spår när SW är redo
           if (_activeDatum) _checkCachedStatus(_activeDatum);
         })
         .catch(err => console.warn('[SW] Registrering misslyckades:', err));
 
-      // Lyssna på meddelanden från SW
       navigator.serviceWorker.addEventListener('message', event => {
         const { type, datum, cached } = event.data || {};
-        if (type === 'CACHE_DONE') _onCacheDone(datum, cached);
-        if (type === 'CACHE_ERROR') _onCacheError(datum);
-        if (type === 'CACHED_STATUS') _updateDownloadBtn(datum, cached);
+        if (type === 'CACHE_DONE')    _onCacheDone(datum);
+        if (type === 'CACHE_ERROR')   _onCacheError(datum);
+        if (type === 'CACHED_STATUS') { if (datum === _activeDatum) _setDlState(cached ? 'cached' : 'idle'); }
       });
     });
-  }
-
-  // ── PWA Install Banner-knappar ──────────────────────────────
-  document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
-    if (!_deferredInstallPrompt) return;
-    _deferredInstallPrompt.prompt();
-    const { outcome } = await _deferredInstallPrompt.userChoice;
-    _deferredInstallPrompt = null;
-    document.getElementById('pwa-banner')?.classList.remove('visible');
-    if (outcome === 'dismissed') localStorage.setItem('pwa_dismissed', '1');
-  });
-
-  document.getElementById('pwa-dismiss-btn')?.addEventListener('click', () => {
-    document.getElementById('pwa-banner')?.classList.remove('visible');
-    localStorage.setItem('pwa_dismissed', '1');
-  });
-
-  // ══════════════════════════════════════════════════════════════
-  //  NEDLADDNINGSKNAPP — Offline-cache per spår
-  // ══════════════════════════════════════════════════════════════
-
-  const _downloadBtn  = document.getElementById('sp-download-btn');
-  const _downloadLbl  = document.getElementById('sp-download-label');
-
-  // Kontrollera om ett datum redan är cachat
-  function _checkCachedStatus(datum) {
-    if (!datum || !_swReg || !navigator.serviceWorker.controller) return;
-    const url = audioUrls[datum];
-    if (!url) return;
-    navigator.serviceWorker.controller.postMessage({ type: 'CHECK_CACHED', url, datum });
-  }
-
-  // Uppdatera knappens utseende
-  function _updateDownloadBtn(datum, isCached) {
-    if (datum !== _activeDatum || !_downloadBtn) return;
-    _downloadBtn.classList.remove('loading', 'cached', 'error');
-    if (isCached) {
-      _downloadBtn.classList.add('cached');
-      _downloadBtn.title = 'Sparat offline ✓';
-      _downloadLbl.textContent = 'Offline ✓';
-      _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="sp-download-label">Offline ✓</span>`;
-    } else {
-      _downloadBtn.title = 'Ladda ner för offline';
-      _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg><span id="sp-download-label">Offline</span>`;
-    }
-  }
-
-  // Callback: nedladdning klar
-  function _onCacheDone(datum, alreadyCached) {
-    _updateDownloadBtn(datum, true);
-    if (!alreadyCached) {
-      // Liten visuell bekräftelse
-      if (_downloadBtn) {
-        _downloadBtn.style.transform = 'scale(1.08)';
-        setTimeout(() => { _downloadBtn.style.transform = ''; }, 280);
-      }
-    }
-  }
-
-  // Callback: fel vid nedladdning
-  function _onCacheError(datum) {
-    if (datum !== _activeDatum || !_downloadBtn) return;
-    _downloadBtn.classList.remove('loading', 'cached');
-    _downloadBtn.classList.add('error');
-    _downloadBtn.title = 'Nedladdning misslyckades';
-    _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="sp-download-label">Fel</span>`;
-    setTimeout(() => {
-      if (datum === _activeDatum) _updateDownloadBtn(datum, false);
-    }, 3000);
-  }
-
-  // Starta nedladdning när knappen klickas
-  if (_downloadBtn) {
-    _downloadBtn.addEventListener('click', () => {
-      if (!_activeDatum || !audioUrls[_activeDatum]) return;
-      if (_downloadBtn.classList.contains('cached')) {
-        // Redan cachat — inget att göra
-        _downloadBtn.style.transform = 'scale(1.05)';
-        setTimeout(() => { _downloadBtn.style.transform = ''; }, 200);
-        return;
-      }
-      if (_downloadBtn.classList.contains('loading')) return;
-
-      // Starta laddning
-      _downloadBtn.classList.remove('error');
-      _downloadBtn.classList.add('loading');
-      _downloadBtn.title = 'Laddar ner…';
-      _downloadBtn.innerHTML = `<span class="sp-spin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg></span><span id="sp-download-label">Laddar…</span>`;
-
-      const url = audioUrls[_activeDatum];
-      if (navigator.serviceWorker.controller) {
-        // Använd Service Worker för att cacha
-        navigator.serviceWorker.controller.postMessage({
-          type: 'CACHE_AUDIO',
-          url,
-          datum: _activeDatum
-        });
-      } else {
-        // Fallback: direkt fetch + Cache API
-        (async () => {
-          try {
-            const cache = await caches.open('tarawih-audio-v1');
-            const existing = await cache.match(url);
-            if (existing) { _onCacheDone(_activeDatum, true); return; }
-            const response = await fetch(url);
-            if (response.ok) {
-              await cache.put(url, response);
-              _onCacheDone(_activeDatum, false);
-            } else { _onCacheError(_activeDatum); }
-          } catch { _onCacheError(_activeDatum); }
-        })();
-      }
-    });
-  }
-
-  // Uppdatera nedladdningsknappen när spelaren öppnas för ett nytt datum
-  // Patchar openPlayer för att trigga cache-kontroll
-  const _origOpenPlayer = typeof openPlayer === 'function' ? openPlayer : null;
-  if (_origOpenPlayer) {
-    window._onPlayerOpen = function(datum) {
-      // Återställ knapp
-      if (_downloadBtn) {
-        _downloadBtn.classList.remove('loading', 'cached', 'error');
-        _downloadBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg><span id="sp-download-label">Offline</span>`;
-        _downloadBtn.title = 'Ladda ner för offline';
-      }
-      // Kontrollera om redan cachat
-      setTimeout(() => _checkCachedStatus(datum), 200);
-    };
   }
 
 </script>
@@ -6291,6 +6286,13 @@
         <path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
+
+    <!-- Offline-knapp — friflytande i övre vänstra hörnet (symmetrisk mot ×) -->
+    <button class="sp-download-btn" id="sp-download-btn" title="Ladda ner för offline">
+      <svg id="sp-dl-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>
+      <span id="sp-download-label">Offline</span>
+    </button>
+
     <div class="sp-drag-handle"></div>
 
 
@@ -6412,12 +6414,6 @@
     <!-- Extras: speed · soundwave · sleep · mute -->
     <div class="sp-extras-row">
       <button class="sp-speed-chip" id="sp-speed-btn" data-i18n-title="speedTip" title="Uppspelningshastighet">1×</button>
-
-      <!-- ── DOWNLOAD BUTTON ── -->
-      <button class="sp-download-btn" id="sp-download-btn" title="Ladda ner för offline">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M7 10l5 5 5-5"/><path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/></svg>
-        <span id="sp-download-label">Offline</span>
-      </button>
 
       <!-- ══ SOUND WAVE — flex:1 centrerar den mellan 1× och knapparna ══ -->
       <div class="sp-soundwave" id="sp-soundwave" style="flex:1;"></div>
