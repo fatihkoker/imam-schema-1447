@@ -2747,6 +2747,10 @@
       bellMinAgo:      'm sedan',
       bellHourAgo:     'h sedan',
       bellDayAgo:      'd sedan',
+      installTitle:    'Lägg till på hemskärmen',
+      installSub:      'Tryck dela → Lägg till',
+      updateLabel:     'Uppdatering tillgänglig',
+      updateSub:       '— tryck för att ladda om',
     },
     ar: {
       days: { Monday:'الاثنين', Tuesday:'الثلاثاء', Wednesday:'الأربعاء', Thursday:'الخميس', Friday:'الجمعة', Saturday:'السبت', Sunday:'الأحد' },
@@ -2815,6 +2819,10 @@
       bellMinAgo:      'د',
       bellHourAgo:     'س',
       bellDayAgo:      'ي',
+      installTitle:    'أضف إلى الشاشة الرئيسية',
+      installSub:      'اضغط مشاركة → أضف',
+      updateLabel:     'تحديث متاح',
+      updateSub:       '— اضغط للتحديث',
     },
     en: {
       days: { Monday:'Monday', Tuesday:'Tuesday', Wednesday:'Wednesday', Thursday:'Thursday', Friday:'Friday', Saturday:'Saturday', Sunday:'Sunday' },
@@ -2883,6 +2891,10 @@
       bellMinAgo:      'm ago',
       bellHourAgo:     'h ago',
       bellDayAgo:      'd ago',
+      installTitle:    'Add to Home Screen',
+      installSub:      'Tap share → Add to Home',
+      updateLabel:     'Update available',
+      updateSub:       '— tap to reload',
     },
     tr: {
       days: { Monday:'Pazartesi', Tuesday:'Salı', Wednesday:'Çarşamba', Thursday:'Perşembe', Friday:'Cuma', Saturday:'Cumartesi', Sunday:'Pazar' },
@@ -2951,6 +2963,10 @@
       bellMinAgo:      'dk önce',
       bellHourAgo:     'sa önce',
       bellDayAgo:      'g önce',
+      installTitle:    'Ana Ekrana Ekle',
+      installSub:      'Paylaş → Ana Ekrana Ekle',
+      updateLabel:     'Güncelleme mevcut',
+      updateSub:       '— yüklemek için dokun',
     },
     so: {
       days: { Monday:'Isniin', Tuesday:'Talaado', Wednesday:'Arbaco', Thursday:'Khamiis', Friday:'Jimce', Saturday:'Sabti', Sunday:'Axad' },
@@ -3019,6 +3035,10 @@
       bellMinAgo:      'dq kahor',
       bellHourAgo:     'sA kahor',
       bellDayAgo:      'mB kahor',
+      installTitle:    'Ku dar Shaashadda Guriga',
+      installSub:      'Taabo wadaag → Ku dar',
+      updateLabel:     'Cusbooneysiinta diyaar',
+      updateSub:       '— taabo si aad u cusbooneysiiso',
     },
   };
 
@@ -5070,6 +5090,21 @@
       ishaLabelEl.textContent = t.ishaLabel;
     }
 
+    // iOS install pill + update toast — uppdatera text vid språkbyte
+    const pillTitle = document.querySelector('#ios-install-pill .pill-title');
+    const pillSub   = document.querySelector('#ios-install-pill .pill-sub');
+    if (pillTitle) pillTitle.textContent = t.installTitle || 'Lägg till på hemskärmen';
+    if (pillSub) {
+      // Behåll SVG-ikonen, byt bara textnoden
+      const svg = pillSub.querySelector('svg');
+      pillSub.textContent = t.installSub || 'Tryck dela → Lägg till';
+      if (svg) pillSub.prepend(svg);
+    }
+    const toastLabel = document.querySelector('#update-toast .toast-label');
+    const toastSub   = document.querySelector('#update-toast .toast-sub');
+    if (toastLabel) toastLabel.textContent = t.updateLabel || 'Uppdatering tillgänglig';
+    if (toastSub)   toastSub.textContent   = t.updateSub   || '— tryck för att ladda om';
+
     localStorage.setItem(LANG_KEY, lang);
   }
 
@@ -6577,10 +6612,10 @@
 <div id="ios-install-pill" role="complementary" aria-label="Lägg till på hemskärmen">
   <div class="pill-icon">🌙</div>
   <div class="pill-text">
-    <div class="pill-title">Lägg till på hemskärmen</div>
+    <div class="pill-title" data-i18n="installTitle">Lägg till på hemskärmen</div>
     <div class="pill-sub">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="15.5"/><polyline points="8 5 12 1 16 5"/><path d="M16 11h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2"/></svg>
-      Tryck dela → Lägg till
+      <span data-i18n="installSub">Tryck dela → Lägg till</span>
     </div>
   </div>
   <button class="pill-dismiss" id="pill-dismiss-btn" aria-label="Stäng">
@@ -6593,8 +6628,8 @@
   <div class="toast-icon">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.96"/></svg>
   </div>
-  <span class="toast-label">Uppdatering tillgänglig</span>
-  <span class="toast-sub">— tryck för att ladda om</span>
+  <span class="toast-label" data-i18n="updateLabel">Uppdatering tillgänglig</span>
+  <span class="toast-sub" data-i18n="updateSub">— tryck för att ladda om</span>
 </div>
 
 </body>
