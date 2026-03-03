@@ -6777,8 +6777,10 @@
 
   async function _initFCM() {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    const lbl = document.getElementById('push-notif-label');
 
     try {
+      if (lbl) lbl.textContent = '⏳ Laddar Firebase...';
       const [{ initializeApp }, { getMessaging, getToken, onMessage }] = await Promise.all([
         import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'),
         import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js'),
@@ -6788,6 +6790,7 @@
       const messaging = getMessaging(app);
 
       if (Notification.permission === 'granted') {
+        if (lbl) lbl.textContent = '⏳ Hämtar token...';
         const swReg = await navigator.serviceWorker.ready;
         _fcmToken = await getToken(messaging, {
           vapidKey: FCM_VAPID_KEY,
@@ -6795,7 +6798,7 @@
         });
         console.log('[FCM] Token:', _fcmToken);
         localStorage.setItem('fcm_token', _fcmToken);
-        // Spara token i repot så Action:en kan skicka till den
+        if (lbl) lbl.textContent = '⏳ Sparar...';
         await _saveTokenToRepo(_fcmToken);
         _updatePushBtn('active');
       }
@@ -6842,11 +6845,25 @@
     const btn = document.getElementById('push-notif-btn');
     if (btn.classList.contains('push-active') || btn.classList.contains('push-denied')) return;
 
-    const perm = await Notification.requestPermission();
-    if (perm === 'granted') {
-      await _initFCM();
-    } else {
-      _updatePushBtn('denied');
+    // Visa laddningsindikator
+    const lbl = document.getElementById('push-notif-label');
+    if (lbl) lbl.textContent = '⏳ Aktiverar...';
+
+    try {
+      // Om redan granted — kör direkt utan att fråga igen
+      let perm = Notification.permission;
+      if (perm === 'default') {
+        perm = await Notification.requestPermission();
+      }
+
+      if (perm === 'granted') {
+        await _initFCM();
+      } else {
+        _updatePushBtn('denied');
+      }
+    } catch (err) {
+      console.error('[Push] Klick-fel:', err);
+      if (lbl) lbl.textContent = '❌ Fel: ' + err.message;
     }
   });
 
