@@ -1469,91 +1469,97 @@
     /* ── iOS Install Pill ── */
     #ios-install-pill {
       position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(140px);
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(160px);
       z-index: 20000;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 100px;
+      border-radius: 18px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10);
-      padding: 10px 14px 10px 12px;
-      display: flex; align-items: center; gap: 10px;
-      cursor: pointer;
+      width: min(340px, calc(100vw - 36px));
+      padding: 14px 14px 14px 14px;
       opacity: 0;
-      white-space: nowrap;
       -webkit-tap-highlight-color: transparent;
       transition:
-        transform 0.5s cubic-bezier(0.34,1.56,0.64,1),
+        transform 0.5s cubic-bezier(0.34,1.46,0.64,1),
         opacity 0.4s ease,
-        border-radius 0.35s cubic-bezier(0.34,1.2,0.64,1),
-        padding 0.35s ease,
         box-shadow 0.3s ease;
-      will-change: transform, border-radius;
-      overflow: hidden;
+      will-change: transform, opacity;
     }
     #ios-install-pill.visible {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
     #ios-install-pill.hiding {
-      transform: translateX(-50%) translateY(140px);
+      transform: translateX(-50%) translateY(160px);
       opacity: 0;
       transition: transform 0.35s cubic-bezier(0.55,0,1,0.45), opacity 0.3s ease;
     }
-    /* Expanded state */
-    #ios-install-pill.expanded {
-      border-radius: 20px;
-      padding: 14px 16px;
-      white-space: normal;
-      cursor: default;
-      align-items: flex-start;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.12);
-      width: min(320px, calc(100vw - 40px));
+
+    /* Collapsed promo row */
+    #ios-install-pill .pill-promo {
+      display: flex; align-items: flex-start; gap: 10px;
+      cursor: pointer;
     }
-    #ios-install-pill .pill-icon {
-      width: 32px; height: 32px; border-radius: 9px;
+    #ios-install-pill .pill-promo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
       background: var(--primary);
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 16px;
-      transition: border-radius 0.3s ease;
-    }
-    #ios-install-pill.expanded .pill-icon {
-      border-radius: 10px;
+      flex-shrink: 0; font-size: 18px; line-height: 1;
       margin-top: 1px;
     }
-    #ios-install-pill .pill-text { flex: 1; min-width: 0; }
+    #ios-install-pill .pill-promo-text { flex: 1; min-width: 0; }
     #ios-install-pill .pill-title {
-      font-size: 0.84rem; font-weight: 600; color: var(--text);
-      line-height: 1.2;
+      font-size: 0.86rem; font-weight: 700; color: var(--text);
+      line-height: 1.25; margin-bottom: 3px;
     }
     #ios-install-pill .pill-sub {
-      font-size: 0.70rem; color: var(--muted); margin-top: 2px;
-      display: flex; align-items: center; gap: 4px;
-      transition: opacity 0.2s ease;
+      font-size: 0.74rem; color: var(--muted); line-height: 1.4;
     }
-    #ios-install-pill.expanded .pill-sub { display: none; }
-    #ios-install-pill .pill-sub svg { flex-shrink: 0; }
+    #ios-install-pill .pill-dismiss {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(0,0,0,0.07);
+      border: none; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+      margin-top: 1px;
+    }
+    #ios-install-pill .pill-dismiss:hover { background: rgba(0,0,0,0.13); }
+    [data-theme="dark"] #ios-install-pill .pill-dismiss { background: rgba(255,255,255,0.08); }
+    [data-theme="dark"] #ios-install-pill .pill-dismiss:hover { background: rgba(255,255,255,0.15); }
 
-    /* Steps — hidden by default, shown when expanded */
-    #ios-install-pill .pill-steps {
+    /* Expanded instructions */
+    #ios-install-pill .pill-steps-wrap {
       display: none;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
     }
-    #ios-install-pill.expanded .pill-steps {
-      display: flex;
+    #ios-install-pill.expanded .pill-steps-wrap {
+      display: block;
+    }
+    #ios-install-pill.expanded .pill-promo {
+      cursor: default;
+    }
+    #ios-install-pill .pill-divider {
+      height: 1px; background: var(--border);
+      margin: 12px 0 10px;
+    }
+    #ios-install-pill .pill-steps-title {
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    #ios-install-pill .pill-steps {
+      display: flex; flex-direction: column; gap: 8px;
     }
     #ios-install-pill .pill-step {
       display: flex; align-items: center; gap: 10px;
-      opacity: 0;
-      transform: translateY(6px);
-      animation: pill-step-in 0.3s ease forwards;
+      opacity: 0; transform: translateY(5px);
+      animation: pill-step-in 0.28s ease forwards;
     }
-    #ios-install-pill .pill-step:nth-child(1) { animation-delay: 0.05s; }
-    #ios-install-pill .pill-step:nth-child(2) { animation-delay: 0.13s; }
-    #ios-install-pill .pill-step:nth-child(3) { animation-delay: 0.21s; }
+    #ios-install-pill .pill-step:nth-child(1) { animation-delay: 0.04s; }
+    #ios-install-pill .pill-step:nth-child(2) { animation-delay: 0.11s; }
+    #ios-install-pill .pill-step:nth-child(3) { animation-delay: 0.18s; }
     @keyframes pill-step-in {
       to { opacity: 1; transform: translateY(0); }
     }
@@ -1563,9 +1569,6 @@
       color: #fff; font-size: 0.68rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-    }
-    #ios-install-pill .step-body {
-      flex: 1;
     }
     #ios-install-pill .step-label {
       font-size: 0.78rem; font-weight: 500; color: var(--text);
@@ -1577,29 +1580,6 @@
       background: var(--surface-2); border: 1px solid var(--border);
       flex-shrink: 0;
     }
-
-    /* Divider between collapsed header and steps */
-    #ios-install-pill .pill-divider {
-      display: none;
-      height: 1px; background: var(--border);
-      margin: 10px -16px 0;
-    }
-    #ios-install-pill.expanded .pill-divider { display: block; }
-
-    #ios-install-pill .pill-dismiss {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: rgba(0,0,0,0.07);
-      border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted); flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.2s;
-      margin-top: 0;
-    }
-    #ios-install-pill.expanded .pill-dismiss { margin-top: 0; align-self: flex-start; }
-    #ios-install-pill .pill-dismiss:hover { background: rgba(0,0,0,0.13); }
-    [data-theme="dark"] #ios-install-pill .pill-dismiss { background: rgba(255,255,255,0.08); }
-    [data-theme="dark"] #ios-install-pill .pill-dismiss:hover { background: rgba(255,255,255,0.15); }
 
     /* ── Update Toast ── */
     #update-toast {
@@ -2896,8 +2876,9 @@
       bellMinAgo:      'm sedan',
       bellHourAgo:     'h sedan',
       bellDayAgo:      'd sedan',
-      installTitle:    'Lägg till på hemskärmen',
-      installSub:      'Tryck dela → Lägg till',
+      installTitle:    'Ha våra recitationer som en app',
+      installSub:      'Lyssna offline, öppna med ett klick och missa aldrig en kväll.',
+      installHowTitle: 'Så här gör du:',
       installStep1:    'Tryck', installStep1b: 'Dela',
       installStep2:    'Tryck', installStep2b: 'Visa mer',
       installStep3:    'Tryck', installStep3b: 'Lägg till på hemskärmen',
@@ -2977,8 +2958,9 @@
       bellMinAgo:      'د',
       bellHourAgo:     'س',
       bellDayAgo:      'ي',
-      installTitle:    'أضف إلى الشاشة الرئيسية',
-      installSub:      'اضغط مشاركة → أضف',
+      installTitle:    'احفظ التطبيق على هاتفك',
+      installSub:      'استمع بدون إنترنت، افتح بنقرة واحدة ولا تفوّت أي ليلة.',
+      installHowTitle: 'كيفية التثبيت:',
       installStep1: 'اضغط', installStep1b: 'مشاركة',
       installStep2: 'اضغط', installStep2b: 'المزيد',
       installStep3: 'اضغط', installStep3b: 'أضف إلى الشاشة الرئيسية',
@@ -3058,8 +3040,9 @@
       bellMinAgo:      'm ago',
       bellHourAgo:     'h ago',
       bellDayAgo:      'd ago',
-      installTitle:    'Add to Home Screen',
-      installSub:      'Tap share → Add to Home',
+      installTitle:    'Get our recitations as an app',
+      installSub:      'Listen offline, open with one tap and never miss an evening.',
+      installHowTitle: 'How to install:',
       installStep1: 'Tap', installStep1b: 'Share',
       installStep2: 'Tap', installStep2b: 'More options',
       installStep3: 'Tap', installStep3b: 'Add to Home Screen',
@@ -3139,8 +3122,9 @@
       bellMinAgo:      'dk önce',
       bellHourAgo:     'sa önce',
       bellDayAgo:      'g önce',
-      installTitle:    'Ana Ekrana Ekle',
-      installSub:      'Paylaş → Ana Ekrana Ekle',
+      installTitle:    'Recitasyonları uygulama olarak kaydet',
+      installSub:      'Çevrimdışı dinle, tek dokunuşla aç, hiçbir geceyi kaçırma.',
+      installHowTitle: 'Nasıl yapılır:',
       installStep1: 'Dokun', installStep1b: 'Paylaş',
       installStep2: 'Dokun', installStep2b: 'Daha Fazla',
       installStep3: 'Dokun', installStep3b: 'Ana Ekrana Ekle',
@@ -3220,8 +3204,9 @@
       bellMinAgo:      'dq kahor',
       bellHourAgo:     'sA kahor',
       bellDayAgo:      'mB kahor',
-      installTitle:    'Ku dar Shaashadda Guriga',
-      installSub:      'Taabo wadaag → Ku dar',
+      installTitle:    'Hel codbixi ahaan app',
+      installSub:      'Dhageyso offline, fur si fudud oo ha lumin habeenkasta.',
+      installHowTitle: 'Sida loo sameeyo:',
       installStep1: 'Taabo', installStep1b: 'Wadaag',
       installStep2: 'Taabo', installStep2b: 'Wax badan',
       installStep3: 'Taabo', installStep3b: 'Ku dar Shaashadda Guriga',
@@ -5280,27 +5265,10 @@
     }
 
     // iOS install pill + update toast — uppdatera text vid språkbyte
-    const pillTitle = document.querySelector('#ios-install-pill .pill-title');
-    const pillSub   = document.querySelector('#ios-install-pill .pill-sub');
-    if (pillTitle) pillTitle.textContent = t.installTitle || 'Lägg till på hemskärmen';
-    if (pillSub) {
-      // Behåll SVG-ikonen, byt bara textnoden
-      const svg = pillSub.querySelector('svg');
-      pillSub.textContent = t.installSub || 'Tryck dela → Lägg till';
-      if (svg) pillSub.prepend(svg);
-    }
-    // Steg-texter
-    const stepKeys = [
-      ['installStep1','installStep1b'],
-      ['installStep2','installStep2b'],
-      ['installStep3','installStep3b'],
-    ];
-    document.querySelectorAll('#ios-install-pill .pill-step').forEach((step, i) => {
-      const spans = step.querySelectorAll('.step-label > span[data-i18n]');
-      spans.forEach(span => {
-        const key = span.dataset.i18n;
-        if (t[key]) span.textContent = t[key];
-      });
+    // iOS pill — uppdatera alla data-i18n-element inne i pillen
+    document.querySelectorAll('#ios-install-pill [data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key] !== undefined) el.textContent = t[key];
     });
     const toastLabel = document.querySelector('#update-toast .toast-label');
     const toastSub   = document.querySelector('#update-toast .toast-sub');
@@ -6629,13 +6597,14 @@
       _hidePill(true);
     });
 
-    // Klick på pill (ej på ×) — expandera
-    pill.addEventListener('click', e => {
-      if (e.target.closest('#pill-dismiss-btn')) return;
-      if (!pill.classList.contains('expanded')) {
+    // Klick på promo-ytan — expandera (ej ×-knappen)
+    const promoArea = pill.querySelector('.pill-promo');
+    if (promoArea) {
+      promoArea.addEventListener('click', e => {
+        if (e.target.closest('#pill-dismiss-btn')) return;
         _expandPill();
-      }
-    });
+      });
+    }
 
     // Visa pill efter 3s
     setTimeout(() => {
@@ -7063,16 +7032,22 @@
 
 </div>
 <!-- ── iOS Install Pill ── -->
-<div id="ios-install-pill" role="complementary" aria-label="Lägg till på hemskärmen">
-  <div class="pill-icon">🌙</div>
-  <div class="pill-text">
-    <div class="pill-title" data-i18n="installTitle">Lägg till på hemskärmen</div>
-    <div class="pill-sub">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="15.5"/><polyline points="8 5 12 1 16 5"/><path d="M16 11h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2"/></svg>
-      <span data-i18n="installSub">Tryck dela → Lägg till</span>
+<div id="ios-install-pill" role="complementary" aria-label="Installera appen">
+  <!-- Collapsed: promo-vy -->
+  <div class="pill-promo">
+    <div class="pill-promo-icon">🔊</div>
+    <div class="pill-promo-text">
+      <div class="pill-title" data-i18n="installTitle">Ha våra recitationer som en app</div>
+      <div class="pill-sub" data-i18n="installSub">Lyssna offline, öppna med ett klick och missa aldrig en kväll.</div>
     </div>
-    <!-- Steps — visas vid expansion -->
+    <button class="pill-dismiss" id="pill-dismiss-btn" aria-label="Stäng">
+      <svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <!-- Expanded: instruktioner -->
+  <div class="pill-steps-wrap">
     <div class="pill-divider"></div>
+    <div class="pill-steps-title" data-i18n="installHowTitle">Så här gör du:</div>
     <div class="pill-steps">
       <div class="pill-step">
         <div class="step-num">1</div>
@@ -7106,9 +7081,6 @@
       </div>
     </div>
   </div>
-  <button class="pill-dismiss" id="pill-dismiss-btn" aria-label="Stäng">
-    <svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-  </button>
 </div>
 
 <!-- ── Update Toast ── -->
