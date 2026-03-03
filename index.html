@@ -6850,6 +6850,10 @@
     if (lbl) lbl.textContent = '⏳ Aktiverar...';
 
     try {
+      if (!('Notification' in window) || !('PushManager' in window)) {
+        if (lbl) lbl.textContent = '❌ Stöds ej i denna webbläsare';
+        return;
+      }
       // Om redan granted — kör direkt utan att fråga igen
       let perm = Notification.permission;
       if (perm === 'default') {
@@ -6867,8 +6871,14 @@
     }
   });
 
-  // Init vid laddning om redan granted
+  // Init vid laddning — dölj knappen om push inte stöds
   window.addEventListener('load', () => {
+    const pushBtn = document.getElementById('push-notif-btn');
+    if (!('Notification' in window) || !('PushManager' in window)) {
+      // Push stöds inte (desktop Safari, äldre webbläsare, icke-standalone iOS)
+      if (pushBtn) pushBtn.style.display = 'none';
+      return;
+    }
     if (Notification.permission === 'granted') {
       _initFCM();
     } else if (Notification.permission === 'denied') {
