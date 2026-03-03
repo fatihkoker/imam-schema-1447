@@ -6748,18 +6748,37 @@
     messagingSenderId: "860592398067",
     appId:             "1:860592398067:web:3ae1c407c498eee39e6186",
   };
-  const FCM_VAPID_KEY = "BPOBrPLoZVQ8U2reRfz2vqFmQh3kV-h8hbpEqjeMgfLNjzkgOqEzfOwwTAz_zwJykqJyjL9BRGB-QCx-DPkHbUc";
-  // ─────────────────────────────────────────────────────────────
+  const FCM_VAPID_KEY   = "BPOBrPLoZVQ8U2reRfz2vqFmQh3kV-h8hbpEqjeMgfLNjzkgOqEzfOwwTAz_zwJykqJyjL9BRGB-QCx-DPkHbUc";
+  // Ersätt med ditt GitHub-repo och en PAT med repo-write scope
+  const FIRESTORE_URL = "https://firestore.googleapis.com/v1/projects/sverigesimamer/databases/(default)/documents";
+  // ──────────────────────────────────────────────────────────────
 
   let _fcmToken = null;
 
+  // Sparar FCM-token till Firestore — ingen känslig nyckel behövs
+  async function _saveTokenToRepo(token) {
+    try {
+      const safeId = btoa(token).replace(/[^a-zA-Z0-9]/g, '').slice(0, 100);
+      await fetch(`${FIRESTORE_URL}/fcm-tokens/${safeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            token:     { stringValue: token },
+            createdAt: { stringValue: new Date().toISOString() },
+          }
+        }),
+      });
+      console.log('[FCM] Token sparad i Firestore');
+    } catch (err) {
+      console.warn('[FCM] Kunde inte spara token:', err);
+    }
+  }
+
   async function _initFCM() {
-    // Kräver att SW är registrerad och att Notification-API finns
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-    if (FCM_CONFIG.apiKey === 'FIREBASE_API_KEY') return; // Ej konfigurerad än
 
     try {
-      // Ladda Firebase dynamiskt (undviker att påverka laddningstid)
       const [{ initializeApp }, { getMessaging, getToken, onMessage }] = await Promise.all([
         import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'),
         import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js'),
@@ -6768,7 +6787,6 @@
       const app       = initializeApp(FCM_CONFIG);
       const messaging = getMessaging(app);
 
-      // Hämta token (kräver granted permission)
       if (Notification.permission === 'granted') {
         const swReg = await navigator.serviceWorker.ready;
         _fcmToken = await getToken(messaging, {
@@ -6776,17 +6794,17 @@
           serviceWorkerRegistration: swReg,
         });
         console.log('[FCM] Token:', _fcmToken);
-        // Spara token lokalt (GitHub Action hämtar den via en liten token-fil)
         localStorage.setItem('fcm_token', _fcmToken);
+        // Spara token i repot så Action:en kan skicka till den
+        await _saveTokenToRepo(_fcmToken);
         _updatePushBtn('active');
       }
 
-      // Hantera push-meddelanden i förgrunden
+      // Hantera push i förgrunden
       onMessage(messaging, (payload) => {
         const t = T[_currentLang] || T['sv'];
         const title = payload.notification?.title || t.pushNewTitle;
         const body  = payload.notification?.body  || t.pushNewBody;
-        // Visa via SW för konsekvent utseende
         navigator.serviceWorker.ready.then(reg => {
           reg.showNotification(title, {
             body, icon: 'favicon.ico', badge: 'favicon.ico',
