@@ -1437,39 +1437,101 @@
     }
 
     /* ── PWA Install Banner ── */
-    #pwa-banner {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 20000;
+    /* ── iOS Install Pill ── */
+    #ios-install-pill {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      z-index: 20000;
       background: var(--surface);
-      border-top: 1px solid var(--border);
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.14);
-      padding: 14px 20px 20px;
-      display: flex; align-items: center; gap: 14px;
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10);
+      padding: 10px 18px 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+      opacity: 0;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
-    #pwa-banner.visible { transform: translateY(0); }
-    #pwa-banner .pwa-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: var(--primary); display: flex; align-items: center;
-      justify-content: center; flex-shrink: 0; font-size: 22px;
+    #ios-install-pill.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
-    #pwa-banner .pwa-text { flex: 1; }
-    #pwa-banner .pwa-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
-    #pwa-banner .pwa-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-    #pwa-banner .pwa-btns { display: flex; gap: 8px; flex-shrink: 0; }
-    #pwa-banner .pwa-install-btn {
-      background: var(--primary); color: #fff;
-      border: none; border-radius: 100px;
-      padding: 8px 18px; font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; font-family: inherit;
-      transition: background 0.2s;
+    #ios-install-pill.hiding {
+      transform: translateX(-50%) translateY(120px);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.55,0,1,0.45), opacity 0.3s ease;
     }
-    #pwa-banner .pwa-install-btn:hover { background: var(--primary-dark); }
-    #pwa-banner .pwa-dismiss-btn {
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 100px;
-      padding: 8px 14px; font-size: 0.8rem;
-      cursor: pointer; font-family: inherit;
+    #ios-install-pill .pill-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 15px;
+    }
+    #ios-install-pill .pill-text {
+      flex: 1;
+    }
+    #ios-install-pill .pill-title {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+      line-height: 1.2;
+    }
+    #ios-install-pill .pill-sub {
+      font-size: 0.68rem; color: var(--muted); margin-top: 1px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #ios-install-pill .pill-sub svg { flex-shrink: 0; }
+    #ios-install-pill .pill-dismiss {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,0.08);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    [data-theme="dark"] #ios-install-pill .pill-dismiss { background: rgba(255,255,255,0.08); }
+
+    /* ── Update Toast ── */
+    #update-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      z-index: 20001;
+      background: var(--primary);
+      border-radius: 100px;
+      box-shadow: 0 8px 32px rgba(36,100,93,0.35), 0 2px 8px rgba(0,0,0,0.12);
+      padding: 12px 20px 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+      opacity: 0;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      color: #fff;
+    }
+    #update-toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #update-toast.hiding {
+      transform: translateX(-50%) translateY(120px);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.55,0,1,0.45), opacity 0.3s ease;
+    }
+    #update-toast .toast-icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    #update-toast .toast-label {
+      font-size: 0.84rem; font-weight: 600; letter-spacing: 0.01em;
+    }
+    #update-toast .toast-sub {
+      font-size: 0.72rem; opacity: 0.75; margin-left: 2px;
     }
 
     /* Mini mute indicator */
@@ -6207,76 +6269,74 @@
     setTimeout(() => _checkCachedStatus(datum), 300);
   };
 
-  // PWA: fånga beforeinstallprompt
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    _deferredInstallPrompt = e;
-    if (!localStorage.getItem('pwa_dismissed')) {
+  // ── iOS Install Pill ──────────────────────────────────────────
+  // Körs efter DOMContentLoaded så att #ios-install-pill finns i DOM
+  window.addEventListener('DOMContentLoaded', function() {
+    const PILL_KEY = 'ios_pill_dismissed';
+
+    // Kör bara på iOS Safari (ej Chrome/Firefox på iOS), ej installerad PWA
+    const ua           = navigator.userAgent;
+    const isIOS        = /iphone|ipad|ipod/i.test(ua);
+    const isSafari     = /safari/i.test(ua) && !/crios|fxios|opios|mercury/i.test(ua);
+    const isStandalone = window.navigator.standalone === true;
+
+    if (!isIOS || !isSafari || isStandalone) return;
+    if (localStorage.getItem(PILL_KEY)) return;
+
+    const pill = document.getElementById('ios-install-pill');
+    if (!pill) return;
+
+    function _hidePill(permanent) {
+      pill.classList.remove('visible');
+      pill.classList.add('hiding');
+      if (permanent) localStorage.setItem(PILL_KEY, '1');
+      pill.addEventListener('transitionend', () => {
+        pill.classList.remove('hiding');
+      }, { once: true });
+    }
+
+    document.getElementById('pill-dismiss-btn')?.addEventListener('click', e => {
+      e.stopPropagation();
+      _hidePill(true);
+    });
+
+    pill.addEventListener('click', () => _hidePill(false));
+
+    // Visa efter 3s
+    setTimeout(() => {
+      pill.classList.add('visible');
+      // Auto-göm efter 14s om användaren inte interagerat
       setTimeout(() => {
-        const banner = document.getElementById('pwa-banner');
-        if (banner) banner.classList.add('visible');
-      }, 3000);
-    }
+        if (pill.classList.contains('visible')) _hidePill(false);
+      }, 14000);
+    }, 3000);
   });
 
-  window.addEventListener('appinstalled', () => {
-    _deferredInstallPrompt = null;
-    const banner = document.getElementById('pwa-banner');
-    if (banner) banner.classList.remove('visible');
-    localStorage.setItem('pwa_dismissed', '1');
-  });
+  // ── Update Toast + Auto-uppdatering ────────────────────────────
+  function _showUpdateToast() {
+    const toast = document.getElementById('update-toast');
+    if (!toast) return;
+    // Liten fördröjning så det känns naturligt
+    setTimeout(() => toast.classList.add('visible'), 800);
 
-  // Delegerade klick-lyssnare (säkra mot dynamic innerHTML)
-  document.addEventListener('click', e => {
-    // PWA-install
-    if (e.target.id === 'pwa-install-btn') {
-      if (!_deferredInstallPrompt) return;
-      _deferredInstallPrompt.prompt();
-      _deferredInstallPrompt.userChoice.then(({ outcome }) => {
-        _deferredInstallPrompt = null;
-        document.getElementById('pwa-banner')?.classList.remove('visible');
-        if (outcome === 'dismissed') localStorage.setItem('pwa_dismissed', '1');
-      });
-    }
-    // PWA-avvisa
-    if (e.target.id === 'pwa-dismiss-btn') {
-      document.getElementById('pwa-banner')?.classList.remove('visible');
-      localStorage.setItem('pwa_dismissed', '1');
-    }
-    // Nedladdningsknapp
-    const dlBtn = e.target.closest('#sp-download-btn');
-    if (dlBtn) {
-      if (!_activeDatum || !audioUrls[_activeDatum]) return;
-      if (dlBtn.classList.contains('cached')) {
-        dlBtn.style.transform = 'scale(1.06)';
-        setTimeout(() => { dlBtn.style.transform = ''; }, 200);
-        return;
-      }
-      if (dlBtn.classList.contains('loading')) return;
-      _setDlState('loading');
-      const url   = audioUrls[_activeDatum];
-      const datum = _activeDatum;
-      const ctrl  = navigator.serviceWorker && navigator.serviceWorker.controller;
-      if (ctrl) {
-        ctrl.postMessage({ type: 'CACHE_AUDIO', url, datum });
-      } else {
-        (async () => {
-          try {
-            const cache    = await caches.open('tarawih-audio-v1');
-            const existing = await cache.match(url);
-            if (existing) { _onCacheDone(datum); return; }
-            const response = await fetch(url);
-            if (response.ok) {
-              await cache.put(url, response.clone());
-              _onCacheDone(datum);
-            } else { _onCacheError(datum); }
-          } catch { _onCacheError(datum); }
-        })();
-      }
-    }
-  });
+    toast.addEventListener('click', () => {
+      toast.classList.remove('visible');
+      toast.classList.add('hiding');
+      // Ladda om med ny SW
+      window.location.reload();
+    }, { once: true });
+  }
 
   // Registrera Service Worker
+    // Debug-hjälp: återställ pill från konsolen med window._resetPill()
+  window._resetPill = function() {
+    localStorage.removeItem('ios_pill_dismissed');
+    const pill = document.getElementById('ios-install-pill');
+    if (pill) { pill.classList.remove('hiding'); pill.classList.add('visible'); }
+    console.log('[PWA] Pill återställd');
+  };
+
+  // Registrera Service Worker + lyssna på uppdateringar
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
@@ -6284,6 +6344,24 @@
           _swReg = reg;
           console.log('[SW] Registrerad:', reg.scope);
           if (_activeDatum) _checkCachedStatus(_activeDatum);
+
+          // Lyssna på ny SW-version
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+              // När ny SW är installerad OCH en gammal SW kontrollerar sidan
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] Ny version tillgänglig');
+                _showUpdateToast();
+              }
+            });
+          });
+
+          // Kolla om det redan finns en väntande SW vid sidladdning
+          if (reg.waiting && navigator.serviceWorker.controller) {
+            _showUpdateToast();
+          }
         })
         .catch(err => console.warn('[SW] Registrering misslyckades:', err));
 
@@ -6292,6 +6370,15 @@
         if (type === 'CACHE_DONE')    _onCacheDone(datum);
         if (type === 'CACHE_ERROR')   _onCacheError(datum);
         if (type === 'CACHED_STATUS') { if (datum === _activeDatum) _setDlState(cached ? 'cached' : 'idle'); }
+      });
+
+      // Automatisk omladdning om SW tar över (efter skipWaiting från ny SW)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          // Ladda om tyst — användaren har redan tryckt på toasten
+        }
       });
     });
   }
@@ -6486,17 +6573,28 @@
   </div>
 
 </div>
-<!-- ── PWA Install Banner ── -->
-<div id="pwa-banner" role="complementary" aria-label="Installera app">
-  <div class="pwa-icon">🌙</div>
-  <div class="pwa-text">
-    <div class="pwa-title">Lägg till på hemskärmen</div>
-    <div class="pwa-sub">Använd appen offline under Ramadan</div>
+<!-- ── iOS Install Pill ── -->
+<div id="ios-install-pill" role="complementary" aria-label="Lägg till på hemskärmen">
+  <div class="pill-icon">🌙</div>
+  <div class="pill-text">
+    <div class="pill-title">Lägg till på hemskärmen</div>
+    <div class="pill-sub">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="15.5"/><polyline points="8 5 12 1 16 5"/><path d="M16 11h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2"/></svg>
+      Tryck dela → Lägg till
+    </div>
   </div>
-  <div class="pwa-btns">
-    <button class="pwa-install-btn" id="pwa-install-btn">Installera</button>
-    <button class="pwa-dismiss-btn" id="pwa-dismiss-btn">Inte nu</button>
+  <button class="pill-dismiss" id="pill-dismiss-btn" aria-label="Stäng">
+    <svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M1 1L10 10M10 1L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<!-- ── Update Toast ── -->
+<div id="update-toast" role="status" aria-label="Uppdatering tillgänglig">
+  <div class="toast-icon">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.96"/></svg>
   </div>
+  <span class="toast-label">Uppdatering tillgänglig</span>
+  <span class="toast-sub">— tryck för att ladda om</span>
 </div>
 
 </body>
