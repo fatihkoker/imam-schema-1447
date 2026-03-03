@@ -1181,11 +1181,7 @@
     [data-theme="light"] .sp-ctrl-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.06); }
     [data-theme="light"] .sp-ctrl-btn:disabled { color: rgba(0,0,0,0.20); }
     [data-theme="light"] .sp-ctrl-lbl { color: rgba(0,0,0,0.28); }
-    [data-theme="light"] .sp-ring-inner {
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
-      background: rgba(220,217,210,0.9) !important;
-    }
-    [data-theme="light"] .sp-ring-inner svg { fill: rgba(0,0,0,0.60) !important; }
+
     [data-theme="light"] .sp-speed-chip {
       color: rgba(0,0,0,0.45);
       background: rgba(0,0,0,0.05);
@@ -1367,15 +1363,23 @@
       transition: stroke-dashoffset 0.4s ease, stroke 0.4s ease;
     }
     .sp-ring-inner {
-      position: absolute; inset: 5px; border-radius: 50%;
+      position: absolute; inset: 5px; border-radius: 50% !important;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.35);
+      background: linear-gradient(135deg, #1a1a1a, #3a3a3a);
       transition: background 0.4s ease;
+      overflow: hidden;
     }
+    [data-theme="light"] .sp-ring-inner {
+      background: rgba(0,0,0,0.07) !important;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.10);
+    }
+    [data-theme="light"] .sp-ring-inner svg { color: rgba(0,0,0,0.55) !important; fill: rgba(0,0,0,0.55) !important; }
+    .sp-ring-inner svg { color: white !important; fill: white !important; }
     @keyframes spmSpring { 0%{transform:scale(1)} 28%{transform:scale(0.80)} 62%{transform:scale(1.13)} 84%{transform:scale(0.95)} 100%{transform:scale(1)} }
     .sp-play-hero.springing .sp-ring-inner { animation: spmSpring 0.48s cubic-bezier(0.34,1.56,0.64,1); }
     .spm-icon-wrap { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-    .spm-icon-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.24s ease, transform 0.24s ease; }
+    .spm-icon-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.24s ease, transform 0.24s ease; color: white; fill: white; }
     .spm-play  { opacity: 1; transform: translate(calc(-50% + 1px), -50%) scale(1) !important; }
     .spm-pause { opacity: 0; transform: translate(-50%, -50%) scale(0.45) !important; }
     .sp-play-hero.playing .spm-play  { opacity: 0 !important; transform: translate(calc(-50% + 1px), -50%) scale(0.45) !important; }
@@ -3898,8 +3902,7 @@
     if (pf) pf.style.background = 'linear-gradient(to right, ' + base + ', ' + light + ')';
     const rf = document.getElementById('sp-ring-fill');
     if (rf) rf.style.stroke = light;
-    const ri = document.getElementById('sp-ring-inner');
-    if (ri) ri.style.background = 'linear-gradient(135deg, ' + lightenHex(base,-20) + ', ' + lightenHex(base,-40) + ')';
+    // ring-inner bakgrund sätts via CSS (inte JS) för konsekvent utseende
 
     // Mini artwork + progress
     const ma = document.getElementById('sp-mini-artwork');
@@ -6740,85 +6743,47 @@
   // ══════════════════════════════════════════════════════════════
 
   // ── Konfiguration (fyll i efter Firebase-setup) ───────────────
-  const FCM_CONFIG = {
-    apiKey:            "AIzaSyA1YkZi9MPCHetCCG6XDyg2TA7AbadmT6k",
-    authDomain:        "sverigesimamer.firebaseapp.com",
-    projectId:         "sverigesimamer",
-    storageBucket:     "sverigesimamer.firebasestorage.app",
-    messagingSenderId: "860592398067",
-    appId:             "1:860592398067:web:3ae1c407c498eee39e6186",
-  };
+  // ── Web Push (VAPID) — ingen Firebase SDK behövs i appen ──────
   const FCM_VAPID_KEY   = "BPOBrPLoZVQ8U2reRfz2vqFmQh3kV-h8hbpEqjeMgfLNjzkgOqEzfOwwTAz_zwJykqJyjL9BRGB-QCx-DPkHbUc";
-  // Ersätt med ditt GitHub-repo och en PAT med repo-write scope
-  const FIRESTORE_URL = "https://firestore.googleapis.com/v1/projects/sverigesimamer/databases/(default)/documents";
-  // ──────────────────────────────────────────────────────────────
+  const FIRESTORE_URL   = "https://firestore.googleapis.com/v1/projects/sverigesimamer/databases/(default)/documents";
 
-  let _fcmToken = null;
+  // Konverterar VAPID-nyckel från base64url till Uint8Array
+  function _vapidToUint8(base64url) {
+    // base64url → base64 standard
+    let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    // Padding
+    while (base64.length % 4 !== 0) base64 += '=';
+    // Dekoda till binär sträng
+    const binaryStr = window.atob(base64);
+    // Konvertera till Uint8Array
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return bytes;
+  }
 
-  // Sparar FCM-token till Firestore — ingen känslig nyckel behövs
-  async function _saveTokenToRepo(token) {
+  // Sparar push-subscription till Firestore
+  async function _saveTokenToRepo(subscription) {
     try {
-      const safeId = btoa(token).replace(/[^a-zA-Z0-9]/g, '').slice(0, 100);
+      const subJson = subscription.toJSON();
+      const safeId  = btoa(subJson.endpoint).replace(/[^a-zA-Z0-9]/g, '').slice(0, 100);
       await fetch(`${FIRESTORE_URL}/fcm-tokens/${safeId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fields: {
-            token:     { stringValue: token },
+            endpoint:  { stringValue: subJson.endpoint },
+            p256dh:    { stringValue: subJson.keys?.p256dh || '' },
+            auth:      { stringValue: subJson.keys?.auth   || '' },
             createdAt: { stringValue: new Date().toISOString() },
+            type:      { stringValue: 'webpush' },
           }
         }),
       });
-      console.log('[FCM] Token sparad i Firestore');
+      console.log('[Push] Subscription sparad i Firestore');
     } catch (err) {
-      console.warn('[FCM] Kunde inte spara token:', err);
-    }
-  }
-
-  async function _initFCM() {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-    const lbl = document.getElementById('push-notif-label');
-
-    try {
-      if (lbl) lbl.textContent = '⏳ Laddar Firebase...';
-      const [{ initializeApp }, { getMessaging, getToken, onMessage }] = await Promise.all([
-        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'),
-        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js'),
-      ]);
-
-      const app       = initializeApp(FCM_CONFIG);
-      const messaging = getMessaging(app);
-
-      if (Notification.permission === 'granted') {
-        if (lbl) lbl.textContent = '⏳ Hämtar token...';
-        const swReg = await navigator.serviceWorker.ready;
-        _fcmToken = await getToken(messaging, {
-          vapidKey: FCM_VAPID_KEY,
-          serviceWorkerRegistration: swReg,
-        });
-        console.log('[FCM] Token:', _fcmToken);
-        localStorage.setItem('fcm_token', _fcmToken);
-        if (lbl) lbl.textContent = '⏳ Sparar...';
-        await _saveTokenToRepo(_fcmToken);
-        _updatePushBtn('active');
-      }
-
-      // Hantera push i förgrunden
-      onMessage(messaging, (payload) => {
-        const t = T[_currentLang] || T['sv'];
-        const title = payload.notification?.title || t.pushNewTitle;
-        const body  = payload.notification?.body  || t.pushNewBody;
-        navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification(title, {
-            body, icon: 'favicon.ico', badge: 'favicon.ico',
-            tag: 'new-audio', renotify: true,
-            data: { url: window.location.href },
-          });
-        });
-      });
-
-    } catch (err) {
-      console.warn('[FCM] Init misslyckades:', err);
+      console.warn('[Push] Kunde inte spara subscription:', err);
     }
   }
 
@@ -6839,48 +6804,61 @@
     }
   }
 
-  // Push-knapp click
-  document.addEventListener('click', async e => {
-    if (!e.target.closest('#push-notif-btn')) return;
-    const btn = document.getElementById('push-notif-btn');
-    if (btn.classList.contains('push-active') || btn.classList.contains('push-denied')) return;
-
-    // Visa laddningsindikator
+  async function _initPush() {
     const lbl = document.getElementById('push-notif-label');
-    if (lbl) lbl.textContent = '⏳ Aktiverar...';
-
     try {
       if (!('Notification' in window) || !('PushManager' in window)) {
         if (lbl) lbl.textContent = '❌ Stöds ej i denna webbläsare';
         return;
       }
-      // Om redan granted — kör direkt utan att fråga igen
-      let perm = Notification.permission;
-      if (perm === 'default') {
-        perm = await Notification.requestPermission();
-      }
 
-      if (perm === 'granted') {
-        await _initFCM();
-      } else {
-        _updatePushBtn('denied');
+      if (lbl) lbl.textContent = '⏳ Begär tillstånd...';
+      let perm = Notification.permission;
+      if (perm === 'default') perm = await Notification.requestPermission();
+      if (perm !== 'granted') { _updatePushBtn('denied'); return; }
+
+      if (lbl) lbl.textContent = '⏳ Prenumererar...';
+      const swReg = await navigator.serviceWorker.ready;
+      console.log('[Push] SW aktiv:', swReg.active?.scriptURL);
+
+      // Kolla om vi redan har en aktiv subscription
+      let sub = await swReg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await swReg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: _vapidToUint8(FCM_VAPID_KEY),
+        });
       }
+      console.log('[Push] Subscription:', sub.endpoint.slice(0, 50));
+
+      if (lbl) lbl.textContent = '⏳ Sparar...';
+      await _saveTokenToRepo(sub);
+      _updatePushBtn('active');
+
     } catch (err) {
-      console.error('[Push] Klick-fel:', err);
-      if (lbl) lbl.textContent = '❌ Fel: ' + err.message;
+      console.error('[Push] Fel:', err);
+      const lbl2 = document.getElementById('push-notif-label');
+      if (lbl2) lbl2.textContent = '❌ Fel: ' + err.message;
     }
+  }
+
+  // Push-knapp click
+  document.addEventListener('click', async e => {
+    if (!e.target.closest('#push-notif-btn')) return;
+    const btn = document.getElementById('push-notif-btn');
+    if (btn.classList.contains('push-active') || btn.classList.contains('push-denied')) return;
+    await _initPush();
   });
 
   // Init vid laddning — dölj knappen om push inte stöds
   window.addEventListener('load', () => {
     const pushBtn = document.getElementById('push-notif-btn');
     if (!('Notification' in window) || !('PushManager' in window)) {
-      // Push stöds inte (desktop Safari, äldre webbläsare, icke-standalone iOS)
       if (pushBtn) pushBtn.style.display = 'none';
       return;
     }
     if (Notification.permission === 'granted') {
-      _initFCM();
+      _initPush();
     } else if (Notification.permission === 'denied') {
       _updatePushBtn('denied');
     }
@@ -7003,8 +6981,8 @@
         </svg>
         <div class="sp-ring-inner" id="sp-ring-inner">
           <span class="spm-icon-wrap">
-            <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="7,3 21,12 7,21"/></svg>
-            <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>
+            <svg class="spm-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
+            <svg class="spm-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="4" height="18" rx="1.5"/><rect x="14" y="3" width="4" height="18" rx="1.5"/></svg>
           </span>
         </div>
       </button>
