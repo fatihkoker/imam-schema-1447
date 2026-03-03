@@ -1614,6 +1614,34 @@
       font-size: 0.72rem; opacity: 0.75; margin-left: 2px;
     }
 
+    /* ── Download Done Toast — åker ner från toppen ── */
+    #dl-done-toast {
+      position: fixed;
+      top: 0; left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      z-index: 20002;
+      background: #1a7a55;
+      color: #fff;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+      padding: 12px 22px 14px;
+      display: flex; align-items: center; gap: 9px;
+      font-size: 0.88rem; font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.42s cubic-bezier(0.34,1.4,0.64,1), opacity 0.3s ease;
+    }
+    #dl-done-toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #dl-done-toast.hiding {
+      transform: translateX(-50%) translateY(-80px);
+      opacity: 0;
+      transition: transform 0.32s cubic-bezier(0.55,0,1,0.45), opacity 0.25s ease;
+    }
+
     /* Mini mute indicator */
     .sp-mini-muted-dot {
       position: absolute; top: 8px; right: 8px;
@@ -2834,6 +2862,7 @@
       installStep3:    'Tryck', installStep3b: 'Lägg till på hemskärmen',
       updateLabel:     'Uppdatering tillgänglig',
       updateSub:       '— tryck för att ladda om',
+      dlDone:          'Nedladdning klar! 📥',
     },
     ar: {
       days: { Monday:'الاثنين', Tuesday:'الثلاثاء', Wednesday:'الأربعاء', Thursday:'الخميس', Friday:'الجمعة', Saturday:'السبت', Sunday:'الأحد' },
@@ -2909,6 +2938,7 @@
       installStep3: 'اضغط', installStep3b: 'أضف إلى الشاشة الرئيسية',
       updateLabel:     'تحديث متاح',
       updateSub:       '— اضغط للتحديث',
+      dlDone:          'اكتمل التحميل! 📥',
     },
     en: {
       days: { Monday:'Monday', Tuesday:'Tuesday', Wednesday:'Wednesday', Thursday:'Thursday', Friday:'Friday', Saturday:'Saturday', Sunday:'Sunday' },
@@ -2984,6 +3014,7 @@
       installStep3: 'Tap', installStep3b: 'Add to Home Screen',
       updateLabel:     'Update available',
       updateSub:       '— tap to reload',
+      dlDone:          'Download complete! 📥',
     },
     tr: {
       days: { Monday:'Pazartesi', Tuesday:'Salı', Wednesday:'Çarşamba', Thursday:'Perşembe', Friday:'Cuma', Saturday:'Cumartesi', Sunday:'Pazar' },
@@ -3059,6 +3090,7 @@
       installStep3: 'Dokun', installStep3b: 'Ana Ekrana Ekle',
       updateLabel:     'Güncelleme mevcut',
       updateSub:       '— yüklemek için dokun',
+      dlDone:          'İndirme tamamlandı! 📥',
     },
     so: {
       days: { Monday:'Isniin', Tuesday:'Talaado', Wednesday:'Arbaco', Thursday:'Khamiis', Friday:'Jimce', Saturday:'Sabti', Sunday:'Axad' },
@@ -3134,6 +3166,7 @@
       installStep3: 'Taabo', installStep3b: 'Ku dar Shaashadda Guriga',
       updateLabel:     'Cusbooneysiinta diyaar',
       updateSub:       '— taabo si aad u cusbooneysiiso',
+      dlDone:          'Soo dejintii dhammaysay! 📥',
     },
   };
 
@@ -6357,7 +6390,7 @@
         break;
       case 'loading':
         btn.classList.add('loading');
-        btn.innerHTML = ''; // spinner via CSS ::after
+        btn.innerHTML = '';
         btn.title = 'Laddar ner…';
         break;
       case 'cached':
@@ -6389,15 +6422,31 @@
     }
   }
 
+  // ── Download Done Toast ───────────────────────────────────────
+  let _dlToastTimer = null;
+  function _showDlDoneToast() {
+    const toast = document.getElementById('dl-done-toast');
+    const lbl   = document.getElementById('dl-done-label');
+    if (!toast) return;
+    const t = T[_currentLang] || T['sv'];
+    if (lbl) lbl.textContent = t.dlDone || 'Nedladdning klar!';
+    clearTimeout(_dlToastTimer);
+    toast.classList.remove('hiding');
+    toast.classList.add('visible');
+    _dlToastTimer = setTimeout(() => {
+      toast.classList.remove('visible');
+      toast.classList.add('hiding');
+      toast.addEventListener('transitionend', () => toast.classList.remove('hiding'), { once: true });
+    }, 2800);
+  }
+
   function _onCacheDone(datum) {
     if (datum === _activeDatum) {
       _setDlState('cached');
       const btn = _dlBtn();
-      if (btn) {
-        btn.style.transform = 'scale(1.1)';
-        setTimeout(() => { btn.style.transform = ''; }, 300);
-      }
+      if (btn) { btn.style.transform = 'scale(1.1)'; setTimeout(() => { btn.style.transform = ''; }, 300); }
     }
+    _showDlDoneToast();
   }
 
   function _onCacheError(datum) {
@@ -6411,6 +6460,42 @@
     _setDlState('idle');
     setTimeout(() => _checkCachedStatus(datum), 300);
   };
+
+  // ── Klick-hantering för nedladdningsknappen ────────────────────
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('#sp-download-btn');
+    if (!btn) return;
+    if (!_activeDatum || !audioUrls[_activeDatum]) return;
+    if (btn.classList.contains('cached')) {
+      btn.style.transform = 'scale(1.06)';
+      setTimeout(() => { btn.style.transform = ''; }, 200);
+      return;
+    }
+    if (btn.classList.contains('loading')) return;
+
+    _setDlState('loading');
+    const url   = audioUrls[_activeDatum];
+    const datum = _activeDatum;
+
+    const ctrl = navigator.serviceWorker && navigator.serviceWorker.controller;
+    if (ctrl) {
+      ctrl.postMessage({ type: 'CACHE_AUDIO', url, datum });
+    } else {
+      // Fallback: Cache API direkt utan SW
+      (async () => {
+        try {
+          const cache    = await caches.open('tarawih-audio-v1');
+          const existing = await cache.match(url);
+          if (existing) { _onCacheDone(datum); return; }
+          const response = await fetch(url);
+          if (response.ok) {
+            await cache.put(url, response.clone());
+            _onCacheDone(datum);
+          } else { _onCacheError(datum); }
+        } catch { _onCacheError(datum); }
+      })();
+    }
+  });
 
   // ── iOS Install Pill ──────────────────────────────────────────
   // Körs efter DOMContentLoaded så att #ios-install-pill finns i DOM
@@ -6790,6 +6875,11 @@
   </div>
   <span class="toast-label" data-i18n="updateLabel">Uppdatering tillgänglig</span>
   <span class="toast-sub" data-i18n="updateSub">— tryck för att ladda om</span>
+</div>
+<!-- ── Download Done Toast ── -->
+<div id="dl-done-toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="dl-done-label">Nedladdning klar!</span>
 </div>
 
 </body>
