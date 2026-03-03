@@ -1,0 +1,84 @@
+name: Push-notis vid ny MP3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.mp3'
+
+jobs:
+  send-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hämta repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Hitta ny/ändrad MP3
+        id: mp3
+        run: |
+          CHANGED=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD | grep '\.mp3$' | grep -v '\-isha\.mp3$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "Inga nya tarawih-MP3:er — avbryter"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            FIRST=$(echo "$CHANGED" | head -1)
+            NIGHT=$(basename "$FIRST" .mp3)
+            echo "file=$FIRST" >> $GITHUB_OUTPUT
+            echo "night=$NIGHT" >> $GITHUB_OUTPUT
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Ny MP3: $FIRST (natt: $NIGHT)"
+          fi
+
+      - name: Hämta OAuth2-token från service account
+        if: steps.mp3.outputs.skip != 'true'
+        id: token
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          pip install google-auth --quiet
+          TOKEN=$(python3 -c "
+          from google.oauth2 import service_account
+          import google.auth.transport.requests
+          creds = service_account.Credentials.from_service_account_file('/tmp/sa.json', scopes=['https://www.googleapis.com/auth/firebase.messaging'])
+          creds.refresh(google.auth.transport.requests.Request())
+          print(creds.token)
+          ")
+          echo "access_token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Skicka FCM V1 push-notis
+        if: steps.mp3.outputs.skip != 'true'
+        run: |
+          NIGHT="${{ steps.mp3.outputs.night }}"
+          PROJECT_ID="sverigesimamer"
+          SITE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          TOKEN="${{ steps.token.outputs.access_token }}"
+
+          HTTP_CODE=$(curl -s -o /tmp/fcm_resp.json -w "%{http_code}" -X POST \
+            "https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"message\": {
+                \"topic\": \"tarawih-new-audio\",
+                \"notification\": {
+                  \"title\": \"🎙️ Nytt Tarawih-ljud!\",
+                  \"body\": \"Natt ${NIGHT} har laddats upp. Lyssna nu.\"
+                },
+                \"data\": {
+                  \"url\": \"${SITE_URL}\",
+                  \"night\": \"${NIGHT}\"
+                },
+                \"webpush\": {
+                  \"notification\": {
+                    \"icon\": \"${SITE_URL}/favicon.ico\",
+                    \"tag\": \"new-audio\",
+                    \"renotify\": \"true\"
+                  },
+                  \"fcm_options\": { \"link\": \"${SITE_URL}\" }
+                }
+              }
+            }")
+
+          cat /tmp/fcm_resp.json
+          [ "$HTTP_CODE" = "200" ] && echo "✅ Push skickad för $NIGHT" || { echo "❌ HTTP $HTTP_CODE"; exit 1; }
