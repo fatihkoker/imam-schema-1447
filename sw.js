@@ -146,3 +146,35 @@ self.addEventListener('message', async event => {
     event.source.postMessage({ type: 'CACHE_CLEARED' });
   }
 });
+
+// ── Push-notiser (Firebase Cloud Messaging) ───────────────────
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data?.json() || {}; } catch { data = { notification: { title: '🎙️ Nytt Tarawih-ljud!', body: 'En ny recitation har laddats upp.' } }; }
+
+  const title   = data.notification?.title || '🎙️ Nytt Tarawih-ljud!';
+  const options = {
+    body:    data.notification?.body || 'En ny recitation har laddats upp.',
+    icon:    './favicon.ico',
+    badge:   './favicon.ico',
+    tag:     'new-audio',
+    renotify: true,
+    data:    { url: data.data?.url || self.registration.scope },
+    actions: [{ action: 'open', title: 'Öppna appen' }],
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Klick på push-notis — öppna appen
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || self.registration.scope;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const client of list) {
+        if (client.url === url && 'focus' in client) return client.focus();
+      }
+      return clients.openWindow(url);
+    })
+  );
+});

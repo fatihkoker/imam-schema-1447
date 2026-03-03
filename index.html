@@ -360,6 +360,34 @@
       50% { opacity: 0.4; transform: scale(0.7); }
     }
 
+    /* ── Push-notis knapp i bell-panel ── */
+    #push-notif-btn {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      width: 100%; margin-top: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 14px;
+      color: var(--muted); font-size: 0.75rem; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.22s ease;
+    }
+    #push-notif-btn:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    #push-notif-btn.push-active {
+      background: rgba(36,100,93,0.15) !important;
+      border-color: rgba(36,100,93,0.40) !important;
+      color: var(--primary) !important; cursor: default;
+    }
+    #push-notif-btn.push-denied {
+      background: rgba(180,40,40,0.08) !important;
+      border-color: rgba(180,40,40,0.25) !important;
+      color: #c05050 !important; cursor: default;
+    }
+    [data-theme="light"] #push-notif-btn {
+      background: rgba(0,0,0,0.04); color: var(--muted);
+    }
+    [data-theme="light"] #push-notif-btn:hover { background: rgba(0,0,0,0.08); color: var(--text); }
+
     /* ── HEADER ── */
     header { background: var(--header-bg); padding: 28px 20px 22px; text-align: center; position: relative; transition: background 0.35s ease; }
     header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 60%, rgba(201,168,76,0.14) 0%, transparent 55%); pointer-events: none; }
@@ -2523,6 +2551,10 @@
         <div class="np-footer-text">
           <div class="np-footer-dot"></div>
           Kollar efter nya ljud automatiskt</div>
+        <button id="push-notif-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="push-notif-label">Aktivera push-notiser</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2847,6 +2879,11 @@
       notifBody:       'Bönetiden har börjat — kl. ',
       notifGranted:    'Notis aktiv',
       notifDenied:     'Notis blockerad',
+      pushNewTitle:    '🎙️ Nytt Tarawih-ljud!',
+      pushNewBody:     'En ny recitation har laddats upp. Lyssna nu.',
+      pushEnableBtn:   'Aktivera push-notiser',
+      pushActiveBtn:   'Push-notiser aktiva ✓',
+      pushDeniedBtn:   'Notiser blockerade',
       bellTitle:       'Nya ljud',
       bellAria:        'Nya ljud',
       bellMarkRead:    'Markera alla lästa',
@@ -2923,6 +2960,11 @@
       notifBody:       'بدأت الصلاة — الساعة ',
       notifGranted:    'الإشعار نشط',
       notifDenied:     'الإشعار محظور',
+      pushNewTitle:    '🎙️ صوت تراويح جديد!',
+      pushNewBody:     'تمت رفع تلاوة جديدة. استمع الآن.',
+      pushEnableBtn:   'تفعيل الإشعارات',
+      pushActiveBtn:   'الإشعارات نشطة ✓',
+      pushDeniedBtn:   'الإشعارات محظورة',
       bellTitle:       'أصوات جديدة',
       bellAria:        'أصوات جديدة',
       bellMarkRead:    'تحديد الكل كمقروء',
@@ -2999,6 +3041,11 @@
       notifBody:       'Prayer time has started — ',
       notifGranted:    'Notification active',
       notifDenied:     'Notification blocked',
+      pushNewTitle:    '🎙️ New Tarawih audio!',
+      pushNewBody:     'A new recitation has been uploaded. Listen now.',
+      pushEnableBtn:   'Enable push notifications',
+      pushActiveBtn:   'Push notifications active ✓',
+      pushDeniedBtn:   'Notifications blocked',
       bellTitle:       'New audio',
       bellAria:        'New audio',
       bellMarkRead:    'Mark all as read',
@@ -3075,6 +3122,11 @@
       notifBody:       'Namaz başladı — saat ',
       notifGranted:    'Bildirim aktif',
       notifDenied:     'Bildirim engellendi',
+      pushNewTitle:    '🎙️ Yeni Teravih sesi!',
+      pushNewBody:     'Yeni bir tilavet yüklendi. Şimdi dinle.',
+      pushEnableBtn:   'Bildirimleri etkinleştir',
+      pushActiveBtn:   'Bildirimler aktif ✓',
+      pushDeniedBtn:   'Bildirimler engellendi',
       bellTitle:       'Yeni ses',
       bellAria:        'Yeni ses',
       bellMarkRead:    'Tümünü okundu işaretle',
@@ -3151,6 +3203,11 @@
       notifBody:       'Salaadda waxay bilaabatay — ',
       notifGranted:    'Ogeysiiska waa firfircoon',
       notifDenied:     'Ogeysiiska waa la xidhay',
+      pushNewTitle:    '🎙️ Cod cusub Tarawih!',
+      pushNewBody:     'Akhrinta cusub ayaa la soo raray. Dhageyso hadda.',
+      pushEnableBtn:   'Fur ogeysiisyada push',
+      pushActiveBtn:   'Ogeysiisyada push waa firfircoon ✓',
+      pushDeniedBtn:   'Ogeysiisyadu waa la xidhay',
       bellTitle:       'Codad cusub',
       bellAria:        'Codad cusub',
       bellMarkRead:    'Dhammaan u calaamadee akhrinta',
@@ -5250,6 +5307,18 @@
     if (toastLabel) toastLabel.textContent = t.updateLabel || 'Uppdatering tillgänglig';
     if (toastSub)   toastSub.textContent   = t.updateSub   || '— tryck för att ladda om';
 
+    // Push-notis knapp
+    const pushBtn = document.getElementById('push-notif-btn');
+    if (pushBtn) {
+      if (pushBtn.classList.contains('push-active')) {
+        document.getElementById('push-notif-label').textContent = t.pushActiveBtn || 'Push-notiser aktiva ✓';
+      } else if (pushBtn.classList.contains('push-denied')) {
+        document.getElementById('push-notif-label').textContent = t.pushDeniedBtn || 'Notiser blockerade';
+      } else {
+        document.getElementById('push-notif-label').textContent = t.pushEnableBtn || 'Aktivera push-notiser';
+      }
+    }
+
     localStorage.setItem(LANG_KEY, lang);
   }
 
@@ -6648,6 +6717,113 @@
       });
     });
   }
+
+  // ══════════════════════════════════════════════════════════════
+  //  FIREBASE CLOUD MESSAGING — Push-notiser för ny ljud
+  //  OBS: Ersätt FIREBASE_CONFIG och VAPID_KEY med dina egna värden
+  // ══════════════════════════════════════════════════════════════
+
+  // ── Konfiguration (fyll i efter Firebase-setup) ───────────────
+  const FCM_CONFIG = {
+    apiKey:            "AIzaSyA1YkZi9MPCHetCCG6XDyg2TA7AbadmT6k",
+    authDomain:        "sverigesimamer.firebaseapp.com",
+    projectId:         "sverigesimamer",
+    storageBucket:     "sverigesimamer.firebasestorage.app",
+    messagingSenderId: "860592398067",
+    appId:             "1:860592398067:web:3ae1c407c498eee39e6186",
+  };
+  const FCM_VAPID_KEY = "BPOBrPLoZVQ8U2reRfz2vqFmQh3kV-h8hbpEqjeMgfLNjzkgOqEzfOwwTAz_zwJykqJyjL9BRGB-QCx-DPkHbUc";
+  // ─────────────────────────────────────────────────────────────
+
+  let _fcmToken = null;
+
+  async function _initFCM() {
+    // Kräver att SW är registrerad och att Notification-API finns
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (FCM_CONFIG.apiKey === 'FIREBASE_API_KEY') return; // Ej konfigurerad än
+
+    try {
+      // Ladda Firebase dynamiskt (undviker att påverka laddningstid)
+      const [{ initializeApp }, { getMessaging, getToken, onMessage }] = await Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js'),
+      ]);
+
+      const app       = initializeApp(FCM_CONFIG);
+      const messaging = getMessaging(app);
+
+      // Hämta token (kräver granted permission)
+      if (Notification.permission === 'granted') {
+        const swReg = await navigator.serviceWorker.ready;
+        _fcmToken = await getToken(messaging, {
+          vapidKey: FCM_VAPID_KEY,
+          serviceWorkerRegistration: swReg,
+        });
+        console.log('[FCM] Token:', _fcmToken);
+        // Spara token lokalt (GitHub Action hämtar den via en liten token-fil)
+        localStorage.setItem('fcm_token', _fcmToken);
+        _updatePushBtn('active');
+      }
+
+      // Hantera push-meddelanden i förgrunden
+      onMessage(messaging, (payload) => {
+        const t = T[_currentLang] || T['sv'];
+        const title = payload.notification?.title || t.pushNewTitle;
+        const body  = payload.notification?.body  || t.pushNewBody;
+        // Visa via SW för konsekvent utseende
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, {
+            body, icon: 'favicon.ico', badge: 'favicon.ico',
+            tag: 'new-audio', renotify: true,
+            data: { url: window.location.href },
+          });
+        });
+      });
+
+    } catch (err) {
+      console.warn('[FCM] Init misslyckades:', err);
+    }
+  }
+
+  function _updatePushBtn(state) {
+    const btn = document.getElementById('push-notif-btn');
+    const lbl = document.getElementById('push-notif-label');
+    if (!btn || !lbl) return;
+    const t = T[_currentLang] || T['sv'];
+    btn.classList.remove('push-active', 'push-denied');
+    if (state === 'active') {
+      btn.classList.add('push-active');
+      lbl.textContent = t.pushActiveBtn || 'Push-notiser aktiva ✓';
+    } else if (state === 'denied') {
+      btn.classList.add('push-denied');
+      lbl.textContent = t.pushDeniedBtn || 'Notiser blockerade';
+    } else {
+      lbl.textContent = t.pushEnableBtn || 'Aktivera push-notiser';
+    }
+  }
+
+  // Push-knapp click
+  document.addEventListener('click', async e => {
+    if (!e.target.closest('#push-notif-btn')) return;
+    const btn = document.getElementById('push-notif-btn');
+    if (btn.classList.contains('push-active') || btn.classList.contains('push-denied')) return;
+
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      await _initFCM();
+    } else {
+      _updatePushBtn('denied');
+    }
+  });
+
+  // Init vid laddning om redan granted
+  window.addEventListener('load', () => {
+    if (Notification.permission === 'granted') {
+      _initFCM();
+    } else if (Notification.permission === 'denied') {
+      _updatePushBtn('denied');
+    }
+  });
 
 </script>
 
