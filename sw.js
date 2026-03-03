@@ -160,3 +160,8 @@ self.addEventListener('message', async event => {
     event.source.postMessage({ type: 'CACHE_CLEARED' });
   }
 });
+
+// ── Skip waiting när sidan ber om det (från update-toast) ─────
+// Obs: vi anv\u00e4nder redan self.skipWaiting() i install-event,
+// s\u00e5 ny SW tar \u00f6ver automatiskt vid n\u00e4sta laddning.
+// Inget extra beh\u00f6vs.
