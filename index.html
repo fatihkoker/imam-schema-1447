@@ -4815,22 +4815,39 @@
   const ishaUrls  = {};
   const ishaState = {};
 
+  // Kontrollera om en URL är tillgänglig — via cache (offline) eller nätverk (online)
+  async function _checkAudioAvailable(url) {
+    // 1. Kolla Cache API — fungerar offline
+    try {
+      const cache = await caches.open('tarawih-audio-v1');
+      const cached = await cache.match(url);
+      if (cached) return true;
+    } catch {}
+    // 2. Försök HEAD-request om online
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok || res.status === 206) return true;
+    } catch {}
+    // 3. Sista utväg: GET-request (för servrar som blockerar HEAD)
+    try {
+      const res = await fetch(url);
+      if (res.ok) return true;
+    } catch {}
+    return false;
+  }
+
   SCHEDULE.forEach(row => {
     const url = basePath + '/' + row.datum + '.mp3';
     audioUrls[row.datum] = url;
-    fetch(url, { method: 'HEAD' })
-      .then(res => { if (res.ok || res.status === 206) injectPlayButtons(row.datum); })
-      .catch(() => { fetch(url).then(res => { if (res.ok) injectPlayButtons(row.datum); }).catch(() => {}); });
+    _checkAudioAvailable(url).then(ok => { if (ok) injectPlayButtons(row.datum); });
 
     const ishaUrl = basePath + '/' + row.datum + '-isha.mp3';
-    fetch(ishaUrl, { method: 'HEAD' })
-      .then(res => {
-        if (res.ok || res.status === 206) {
-          ishaUrls[row.datum] = ishaUrl;
-          markIshaAvailable(row.datum);
-        }
-      })
-      .catch(() => {});
+    _checkAudioAvailable(ishaUrl).then(ok => {
+      if (ok) {
+        ishaUrls[row.datum] = ishaUrl;
+        markIshaAvailable(row.datum);
+      }
+    });
   });
 
   // Marks a row/card as having isha available (adds dot indicator)
