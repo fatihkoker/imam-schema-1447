@@ -1632,6 +1632,10 @@
       opacity: 0;
       transition: transform 0.42s cubic-bezier(0.34,1.4,0.64,1), opacity 0.3s ease;
     }
+    [data-theme="dark"] #dl-done-toast {
+      background: #14503a;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    }
     #dl-done-toast.visible {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
@@ -6410,6 +6414,7 @@
     if (!datum) return;
     const url = audioUrls[datum];
     if (!url) return;
+    // Kolla bara tarawih-spåret för cached-state (isha är bonus)
     const ctrl = navigator.serviceWorker && navigator.serviceWorker.controller;
     if (ctrl) {
       ctrl.postMessage({ type: 'CHECK_CACHED', url, datum });
@@ -6474,24 +6479,39 @@
     if (btn.classList.contains('loading')) return;
 
     _setDlState('loading');
-    const url   = audioUrls[_activeDatum];
-    const datum = _activeDatum;
+    const datum    = _activeDatum;
+    const urls = [audioUrls[datum]];
+    // Lägg alltid till isha-URL — SW ignorerar tyst om filen inte finns (404)
+    const ishaUrl = basePath + '/' + datum + '-isha.mp3';
+    urls.push(ishaUrl);
 
     const ctrl = navigator.serviceWorker && navigator.serviceWorker.controller;
     if (ctrl) {
-      ctrl.postMessage({ type: 'CACHE_AUDIO', url, datum });
+      // Skicka alla URLs till SW — den cachar dem sekventiellt
+      ctrl.postMessage({ type: 'CACHE_AUDIO', urls, datum });
     } else {
       // Fallback: Cache API direkt utan SW
       (async () => {
         try {
-          const cache    = await caches.open('tarawih-audio-v1');
-          const existing = await cache.match(url);
-          if (existing) { _onCacheDone(datum); return; }
-          const response = await fetch(url);
-          if (response.ok) {
-            await cache.put(url, response.clone());
-            _onCacheDone(datum);
-          } else { _onCacheError(datum); }
+          const cache = await caches.open('tarawih-audio-v1');
+          // Tarawih — obligatorisk
+          const mainUrl = audioUrls[datum];
+          const existing = await cache.match(mainUrl);
+          if (!existing) {
+            const response = await fetch(mainUrl);
+            if (response.ok) await cache.put(mainUrl, response.clone());
+            else { _onCacheError(datum); return; }
+          }
+          // Isha — frivillig, tyst fel om den inte finns
+          try {
+            const ishaFallbackUrl = basePath + '/' + datum + '-isha.mp3';
+            const ishaExisting = await cache.match(ishaFallbackUrl);
+            if (!ishaExisting) {
+              const ishaResp = await fetch(ishaFallbackUrl);
+              if (ishaResp.ok) await cache.put(ishaFallbackUrl, ishaResp.clone());
+            }
+          } catch {}
+          _onCacheDone(datum);
         } catch { _onCacheError(datum); }
       })();
     }
