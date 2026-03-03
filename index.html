@@ -6647,6 +6647,53 @@
     }, 3000);
   });
 
+  // ── Deep link: #natt=2026-03-01 — öppnar spelaren direkt ────────
+  function _handleDeepLink() {
+    const hash = window.location.hash; // t.ex. "#natt=2026-03-01"
+    if (!hash.startsWith('#natt=')) return;
+    const datum = hash.replace('#natt=', '').trim();
+    const row   = SCHEDULE.find(r => r.datum === datum);
+    if (!row) return;
+
+    // Rensa hash ur URL:en utan att ladda om sidan
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    // Vänta tills DOM är renderad (tabellen byggs async)
+    const _tryOpen = (attempts) => {
+      // Hitta raden i desktop-tabell eller mobil-card
+      const isMobile = window.innerWidth <= 640;
+      const selector = isMobile
+        ? `.day-card-mobile[data-datum="${datum}"]`
+        : `tr[data-datum="${datum}"]`;
+      const el = document.querySelector(selector);
+
+      if (el) {
+        // Scrolla till raden med lite offset
+        const y = el.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+
+        // Markera raden visuellt en kort stund
+        el.style.transition = 'background 0.3s ease';
+        el.style.background = 'rgba(36,100,93,0.18)';
+        setTimeout(() => { el.style.background = ''; }, 1400);
+
+        // Öppna full player
+        setTimeout(() => openPlayer(datum), 350);
+      } else if (attempts > 0) {
+        setTimeout(() => _tryOpen(attempts - 1), 300);
+      }
+    };
+
+    // Ge appen 600ms att rendera tabellen, försök sedan upp till 5 gånger
+    setTimeout(() => _tryOpen(5), 600);
+  }
+
+  // Kör vid sidladdning
+  window.addEventListener('DOMContentLoaded', _handleDeepLink);
+
+  // Kör även om hash ändras medan sidan är öppen (t.ex. PWA i bakgrunden)
+  window.addEventListener('hashchange', _handleDeepLink);
+
   // ── Update Toast + Auto-uppdatering ────────────────────────────
   function _showUpdateToast() {
     const toast = document.getElementById('update-toast');
